@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai Creek Harbour — Security Operations Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-deep:    #090d12;
+    --bg-panel:   #0e1520;
+    --bg-card:    #131d2b;
+    --bg-hover:   #1a2638;
+    --border:     rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.14);
+    --accent:     #e8a020;
+    --accent-dim: rgba(232,160,32,0.15);
+    --red:        #e84040;
+    --red-dim:    rgba(232,64,64,0.15);
+    --green:      #34c77b;
+    --green-dim:  rgba(52,199,123,0.12);
+    --blue:       #3a8fe8;
+    --blue-dim:   rgba(58,143,232,0.12);
+    --text-pri:   #e8edf5;
+    --text-sec:   #7a8fa8;
+    --text-dim:   #3d5068;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono:    'DM Mono', monospace;
+    --font-body:    'DM Sans', sans-serif;
+    --r:          6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-deep);
+    color: var(--text-pri);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle scanline texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.06) 2px,
+      rgba(0,0,0,0.06) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-badge {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: #000;
+    letter-spacing: 0.5px;
+  }
+
+  .header-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--text-pri);
+    line-height: 1;
+  }
+
+  .header-sub {
+    font-size: 10px;
+    color: var(--text-sec);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 3px;
+    font-family: var(--font-mono);
+  }
+
+  .header-center {
+    text-align: center;
+  }
+
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--green-dim);
+    border: 1px solid rgba(52,199,123,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-green 2s infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  #live-clock {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .clock-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-sec);
+    letter-spacing: 2px;
+    margin-top: 2px;
+  }
+
+  /* ── CONFIG PANEL ── */
+  .config-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 32px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .config-bar label {
+    color: var(--text-sec);
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .config-bar input, .config-bar select {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--r);
+    color: var(--text-pri);
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    outline: none;
+  }
+
+  .config-bar input:focus, .config-bar select:focus {
+    border-color: var(--accent);
+  }
+
+  .config-bar input[type="text"] { width: 320px; }
+
+  .btn-fetch {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--r);
+    padding: 7px 18px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.15s;
+  }
+
+  .btn-fetch:hover { opacity: 0.85; }
+  .btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-demo {
+    background: transparent;
+    color: var(--text-sec);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--r);
+    padding: 7px 18px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-demo:hover {
+    color: var(--text-pri);
+    border-color: var(--accent);
+  }
+
+  .fetch-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-sec);
+    letter-spacing: 1px;
+    margin-left: auto;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── KPI ROW ── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi-card:hover { border-color: var(--border-bright); }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .kpi-card.critical::before { background: var(--red); }
+  .kpi-card.high::before { background: #e87820; }
+  .kpi-card.medium::before { background: var(--accent); }
+  .kpi-card.low::before { background: var(--green); }
+  .kpi-card.total::before { background: var(--blue); }
+  .kpi-card.active::before { background: #a34de8; }
+
+  .kpi-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: 42px;
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
+  .kpi-card.critical .kpi-value { color: var(--red); }
+  .kpi-card.high .kpi-value { color: #e87820; }
+  .kpi-card.medium .kpi-value { color: var(--accent); }
+  .kpi-card.low .kpi-value { color: var(--green); }
+  .kpi-card.total .kpi-value { color: var(--blue); }
+  .kpi-card.active .kpi-value { color: #a34de8; }
+
+  .kpi-delta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── MAIN GRID ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 340px;
+    gap: 16px;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--text-pri);
+  }
+
+  .panel-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--bg-hover);
+    color: var(--text-sec);
+  }
+
+  /* ── CHART PANELS ── */
+  .chart-wrap {
+    padding: 16px;
+    height: 220px;
+    position: relative;
+  }
+
+  /* ── ZONE HEATMAP ── */
+  .zone-grid {
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .zone-cell {
+    border-radius: var(--r);
+    padding: 10px 12px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .zone-cell:hover { transform: scale(1.02); border-color: var(--border-bright); }
+
+  .zone-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-pri);
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .zone-count {
+    font-family: var(--font-display);
+    font-size: 26px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .zone-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 0 0 var(--r) var(--r);
+  }
+
+  /* ── INCIDENT FEED ── */
+  .feed-list {
+    max-height: 380px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .feed-item {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  .feed-item:hover { background: var(--bg-hover); }
+
+  .severity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .severity-dot.critical { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse-red 1.5s infinite; }
+  .severity-dot.high { background: #e87820; }
+  .severity-dot.medium { background: var(--accent); }
+  .severity-dot.low { background: var(--green); }
+
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--red); }
+    50% { opacity: 0.5; box-shadow: 0 0 4px var(--red); }
+  }
+
+  .feed-main {}
+
+  .feed-type {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-pri);
+    letter-spacing: 0.3px;
+  }
+
+  .feed-summary {
+    font-size: 11px;
+    color: var(--text-sec);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .feed-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--bg-hover);
+    color: var(--text-sec);
+    letter-spacing: 0.5px;
+  }
+
+  .tag.zone { color: var(--blue); background: var(--blue-dim); }
+  .tag.type { color: var(--accent); background: var(--accent-dim); }
+
+  .feed-time {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* ── BOTTOM GRID ── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 340px;
+    gap: 16px;
+  }
+
+  /* ── SHIFT PANEL ── */
+  .shift-selector {
+    display: flex;
+    gap: 0;
+  }
+
+  .shift-btn {
+    flex: 1;
+    padding: 6px;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .shift-btn:first-child { border-radius: var(--r) 0 0 var(--r); }
+  .shift-btn:last-child { border-radius: 0 var(--r) var(--r) 0; }
+
+  .shift-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .shift-stats {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .shift-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .shift-row-label { color: var(--text-sec); }
+
+  .shift-row-val {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--text-pri);
+  }
+
+  /* ── RECOMMENDATIONS ── */
+  .reco-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .reco-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--bg-hover);
+    border-radius: var(--r);
+    border-left: 2px solid var(--accent);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-sec);
+    transition: background 0.15s;
+  }
+
+  .reco-item:hover { background: var(--bg-panel); color: var(--text-pri); }
+
+  .reco-num {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  /* ── TOP TYPES ── */
+  .type-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .type-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .type-name {
+    width: 140px;
+    flex-shrink: 0;
+    color: var(--text-sec);
+    font-size: 11px;
+  }
+
+  .type-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-hover);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .type-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.6s ease;
+  }
+
+  .type-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-pri);
+    width: 24px;
+    text-align: right;
+  }
+
+  /* ── SHIFT HANDOVER PANEL ── */
+  .handover-box {
+    padding: 14px 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-sec);
+    line-height: 1.8;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    border-top: 1px solid var(--border);
+  }
+
+  .handover-highlight { color: var(--accent); }
+  .handover-critical { color: var(--red); }
+  .handover-ok { color: var(--green); }
+
+  /* ── SLIDE-IN OVERLAY PANEL ── */
+  .slide-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+  }
+  .slide-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+  }
+  .slide-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 420px;
+    height: 100vh;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-bright);
+    z-index: 1001;
+    box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-pri);
+  }
+  .slide-backdrop.show .slide-panel {
+    right: 0;
+  }
+  .slide-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slide-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+  .slide-close {
+    background: none;
+    border: none;
+    color: var(--text-sec);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .slide-close:hover { color: var(--text-pri); }
+  .slide-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scrollbar-width: thin;
+  }
+  .slide-sub-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 12px 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    background: var(--bg-panel);
+  }
+
+  /* ── LOADING OVERLAY ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(9,13,18,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    display: none;
+  }
+
+  .loading-overlay.show { display: flex; }
+
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 2px solid var(--border-bright);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-sec);
+    letter-spacing: 2px;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* ── MODAL (incident detail) ── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 8000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-backdrop.show { display: flex; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    width: 540px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-sec);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .modal-close:hover { color: var(--text-pri); }
+
+  .modal-body {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modal-field label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .modal-field p {
+    font-size: 13px;
+    color: var(--text-pri);
+    line-height: 1.5;
+  }
+
+  .actions-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .actions-list li {
+    font-size: 12px;
+    color: var(--text-sec);
+    padding: 6px 10px;
+    background: var(--bg-hover);
+    border-radius: 4px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .actions-list li::before {
+    content: '→';
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1200px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .main-grid { grid-template-columns: 1fr 1fr; }
+    .bottom-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="header-left">
+    <div class="logo-badge">DCH</div>
+    <div>
+      <div class="header-title">ZONE D — SECURITY OPERATIONS CENTRE</div>
+      <div class="header-sub">Dubai Creek Harbour Zone D · 14 Communities · 204 Officers · 8008 Cameras</div>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      LIVE MONITORING
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="live-clock">00:00:00</div>
+    <div class="clock-date" id="live-date">—</div>
+  </div>
+</header>
+
+<!-- ── CONFIG BAR ── -->
+<div class="config-bar">
+  <label>GOOGLE SHEET URL</label>
+  <input type="text" id="sheet-url" placeholder="Paste your Google Sheets published CSV URL here" />
+  <label>RANGE</label>
+  <select id="date-range">
+    <option value="1">Today</option>
+    <option value="7" selected>Last 7 days</option>
+    <option value="30">Last 30 days</option>
+    <option value="999">All time</option>
+  </select>
+  <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
+  <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
+  <span class="fetch-status" id="fetch-status">No data loaded · Click LOAD DEMO to preview</span>
+</div>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi-card total">
+      <div class="kpi-label">Total Incidents</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-delta" id="kpi-total-d">this period</div>
+    </div>
+    <div class="kpi-card critical">
+      <div class="kpi-label">Critical</div>
+      <div class="kpi-value" id="kpi-critical">—</div>
+      <div class="kpi-delta">immediate action</div>
+    </div>
+    <div class="kpi-card high">
+      <div class="kpi-label">High</div>
+      <div class="kpi-value" id="kpi-high">—</div>
+      <div class="kpi-delta">escalated</div>
+    </div>
+    <div class="kpi-card medium">
+      <div class="kpi-label">Medium</div>
+      <div class="kpi-value" id="kpi-medium">—</div>
+      <div class="kpi-delta">monitored</div>
+    </div>
+    <div class="kpi-card low">
+      <div class="kpi-label">Low</div>
+      <div class="kpi-value" id="kpi-low">—</div>
+      <div class="kpi-delta">logged</div>
+    </div>
+    <div class="kpi-card active">
+      <div class="kpi-label">Action Required</div>
+      <div class="kpi-value" id="kpi-action">—</div>
+      <div class="kpi-delta">open items</div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="main-grid">
+
+    <!-- Incidents over time -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">INCIDENT TIMELINE</div>
+        <span class="panel-badge" id="chart-range-label">7D</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Zone heatmap -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">ZONE HEATMAP</div>
+        <span class="panel-badge">HOTSPOT ANALYSIS (CLICK FOR DETAILS)</span>
+      </div>
+      <div class="zone-grid" id="zone-grid">
+        <div class="empty-state">Load data to view</div>
+      </div>
+    </div>
+
+    <!-- Live incident feed -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">INCIDENT FEED</div>
+        <span class="panel-badge" id="feed-count">0 REPORTS</span>
+      </div>
+      <div class="feed-list" id="feed-list">
+        <div class="empty-state">No incidents loaded</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Grid -->
+  <div class="bottom-grid">
+
+    <!-- Shift comparison -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">SHIFT ANALYSIS</div>
+        <div class="shift-selector">
+          <button class="shift-btn active" onclick="setShift('Morning', this)">MORNING</button>
+          <button class="shift-btn" onclick="setShift('Night', this)">NIGHT</button>
+        </div>
+      </div>
+      <div class="shift-stats" id="shift-stats">
+        <div class="empty-state" style="padding:20px">Load data first</div>
+      </div>
+      <div class="chart-wrap" style="height:160px;">
+        <canvas id="shiftChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top incident types -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">INCIDENT TYPES</div>
+        <span class="panel-badge">RANKED</span>
+      </div>
+      <div class="type-list" id="type-list">
+        <div class="empty-state" style="padding:20px">Load data first</div>
+      </div>
+    </div>
+
+    <!-- AI Recommendations -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">AI RECOMMENDATIONS</div>
+        <span class="panel-badge" id="reco-shift-label">LIVE ACTIVE OPERATIONS</span>
+      </div>
+      <div class="reco-list" id="reco-list">
+        <div class="empty-state" style="padding:20px">Load data to generate recommendations</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Shift Handover Preview -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">SHIFT HANDOVER SUMMARY</div>
+      <span class="panel-badge" id="handover-shift-label">AUTO-GENERATED EVERY 12 HOURS</span>
+    </div>
+    <div class="handover-box" id="handover-box">Load data to generate shift handover summary…</div>
+  </div>
+
+</main>
+
+<!-- Slide-in detail panel -->
+<div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
+  <div class="slide-panel" onclick="event.stopPropagation()">
+    <div class="slide-header">
+      <div class="slide-title" id="slide-zone-name">ZONE DETAIL</div>
+      <button class="slide-close" onclick="hideZonePanel()">✕</button>
+    </div>
+    <div class="slide-body" id="slide-zone-body">
+      <!-- Injected via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY AI</span>
+  <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
+  <span id="last-refresh">LAST REFRESH: —</span>
+</footer>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">FETCHING SECURITY DATA…</div>
+</div>
+
+<!-- Incident Detail Modal -->
+<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">INCIDENT DETAIL</div>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ── GLOBAL STATE ──
+let allIncidents = [];
+let charts = {};
+let currentShift = 'Morning';
+
+// Helper to get true GST date/hour variables accurately regardless of local OS settings
+function getGSTDateTime(dateInput) {
+  const baseDate = dateInput ? new Date(dateInput) : new Date();
+  // Adjust localized display configurations
+  const gstString = baseDate.toLocaleString("en-US", {timeZone: "Asia/Dubai"});
+  const gstDate = new Date(gstString);
+  const hour = gstDate.getHours();
+  return { gstDate, hour };
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const { gstDate } = getGSTDateTime();
+  document.getElementById('live-clock').textContent =
+    gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+  document.getElementById('live-date').textContent =
+    gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── FETCH FROM GOOGLE SHEETS (published as CSV) ──
+async function fetchData() {
+  const url = document.getElementById('sheet-url').value.trim();
+  if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
+
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('fetch-status').textContent = 'FETCHING…';
+
+  let csvUrl = url;
+  if (url.includes('/pub?')) {
+    csvUrl = url;
+  } else if (url.includes('/edit')) {
+    csvUrl = url.replace('/edit', '/pub') + '?output=csv';
+  } else if (!url.includes('output=csv')) {
+    csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
+  }
+
+  const attempts = [
+    csvUrl,
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
+    'https://corsproxy.io/?' + encodeURIComponent(csvUrl)
+  ];
+
+  let lastError = '';
+  for (const attemptUrl of attempts) {
+    try {
+      const resp = await fetch(attemptUrl, { cache: 'no-store' });
+      if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
+      const text = await resp.text();
+      if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
+      allIncidents = parseCSV(text);
+      
+      // Enforce absolute chronological processing order across the data stream
+      sortIncidentsDescending(allIncidents);
+      
+      const { gstDate } = getGSTDateTime();
+      const timeStr = gstDate.toLocaleTimeString('en-AE');
+      document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} INCIDENTS · ${timeStr}`;
+      document.getElementById('last-refresh').textContent = 'LAST REFRESH: ' + timeStr;
+      document.getElementById('loading').classList.remove('show');
+      renderAll();
+      return;
+    } catch(e) {
+      lastError = e.message;
+      continue;
+    }
+  }
+
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('fetch-status').textContent = 'FETCH FAILED — see instructions below';
+  alert(
+    'Could not fetch data automatically.\n\n' +
+    'You are likely opening this file directly from your drive (file://) while n8n runs in WSL.\n\n' +
+    'SOLUTION:\n' +
+    '1. In WSL terminal run: python3 -m http.server 8080\n' +
+    '2. Open Chrome and go to: http://localhost:8080/security_dashboard.htmln' +
+    '3. Paste your Google Sheet CSV URL and click Fetch Data again.\n\n' +
+    'OR use the LOAD DEMO button to preview with sample data.'
+  );
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+  return lines.slice(1).map(line => {
+    const vals = parseCSVLine(line);
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = (vals[i] || '').replace(/"/g,'').trim());
+    
+    // Normalize shifting parameters inside raw loads to prevent mismatching downstream calculations
+    if (obj.timestamp) {
+      const { hour } = getGSTDateTime(obj.timestamp);
+      if (hour >= 7 && hour < 19) {
+        obj.shift = 'Morning Shift (07:00-19:00)';
+      } else {
+        obj.shift = 'Night Shift (19:00-07:00)';
+      }
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const { gstDate } = getGSTDateTime(obj.timestamp);
+      obj.day_of_week = days[gstDate.getDay()];
+    }
+    return obj;
+  }).filter(r => r.timestamp || r.incident_type);
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQuotes = !inQuotes; }
+    else if (line[i] === ',' && !inQuotes) { result.push(current); current = ''; }
+    else { current += line[i]; }
+  }
+  result.push(current);
+  return result;
+}
+
+function sortIncidentsDescending(arr) {
+  arr.sort((a, b) => {
+    const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+    const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+    return timeB - timeA;
+  });
+}
+
+// ── DEMO DATA ──
+function loadDemoData() {
+  const zones = ['The Cove', 'North Residence', 'South Residence', 'The Grand', 'Creek Edge', 'Creek Crescent', '17 Icon Bay', 'Creek Gate', 'Harbour Gate', 'Creek Rise', 'Creek Horizon', 'Harbour Views', 'Creekside 18', 'Master Community', 'Creek Beach', 'Marina Walk', 'Central Park', 'Parking', 'CCTV Room', 'Infrastructure'];
+  const types = ['Trespassing','Theft','Suspicious_Activity','Noise_Complaint','Access_Control','Patrol_Report','Altercation','Vandalism','Medical','Lost_Property'];
+  const severities = ['Critical','High','Medium','Medium','Low','Low','Low'];
+  const officers = ['Ofc. Rahman','Ofc. Al Mansoori','Ofc. Singh','Ofc. Khalid','Ofc. Peters','Sgt. Al Hamdan'];
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const summaries = [
+    'Unauthorized individual spotted near restricted access point, challenged and escorted off premises.',
+    'Retail unit reported missing merchandise, CCTV review initiated.',
+    'Altercation between two visitors in the promenade area, both parties separated, no injuries.',
+    'Vehicle parked in loading bay obstruction, owner contacted and vehicle moved.',
+    'Officer patrol completed, all clear reported.',
+    'Medical assistance provided to visitor who reported dizziness, paramedics called.',
+    'Gate sensor fault reported, maintenance team notified.',
+    'Suspicious individual observed photographing restricted infrastructure, approached and details recorded.',
+  ];
+
+  allIncidents = [];
+  const { gstDate: currentGst } = getGSTDateTime();
+  
+  for (let i = 0; i < 120; i++) {
+    const d = new Date(currentGst.getTime() - Math.random() * 7 * 86400000);
+    const hour = d.getHours();
+    let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+    const sev = severities[Math.floor(Math.random() * severities.length)];
+    
+    allIncidents.push({
+      message_id: 'DEMO_' + i,
+      timestamp: d.toISOString(),
+      sender: officers[Math.floor(Math.random() * officers.length)],
+      shift: shift,
+      day_of_week: days[d.getDay()],
+      incident_type: types[Math.floor(Math.random() * types.length)],
+      severity: sev,
+      location_zone: zones[Math.floor(Math.random() * zones.length)],
+      summary: summaries[Math.floor(Math.random() * summaries.length)],
+      action_required: (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
+      immediate_actions: sev === 'Critical' ? 'Contact supervisor; Dispatch additional officers; Review CCTV' : '',
+      confidence: (0.75 + Math.random() * 0.24).toFixed(2)
+    });
+  }
+  
+  sortIncidentsDescending(allIncidents);
+  document.getElementById('fetch-status').textContent = `DEMO DATA · ${allIncidents.length} INCIDENTS LOADED`;
+  const { gstDate } = getGSTDateTime();
+  document.getElementById('last-refresh').textContent = 'LAST REFRESH: DEMO · ' + gstDate.toLocaleTimeString('en-AE');
+  renderAll();
+}
+
+// ── FILTER BY DATE RANGE ──
+function getFilteredIncidents() {
+  const days = parseInt(document.getElementById('date-range').value);
+  const cutoff = new Date(Date.now() - days * 86400000);
+  const filtered = allIncidents.filter(i => new Date(i.timestamp) >= cutoff || days >= 999);
+  sortIncidentsDescending(filtered);
+  return filtered;
+}
+
+// ── RENDER ALL ──
+function renderAll() {
+  const data = getFilteredIncidents();
+  renderKPIs(data);
+  renderFeed(data);
+  renderTimeline(data);
+  renderZoneHeatmap(data);
+  renderTypes(data);
+  renderShiftStats(data);
+  renderRecommendations(data);
+  renderHandover(data);
+}
+
+// ── KPIs ──
+function renderKPIs(data) {
+  const count = v => data.filter(i => i.severity === v).length;
+  document.getElementById('kpi-total').textContent = data.length;
+  document.getElementById('kpi-critical').textContent = count('Critical');
+  document.getElementById('kpi-high').textContent = count('High');
+  document.getElementById('kpi-medium').textContent = count('Medium');
+  document.getElementById('kpi-low').textContent = count('Low');
+  document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
+}
+
+// ── INCIDENT FEED ──
+function renderFeed(data) {
+  const el = document.getElementById('feed-list');
+  document.getElementById('feed-count').textContent = data.length + ' REPORTS';
+  if (!data.length) { el.innerHTML = '<div class="empty-state">No incidents in range</div>'; return; }
+  
+  // Ensure strict chronological alignment during injection loops
+  let feedData = [...data];
+  sortIncidentsDescending(feedData);
+  
+  el.innerHTML = feedData.slice(0,30).map((inc) => {
+    // Find the correct indexing from the primary source collection to avoid breaking modal displays
+    const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
+    return `
+      <div class="feed-item" onclick="showModal(${masterIdx})">
+        <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
+        <div class="feed-main">
+          <div class="feed-type">${inc.incident_type.replace(/_/g,' ')}</div>
+          <div class="feed-summary">${inc.summary}</div>
+          <div class="feed-meta">
+            <span class="tag zone">${inc.location_zone}</span>
+            <span class="tag type">${inc.severity}</span>
+            <span class="tag">${inc.sender}</span>
+          </div>
+        </div>
+        <div class="feed-time">${formatTime(inc.timestamp)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  return d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+}
+
+// ── TIMELINE CHART ──
+function renderTimeline(data) {
+  const days = parseInt(document.getElementById('date-range').value);
+  const buckets = {};
+  const { gstDate: nowGst } = getGSTDateTime();
+  
+  for (let i = Math.min(days, 30) - 1; i >= 0; i--) {
+    const d = new Date(nowGst.getTime() - i * 86400000);
+    const key = d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+    buckets[key] = { Critical:0, High:0, Medium:0, Low:0 };
+  }
+  
+  data.forEach(inc => {
+    if (inc.timestamp) {
+      const { gstDate } = getGSTDateTime(inc.timestamp);
+      const key = gstDate.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+      if (buckets[key]) buckets[key][inc.severity] = (buckets[key][inc.severity] || 0) + 1;
+    }
+  });
+  
+  const labels = Object.keys(buckets);
+  const makeDS = (sev, color, borderColor) => ({
+    label: sev,
+    data: labels.map(l => buckets[l][sev] || 0),
+    backgroundColor: color,
+    borderColor: borderColor,
+    borderWidth: 1.5,
+    borderRadius: 3,
+    stack: 'stack'
+  });
+
+  if (charts.timeline) charts.timeline.destroy();
+  const ctx = document.getElementById('timelineChart').getContext('2d');
+  charts.timeline = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        makeDS('Critical', 'rgba(232,64,64,0.8)', '#e84040'),
+        makeDS('High',     'rgba(232,120,32,0.8)', '#e87820'),
+        makeDS('Medium',   'rgba(232,160,32,0.8)', '#e8a020'),
+        makeDS('Low',      'rgba(52,199,123,0.6)', '#34c77b'),
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7a8fa8', font: { family: 'DM Mono', size: 9 }, maxRotation: 45 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7a8fa8', font: { family: 'DM Mono', size: 9 } }, beginAtZero: true }
+      }
+    }
+  });
+  document.getElementById('chart-range-label').textContent = Math.min(days,30) + 'D';
+}
+
+// ── ZONE HEATMAP ──
+function renderZoneHeatmap(data) {
+  const el = document.getElementById('zone-grid');
+  const zones = {};
+  data.forEach(i => { zones[i.location_zone] = (zones[i.location_zone]||0) + 1; });
+  const sorted = Object.entries(zones).sort((a,b)=>b[1]-a[1]);
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state">No data</div>'; return; }
+  const max = sorted[0][1];
+  const colors = [
+    ['rgba(232,64,64,0.25)','#e84040'],
+    ['rgba(232,120,32,0.2)','#e87820'],
+    ['rgba(232,160,32,0.15)','#e8a020'],
+    ['rgba(58,143,232,0.12)','#3a8fe8'],
+    ['rgba(52,199,123,0.1)','#34c77b'],
+  ];
+  
+  el.innerHTML = sorted.slice(0,8).map(([ zone, count ]) => {
+    const intensity = count / max;
+    const ci = Math.min(Math.floor((1 - intensity) * colors.length), colors.length - 1);
+    const [bg, bar] = colors[ci];
+    // Sanitize string keys safely before packing into JS event listener execution blocks
+    const cleanZone = zone.replace(/'/g, "\\'");
+    return `
+      <div class="zone-cell" style="background:${bg};" onclick="showZonePanel('${cleanZone}')">
+        <div class="zone-name">${zone}</div>
+        <div class="zone-count" style="color:${bar}">${count}</div>
+        <div class="zone-bar" style="background:${bar}"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── HEATMAP SLIDE-IN OVERLAY INTERACTION LOGIC ──
+function showZonePanel(zoneName) {
+  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — METRIC PROFILE';
+  const data = getFilteredIncidents();
+  const zoneIncidents = data.filter(i => i.location_zone === zoneName);
+  sortIncidentsDescending(zoneIncidents);
+  
+  const bodyEl = document.getElementById('slide-zone-body');
+  if(!zoneIncidents.length) {
+    bodyEl.innerHTML = '<div class="empty-state">No recorded records found inside filter boundaries.</div>';
+  } else {
+    const total = zoneIncidents.length;
+    const crit = zoneIncidents.filter(i => i.severity === 'Critical').length;
+    const high = zoneIncidents.filter(i => i.severity === 'High').length;
+    const med = zoneIncidents.filter(i => i.severity === 'Medium').length;
+    const low = zoneIncidents.filter(i => i.severity === 'Low').length;
+    const openItems = zoneIncidents.filter(i => i.action_required === 'TRUE').length;
+    
+    // Compile ranked incident types for this area
+    const types = {};
+    zoneIncidents.forEach(i => { types[i.incident_type] = (types[i.incident_type]||0) + 1; });
+    const topTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+    let html = `
+      <div>
+        <div class="slide-sub-title">Overview Profile</div>
+        <div class="shift-stats" style="padding:10px 0;">
+          <div class="shift-row"><span class="shift-row-label">Total Volume</span><span class="shift-row-val">${total}</span></div>
+          <div class="shift-row"><span class="shift-row-label">Active Action Flags</span><span class="shift-row-val" style="color:var(--accent)">${openItems}</span></div>
+          <div class="shift-row"><span class="shift-row-label">Critical Threat Count</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
+          <div class="shift-row"><span class="shift-row-label">High Urgency Count</span><span class="shift-row-val" style="color:#e87820">${high}</span></div>
+        </div>
+      </div>
+      
+      <div>
+        <div class="slide-sub-title">Primary Incident Trends</div>
+        <div class="type-list" style="padding:10px 0;">
+          ${topTypes.map(([t, c]) => `
+            <div class="type-row">
+              <div class="type-name" style="width:160px;">${t.replace(/_/g,' ')}</div>
+              <div class="type-bar-track"><div class="type-bar-fill" style="width:${Math.round(c/total*100)}%"></div></div>
+              <div class="type-count">${c}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div>
+        <div class="slide-sub-title">Recent Activity Log (Max 5)</div>
+        <div class="feed-list" style="max-height:300px; padding:5px 0;">
+          ${zoneIncidents.slice(0,5).map(inc => {
+            const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
+            return `
+              <div class="feed-item" style="padding:10px 5px;" onclick="showModal(${masterIdx})">
+                <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
+                <div class="feed-main">
+                  <div class="feed-type" style="font-size:11px;">${inc.incident_type.replace(/_/g,' ')}</div>
+                  <div class="feed-summary" style="font-size:10px; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${inc.summary}</div>
+                </div>
+                <div class="feed-time" style="font-size:9px;">${formatTime(inc.timestamp)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    bodyEl.innerHTML = html;
+  }
+  
+  document.getElementById('slide-backdrop').classList.add('show');
+}
+
+function hideZonePanel() {
+  document.getElementById('slide-backdrop').classList.remove('show');
+}
+
+function closeZonePanel(e) {
+  if (e.target === document.getElementById('slide-backdrop')) hideZonePanel();
+}
+
+// ── INCIDENT TYPES ──
+function renderTypes(data) {
+  const el = document.getElementById('type-list');
+  const types = {};
+  data.forEach(i => { const t = i.incident_type.replace(/_/g,' '); types[t] = (types[t]||0) + 1; });
+  const sorted = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No data</div>'; return; }
+  const max = sorted[0][1];
+  el.innerHTML = sorted.map(([type, count]) => `
+    <div class="type-row">
+      <div class="type-name">${type}</div>
+      <div class="type-bar-track">
+        <div class="type-bar-fill" style="width:${Math.round(count/max*100)}%"></div>
+      </div>
+      <div class="type-count">${count}</div>
+    </div>
+  `).join('');
+}
+
+// ── SHIFT ANALYSIS ──
+function setShift(shift, btn) {
+  currentShift = shift;
+  document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const data = getFilteredIncidents();
+  renderShiftStats(data);
+}
+
+function renderShiftStats(data) {
+  const shiftKey = currentShift;
+  const shiftData = data.filter(i => i.shift && i.shift.startsWith(shiftKey));
+  const el = document.getElementById('shift-stats');
+  if (!shiftData.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No data for this shift</div>'; renderShiftChart(data); return; }
+
+  const count = sev => shiftData.filter(i => i.severity === sev).length;
+  const zones = {};
+  shiftData.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
+  const topZone = Object.entries(zones).sort((a,b)=>b[1]-a[1])[0];
+  const pct = (n, total) => total ? Math.round(n/total*100) + '%' : '0%';
+  const total = shiftData.length;
+
+  el.innerHTML = `
+    <div class="shift-row"><span class="shift-row-label">Total incidents</span><span class="shift-row-val">${total}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Critical / High</span><span class="shift-row-val" style="color:var(--red)">${count('Critical')} / ${count('High')}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Action required</span><span class="shift-row-val" style="color:var(--accent)">${shiftData.filter(i=>i.action_required==='TRUE').length}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Hottest zone</span><span class="shift-row-val" style="color:var(--blue)">${topZone ? topZone[0] : '—'}</span></div>
+    <div class="shift-row"><span class="shift-row-label">% of all incidents</span><span class="shift-row-val">${pct(total, data.length)}</span></div>
+  `;
+  renderShiftChart(data);
+}
+
+function renderShiftChart(data) {
+  const shiftCounts = {Morning:0, Night:0};
+  data.forEach(i => {
+    if (i.shift && i.shift.startsWith('Morning')) shiftCounts.Morning++;
+    else if (i.shift && i.shift.startsWith('Night')) shiftCounts.Night++;
+  });
+  if (charts.shift) charts.shift.destroy();
+  const ctx = document.getElementById('shiftChart').getContext('2d');
+  charts.shift = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Morning 07:00–19:00', 'Night 19:00–07:00'],
+      datasets: [{
+        data: [shiftCounts.Morning, shiftCounts.Night],
+        backgroundColor: ['rgba(232,160,32,0.7)','rgba(58,143,232,0.7)'],
+        borderColor: ['#e8a020','#3a8fe8'],
+        borderWidth: 1.5
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#7a8fa8', font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 10 } }
+      }
+    }
+  });
+}
+
+// ── AI RECOMMENDATIONS ──
+function renderRecommendations(data) {
+  const el = document.getElementById('reco-list');
+  const labelEl = document.getElementById('reco-shift-label');
+  
+  const { hour } = getGSTDateTime();
+  const activeShiftLabel = (hour >= 7 && hour < 19) ? 'MORNING SHIFT ACTIVE' : 'NIGHT SHIFT ACTIVE';
+  const targetShiftFilter = (hour >= 7 && hour < 19) ? 'Morning' : 'Night';
+  
+  // Calculate active operation thresholds based entirely on raw shift logs
+  const realTimeShiftData = data.filter(i => i.shift && i.shift.startsWith(targetShiftFilter));
+  const openCount = realTimeShiftData.filter(i => i.action_required === 'TRUE').length;
+  
+  labelEl.textContent = `${activeShiftLabel} · ${realTimeShiftData.length} RUNNING INCIDENTS · ${openCount} OPEN ACTIONS`;
+  
+  // Base decision trees on current operational data blocks
+  const recos = generateRecommendations(realTimeShiftData.length > 0 ? realTimeShiftData : data);
+  if (!recos.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No real-time actionable events located.</div>'; return; }
+  el.innerHTML = recos.map((r,i) => `
+    <div class="reco-item">
+      <div class="reco-num">${i+1}</div>
+      <div>${r}</div>
+    </div>
+  `).join('');
+}
+
+function generateRecommendations(data) {
+  if (!data.length) return [];
+  const recos = [];
+
+  const ZONE_D_COMMUNITIES = [
+    'The Cove','North Residence','South Residence','The Grand',
+    'Creek Edge','Creek Crescent','17 Icon Bay','Creek Gate',
+    'Harbour Gate','Creek Rise','Creek Horizon','Harbour Views',
+    'Creekside 18','Master Community','Creek Beach',
+    'Marina Walk','Central Park','Parking','CCTV Room'
+  ];
+
+  // 1. Hottest community profile
+  const zones = {};
+  data.forEach(i => {
+    if (i.location_zone && i.location_zone !== 'Unknown')
+      zones[i.location_zone] = (zones[i.location_zone]||0)+1;
+  });
+  const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]);
+  if (topZones.length > 0) {
+    const [zone, count] = topZones[0];
+    recos.push(`Deploy additional patrol to <strong>${zone}</strong> — highest incident density with ${count} reports. Request CCTV room to increase monitoring frequency for this community.`);
+  }
+
+  // 2. CCTV and ANPR system tracking
+  const infraIncidents = data.filter(i =>
+    i.incident_type === 'Maintenance_Security' || i.location_zone === 'CCTV Room' || i.location_zone === 'Infrastructure'
+  );
+  if (infraIncidents.length > 0) {
+    recos.push(`<strong>${infraIncidents.length} infrastructure/CCTV incidents</strong> recorded — verify all 16 CCTV control rooms are operational and escalate camera faults to technical team immediately.`);
+  }
+
+  // 3. High threat distribution rules
+  const shiftCritical = data.filter(i => i.severity === 'Critical' || i.severity === 'High');
+  if (shiftCritical.length > 0) {
+    recos.push(`Reinforce defensive parameters across 14 security offices — ${shiftCritical.length} Critical/High incidents recorded under processing filter. Verify all 204 WeOne Security officers are accounted for.`);
+  }
+
+  // 4. Incident matrix frequency analysis
+  const types = {};
+  data.forEach(i => { if(i.incident_type) types[i.incident_type] = (types[i.incident_type]||0)+1; });
+  const topType = Object.entries(types).sort((a,b)=>b[1]-a[1])[0];
+  if (topType) {
+    const typeLabel = topType[0].replace(/_/g,' ');
+    const affectedCommunities = [...new Set(
+      data.filter(i => i.incident_type === topType[0] && i.location_zone !== 'Unknown')
+          .map(i => i.location_zone)
+    )].slice(0,3).join(', ');
+    recos.push(`Most frequent incident: <strong>${typeLabel}</strong> (${topType[1]} reports). ${affectedCommunities ? 'Affected communities: ' + affectedCommunities + '.' : ''} Review standard operating procedure and brief all 14 community supervisors.`);
+  }
+
+  // 5. Scaling calculations for residential boundaries
+  const accessIncidents = data.filter(i =>
+    i.incident_type === 'Access_Control' || i.incident_type === 'Trespassing'
+  );
+  if (accessIncidents.length > 0) {
+    recos.push(`<strong>${accessIncidents.length} access control/trespassing incidents</strong> — with 6566 apartments, 101 villas and 527 HHO units across Zone D, verify all building access points and ANPR cameras (44 total) are functioning correctly.`);
+  }
+
+  return recos.slice(0, 5);
+}
+
+// ── SHIFT HANDOVER ──
+async function fetchDubaiWeather() {
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weathercode&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FDubai';
+    const resp = await fetch(url);
+    const json = await resp.json();
+    const c = json.current;
+    const temp = Math.round(c.temperature_2m);
+    const humidity = c.relative_humidity_2m;
+    const wind = Math.round(c.wind_speed_10m);
+    const windDir = getWindDir(c.wind_direction_10m);
+    const wcode = c.weathercode;
+    const condition = getWeatherCondition(wcode);
+    const advisory = getWeatherAdvisory(temp, wind, wcode);
+
+    const hourly = json.hourly;
+    const { hour: currentHourIndex } = getGSTDateTime();
+    const next6hPrecip = hourly.precipitation_probability.slice(currentHourIndex, currentHourIndex + 6);
+    const maxPrecip = next6hPrecip.length ? Math.max(...next6hPrecip) : 0;
+
+    return { temp, humidity, wind, windDir, condition, advisory, maxPrecip, ok: true };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+function getWindDir(deg) {
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
+function getWeatherCondition(code) {
+  if (code === 0) return 'Clear skies';
+  if (code <= 3) return 'Partly cloudy';
+  if (code <= 9) return 'Hazy / dusty';
+  if (code <= 19) return 'Light fog';
+  if (code <= 29) return 'Drizzle';
+  if (code <= 39) return 'Dusty conditions';
+  if (code <= 49) return 'Foggy';
+  if (code <= 59) return 'Drizzle';
+  if (code <= 69) return 'Rain';
+  if (code <= 79) return 'Snow / sleet';
+  if (code <= 99) return 'Thunderstorm';
+  return 'Unknown';
+}
+
+function getWeatherAdvisory(temp, wind, code) {
+  const advisories = [];
+  if (temp >= 40) advisories.push('EXTREME HEAT — Mandate hydration breaks every 30 min for external patrols');
+  else if (temp >= 36) advisories.push('HIGH HEAT — Hydration breaks every hour for outdoor officers');
+  if (wind >= 40) advisories.push('HIGH WINDS — Secure loose items, restrict rooftop access');
+  else if (wind >= 25) advisories.push('MODERATE WINDS — Exercise caution on elevated areas');
+  if (code >= 80 && code <= 99) advisories.push('RAIN/STORM — Deploy additional officers to parking and entrances, wet surfaces hazard');
+  else if (code >= 40 && code <= 49) advisories.push('FOG ADVISORY — Reduce vehicle speed, increase lighting at access points');
+  else if (code >= 30 && code <= 39) advisories.push('DUST ADVISORY — Protect CCTV lenses, officers to wear dust protection');
+  if (advisories.length === 0) advisories.push('No adverse weather conditions — standard operations');
+  return advisories;
+}
+
+function getDCHTrafficAdvisory() {
+  const { hour: gstHour, gstDate } = getGSTDateTime();
+  const day = gstDate.getDay(); 
+  const isWeekend = (day === 5 || day === 6);
+  const advisories = [];
+
+  if (!isWeekend) {
+    if (gstHour >= 7 && gstHour <= 9) {
+      advisories.push('MORNING PEAK — Heavy congestion expected on Ras Al Khor Road and Al Ain Road. Delivery vehicles and visitor arrivals elevated. Gate 1 and Gate 3 access may be slow.');
+    } else if (gstHour >= 12 && gstHour <= 14) {
+      advisories.push('MIDDAY — Moderate traffic on Creek Road. Lunch hour visitor spike expected at Retail District.');
+    } else if (gstHour >= 16 && gstHour <= 20) {
+      advisories.push('EVENING PEAK — Heavy outbound traffic on Al Ain Road. Elevated visitor and resident vehicle movements. Expect congestion at parking levels. Deploy additional officer to Parking Gate.');
+    } else {
+      advisories.push('Traffic conditions normal for current time. Monitor Ras Al Khor Road for incident updates.');
+    }
+  } else {
+    if (gstHour >= 16 && gstHour <= 23) {
+      advisories.push('WEEKEND EVENING — High visitor footfall expected. Retail District and Events Lawn at elevated capacity. Parking Levels may reach full capacity by 19:00. Coordinate with parking team.');
+    } else if (gstHour >= 10 && gstHour <= 15) {
+      advisories.push('WEEKEND DAY — Moderate to high visitor activity. Creek Marina and Harbour Promenade busy. Monitor crowd density near waterfront.');
+    } else {
+      advisories.push('Weekend off-peak — normal traffic and visitor levels expected.');
+    }
+  }
+
+  if (day === 5 && gstHour >= 11 && gstHour <= 14) {
+    advisories.push('FRIDAY PRAYER — Significant traffic reduction 12:00–13:30. Increased pedestrian activity near mosque areas post-prayer.');
+  }
+
+  return advisories;
+}
+
+function renderHandover(data) {
+  const el = document.getElementById('handover-box');
+  if (!data.length) return;
+
+  const { hour, gstDate } = getGSTDateTime();
+  let currentShiftName, nextShiftName;
+  if (hour >= 7 && hour < 19) { currentShiftName = 'Morning Shift (07:00–19:00)'; nextShiftName = 'Night Shift (19:00–07:00)'; }
+  else { currentShiftName = 'Night Shift (19:00–07:00)'; nextShiftName = 'Morning Shift (07:00–19:00)'; }
+
+  const cutoff12h = new Date(Date.now() - 12 * 3600000);
+  const shift12h = data.filter(i => new Date(i.timestamp) >= cutoff12h);
+  const sev = s => shift12h.filter(i => i.severity === s).length;
+  const types = {};
+  shift12h.forEach(i => types[i.incident_type] = (types[i.incident_type]||0)+1);
+  const topTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const zones = {};
+  shift12h.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
+  const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  const dateStr = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+
+  fetchDubaiWeather().then(weather => {
+    const trafficAdvisories = getDCHTrafficAdvisory();
+    const recos = generateRecommendations(data).map((r,i) => `${i+1}. ${r.replace(/<[^>]+>/g,'')}`).join('\n');
+
+    let weatherBlock = '';
+    if (weather.ok) {
+      weatherBlock = `
+<span class="handover-highlight">━━━ WEATHER — INCOMING SHIFT ━━━</span>
+Condition        : ${weather.condition}
+Temperature      : ${weather.temp}°C
+Humidity         : ${weather.humidity}%
+Wind             : ${weather.wind} km/h ${weather.windDir}
+Rain Probability : ${weather.maxPrecip}% (next 6 hours)
+
+ADVISORY:
+${weather.advisory.map(a => '⚠ ' + a).join('\n')}`;
+    } else {
+      weatherBlock = `
+<span class="handover-highlight">━━━ WEATHER ━━━</span>
+Weather data unavailable — check manually`;
+    }
+
+    const trafficBlock = `
+<span class="handover-highlight">━━━ TRAFFIC & ENVIRONMENT ━━━</span>
+${trafficAdvisories.map(a => '🚦 ' + a).join('\n')}`;
+
+    el.innerHTML = `<span class="handover-highlight">═══════════════════════════════════════════════════
+SHIFT HANDOVER REPORT — AUTO GENERATED
+DUBAI CREEK HARBOUR SECURITY OPERATIONS
+${dateStr}
+═══════════════════════════════════════════════════</span>
+
+<span class="handover-highlight">OUTGOING:</span> ${currentShiftName}
+<span class="handover-highlight">INCOMING:</span> ${nextShiftName}
+
+<span class="handover-highlight">━━━ INCIDENTS (LAST 12 HOURS) ━━━</span>
+Total Incidents  : ${shift12h.length}
+${sev('Critical') > 0 ? `<span class="handover-critical">CRITICAL         : ${sev('Critical')}  ← REQUIRES HANDOVER BRIEFING</span>` : `Critical         : ${sev('Critical')}`}
+High Priority    : ${sev('High')}
+Medium           : ${sev('Medium')}
+Low / Routine    : ${sev('Low')}
+Action Required  : ${shift12h.filter(i=>i.action_required==='TRUE').length} open items
+
+<span class="handover-highlight">━━━ TOP INCIDENT TYPES ━━━</span>
+${topTypes.map(([t,c]) => `${t.replace(/_/g,' ').padEnd(25)} ${c} reports`).join('\n') || 'No incidents recorded'}
+
+<span class="handover-highlight">━━━ HOTSPOT ZONES ━━━</span>
+${topZones.map(([z,c],i) => `${i+1}. ${z.padEnd(30)} ${c} incidents`).join('\n') || 'No zone data'}
+${weatherBlock}
+${trafficBlock}
+
+<span class="handover-highlight">━━━ RECOMMENDATIONS FOR INCOMING SHIFT ━━━</span>
+${recos}
+
+<span class="handover-ok">━━━ STATUS: ALL AREAS ACCOUNTED FOR ━━━</span>
+Next auto-summary: ${getNext12h()}
+
+Outgoing supervisor sign-off: ____________________
+Incoming supervisor sign-off: ____________________`;
+  
+  });
+
+  document.getElementById('handover-shift-label').textContent = 'GENERATED: ' + gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'});
+}
+
+function getNext12h() {
+  const { hour, gstDate } = getGSTDateTime();
+  const next = new Date(gstDate);
+  next.setMinutes(0); next.setSeconds(0);
+  if (hour < 7) next.setHours(7);
+  else if (hour < 19) next.setHours(19);
+  else { next.setDate(next.getDate()+1); next.setHours(7); }
+  return next.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'}) + ' ' + next.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+}
+
+// ── MODAL ──
+function showModal(idx) {
+  const inc = allIncidents[idx];
+  if (!inc) return;
+  document.getElementById('modal-title').textContent = inc.incident_type.replace(/_/g,' ');
+  const actions = inc.immediate_actions ? inc.immediate_actions.split(';').filter(Boolean) : [];
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-field"><label>Severity</label><p style="color:${sevColor(inc.severity)}">${inc.severity}</p></div>
+    <div class="modal-field"><label>Zone</label><p>${inc.location_zone}</p></div>
+    <div class="modal-field"><label>Reported by</label><p>${inc.sender}</p></div>
+    <div class="modal-field"><label>Time</label><p>${new Date(inc.timestamp).toLocaleString('en-AE')}</p></div>
+    <div class="modal-field"><label>Shift</label><p>${inc.shift || '—'}</p></div>
+    <div class="modal-field"><label>Summary</label><p>${inc.summary}</p></div>
+    ${actions.length ? `<div class="modal-field"><label>Immediate Actions</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
+    <div class="modal-field"><label>AI Confidence</label><p style="color:var(--text-sec)">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
+    <div class="modal-field"><label>Raw Message</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec)">${inc.raw_message || '—'}</p></div>
+    <div class="modal-field"><label>Incident ID</label><p style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">${inc.message_id}</p></div>
+  `;
+  document.getElementById('modal').classList.add('show');
+}
+
+function sevColor(s) {
+  const m = {Critical:'var(--red)',High:'#e87820',Medium:'var(--accent)',Low:'var(--green)'};
+  return m[s] || 'var(--text-sec)';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
+}
+
+// Auto-refresh every 5 minutes if live URL is set
+setInterval(() => {
+  const url = document.getElementById('sheet-url').value.trim();
+  if (url && allIncidents.length > 0) fetchData();
+}, 5 * 60 * 1000);
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!allIncidents.length) {
+      document.getElementById('fetch-status').textContent = 'Click LOAD DEMO to preview with sample data, or paste your Sheet URL above';
+    }
+  }, 1500);
+});
+</script>
+</body>
+</html>
