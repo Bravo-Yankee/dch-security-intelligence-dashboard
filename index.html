@@ -41,7 +41,6 @@
     overflow-x: hidden;
   }
 
-  /* Subtle scanline texture */
   body::before {
     content: '';
     position: fixed;
@@ -57,17 +56,18 @@
     z-index: 9999;
   }
 
-  /* ── HEADER ── */
+  /* ── RESPONSIVE HEADER ── */
   header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    padding: 16px 32px;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--border);
     background: var(--bg-panel);
     position: sticky;
     top: 0;
     z-index: 100;
+    gap: 16px;
   }
 
   .header-left {
@@ -85,23 +85,25 @@
     font-size: 18px;
     color: #000;
     letter-spacing: 0.5px;
+    flex-shrink: 0;
   }
 
   .header-title {
     font-family: var(--font-display);
-    font-size: 22px;
+    font-size: clamp(18px, 2vw, 24px);
     letter-spacing: 2px;
     color: var(--text-pri);
-    line-height: 1;
+    line-height: 1.1;
   }
 
   .header-sub {
     font-size: 10px;
     color: var(--text-sec);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-transform: uppercase;
     margin-top: 3px;
     font-family: var(--font-mono);
+    word-break: break-word;
   }
 
   .header-center {
@@ -120,6 +122,7 @@
     font-size: 11px;
     color: var(--green);
     letter-spacing: 1px;
+    white-space: nowrap;
   }
 
   .live-dot {
@@ -140,8 +143,8 @@
 
   #live-clock {
     font-family: var(--font-display);
-    font-size: 28px;
-    letter-spacing: 3px;
+    font-size: clamp(22px, 2.5vw, 28px);
+    letter-spacing: 2px;
     color: var(--accent);
     line-height: 1;
   }
@@ -150,19 +153,27 @@
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-sec);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     margin-top: 2px;
   }
 
-  /* ── CONFIG PANEL ── */
+  /* ── RESPONSIVE CONFIG PANEL ── */
   .config-bar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;
-    padding: 10px 32px;
+    padding: 12px 24px;
     background: var(--bg-panel);
     border-bottom: 1px solid var(--border);
     font-size: 12px;
+  }
+
+  .config-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
   }
 
   .config-bar label {
@@ -171,6 +182,7 @@
     letter-spacing: 1px;
     font-size: 10px;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .config-bar input, .config-bar select {
@@ -182,26 +194,45 @@
     font-family: var(--font-mono);
     font-size: 11px;
     outline: none;
+    height: 32px;
+  }
+
+  .config-bar input[type="text"] { 
+    width: 100%;
+    min-width: 200px;
+  }
+
+  .config-bar select {
+    min-width: 110px;
   }
 
   .config-bar input:focus, .config-bar select:focus {
     border-color: var(--accent);
   }
 
-  .config-bar input[type="text"] { width: 320px; }
+  .actions-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-fetch, .btn-demo {
+    border-radius: var(--r);
+    padding: 0 18px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+    height: 32px;
+    white-space: nowrap;
+  }
 
   .btn-fetch {
     background: var(--accent);
     color: #000;
     border: none;
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
     font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: opacity 0.15s;
   }
 
   .btn-fetch:hover { opacity: 0.85; }
@@ -211,12 +242,6 @@
     background: transparent;
     color: var(--text-sec);
     border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
   }
 
   .btn-demo:hover {
@@ -230,20 +255,24 @@
     color: var(--text-sec);
     letter-spacing: 1px;
     margin-left: auto;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+    margin-top: 4px;
   }
 
   /* ── MAIN LAYOUT ── */
   main {
-    padding: 24px 32px;
+    padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
-  /* ── KPI ROW ── */
+  /* ── FLUXY KPI ROW ── */
   .kpi-row {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
   }
 
@@ -251,7 +280,7 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--r);
-    padding: 16px;
+    padding: 14px;
     position: relative;
     overflow: hidden;
     transition: border-color 0.2s;
@@ -276,15 +305,15 @@
   .kpi-label {
     font-family: var(--font-mono);
     font-size: 9px;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--text-sec);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .kpi-value {
     font-family: var(--font-display);
-    font-size: 42px;
+    font-size: clamp(32px, 3.5vw, 42px);
     line-height: 1;
     letter-spacing: 1px;
   }
@@ -303,10 +332,16 @@
     margin-top: 4px;
   }
 
-  /* ── MAIN GRID ── */
+  /* ── FLUID GRID LAYOUTS ── */
   .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 340px;
+    gap: 16px;
+  }
+
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 16px;
   }
 
@@ -315,6 +350,8 @@
     border: 1px solid var(--border);
     border-radius: var(--r);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .panel-header {
@@ -343,18 +380,19 @@
     color: var(--text-sec);
   }
 
-  /* ── CHART PANELS ── */
+  /* ── CHART CONTAINER FIXES ── */
   .chart-wrap {
     padding: 16px;
     height: 220px;
     position: relative;
+    width: 100%;
   }
 
-  /* ── ZONE HEATMAP ── */
+  /* ── ZONE HEATMAP ROW ── */
   .zone-grid {
     padding: 12px 16px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 8px;
   }
 
@@ -364,11 +402,10 @@
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.15s, border-color 0.15s;
-    border: 1px solid transparent;
+    transition: transform 0.15s;
   }
 
-  .zone-cell:hover { transform: scale(1.02); border-color: var(--border-bright); }
+  .zone-cell:hover { transform: scale(1.02); }
 
   .zone-name {
     font-size: 11px;
@@ -377,6 +414,9 @@
     margin-bottom: 4px;
     position: relative;
     z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .zone-count {
@@ -394,7 +434,7 @@
     border-radius: 0 0 var(--r) var(--r);
   }
 
-  /* ── INCIDENT FEED ── */
+  /* ── INCIDENT FEED FEEDBACK ── */
   .feed-list {
     max-height: 380px;
     overflow-y: auto;
@@ -431,8 +471,6 @@
     0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--red); }
     50% { opacity: 0.5; box-shadow: 0 0 4px var(--red); }
   }
-
-  .feed-main {}
 
   .feed-type {
     font-size: 12px;
@@ -475,14 +513,7 @@
     white-space: nowrap;
   }
 
-  /* ── BOTTOM GRID ── */
-  .bottom-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 340px;
-    gap: 16px;
-  }
-
-  /* ── SHIFT PANEL ── */
+  /* ── SHIFT SEGMENTATION ── */
   .shift-selector {
     display: flex;
     gap: 0;
@@ -490,7 +521,7 @@
 
   .shift-btn {
     flex: 1;
-    padding: 6px;
+    padding: 6px 12px;
     background: var(--bg-hover);
     border: 1px solid var(--border);
     color: var(--text-sec);
@@ -500,6 +531,7 @@
     cursor: pointer;
     transition: all 0.15s;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .shift-btn:first-child { border-radius: var(--r) 0 0 var(--r); }
@@ -523,15 +555,11 @@
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
+    gap: 8px;
   }
 
-  .shift-row-label { color: var(--text-sec); }
-
-  .shift-row-val {
-    font-family: var(--font-mono);
-    font-weight: 500;
-    color: var(--text-pri);
-  }
+  .shift-row-label { color: var(--text-sec); white-space: nowrap; }
+  .shift-row-val { font-family: var(--font-mono); font-weight: 500; color: var(--text-pri); text-align: right; }
 
   /* ── RECOMMENDATIONS ── */
   .reco-list {
@@ -556,16 +584,9 @@
   }
 
   .reco-item:hover { background: var(--bg-panel); color: var(--text-pri); }
+  .reco-num { font-family: var(--font-display); font-size: 18px; color: var(--accent); line-height: 1; flex-shrink: 0; }
 
-  .reco-num {
-    font-family: var(--font-display);
-    font-size: 18px;
-    color: var(--accent);
-    line-height: 1;
-    flex-shrink: 0;
-  }
-
-  /* ── TOP TYPES ── */
+  /* ── TOP INCIDENTS LIST ── */
   .type-list {
     padding: 12px 16px;
     display: flex;
@@ -581,10 +602,13 @@
   }
 
   .type-name {
-    width: 140px;
+    width: 110px;
     flex-shrink: 0;
     color: var(--text-sec);
     font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .type-bar-track {
@@ -610,7 +634,7 @@
     text-align: right;
   }
 
-  /* ── SHIFT HANDOVER PANEL ── */
+  /* ── HANDOVER OVERLAY ── */
   .handover-box {
     padding: 14px 18px;
     font-family: var(--font-mono);
@@ -618,7 +642,7 @@
     color: var(--text-sec);
     line-height: 1.8;
     white-space: pre-wrap;
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
@@ -629,93 +653,23 @@
   .handover-critical { color: var(--red); }
   .handover-ok { color: var(--green); }
 
-  /* ── SLIDE-IN OVERLAY PANEL ── */
-  .slide-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
-  }
-  .slide-backdrop.show {
-    opacity: 1;
-    visibility: visible;
-  }
-  .slide-panel {
-    position: fixed;
-    top: 0;
-    right: -420px;
-    width: 420px;
-    height: 100vh;
-    background: var(--bg-panel);
-    border-left: 1px solid var(--border-bright);
-    z-index: 1001;
-    box-shadow: -5px 0 25px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--text-pri);
-  }
-  .slide-backdrop.show .slide-panel {
-    right: 0;
-  }
-  .slide-header {
-    padding: 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .slide-title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    letter-spacing: 1px;
-    color: var(--accent);
-  }
-  .slide-close {
-    background: none;
-    border: none;
-    color: var(--text-sec);
-    font-size: 20px;
-    cursor: pointer;
-  }
-  .slide-close:hover { color: var(--text-pri); }
-  .slide-body {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    scrollbar-width: thin;
-  }
-  .slide-sub-title {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--text-sec);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 4px;
-    letter-spacing: 1px;
-  }
-
   /* ── FOOTER ── */
   footer {
-    padding: 12px 32px;
+    padding: 12px 24px;
     border-top: 1px solid var(--border);
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-dim);
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     background: var(--bg-panel);
   }
 
-  /* ── LOADING OVERLAY ── */
+  /* ── UTILITIES/MODAL ── */
   .loading-overlay {
     position: fixed;
     inset: 0;
@@ -740,25 +694,9 @@
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 12px; color: var(--text-sec); letter-spacing: 2px; }
+  .empty-state { padding: 40px; text-align: center; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; }
 
-  .loading-text {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--text-sec);
-    letter-spacing: 2px;
-  }
-
-  /* ── EMPTY STATE ── */
-  .empty-state {
-    padding: 40px;
-    text-align: center;
-    color: var(--text-dim);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 1px;
-  }
-
-  /* ── MODAL (incident detail) ── */
   .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -767,6 +705,7 @@
     display: none;
     align-items: center;
     justify-content: center;
+    padding: 16px;
   }
 
   .modal-backdrop.show { display: flex; }
@@ -776,94 +715,118 @@
     border: 1px solid var(--border-bright);
     border-radius: 8px;
     width: 540px;
-    max-width: 90vw;
-    max-height: 80vh;
+    max-width: 100%;
+    max-height: 90vh;
     overflow-y: auto;
   }
 
-  .modal-header {
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .modal-title {
-    font-family: var(--font-display);
-    font-size: 18px;
-    letter-spacing: 2px;
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--text-sec);
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-
+  .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-family: var(--font-display); font-size: 18px; letter-spacing: 2px; }
+  .modal-close { background: none; border: none; color: var(--text-sec); font-size: 20px; cursor: pointer; line-height: 1; transition: color 0.15s; }
   .modal-close:hover { color: var(--text-pri); }
+  .modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .modal-field label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-sec); display: block; margin-bottom: 4px; }
+  .modal-field p { font-size: 13px; color: var(--text-pri); line-height: 1.5; }
+  .actions-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .actions-list li { font-size: 12px; color: var(--text-sec); padding: 6px 10px; background: var(--bg-hover); border-radius: 4px; display: flex; gap: 8px; }
+  .actions-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; }
 
-  .modal-body {
-    padding: 18px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  /* ══════════════════════════════════════════════════
+     MEDIA QUERIES (BREAKPOINTS)
+     ══════════════════════════════════════════════════ */
+
+  /* Desktop Wall Monitor / Large Screens */
+  @media (max-width: 1400px) {
+    .main-grid { grid-template-columns: 1fr 1fr 300px; }
   }
 
-  .modal-field label {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text-sec);
-    display: block;
-    margin-bottom: 4px;
+  /* Tablets & Small Desktops (Landscape/Portrait Shift) */
+  @media (max-width: 1100px) {
+    .main-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .main-grid > .panel:nth-child(3) {
+      grid-column: span 2; /* Stretch incident feed to full layout width */
+    }
+    .bottom-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .bottom-grid > .panel:nth-child(3) {
+      grid-column: span 2; /* Stretch recommendations bar underneath */
+    }
   }
 
-  .modal-field p {
-    font-size: 13px;
-    color: var(--text-pri);
-    line-height: 1.5;
+  /* Medium Tablets & Large Mobile Screens */
+  @media (max-width: 768px) {
+    header {
+      grid-template-columns: 1fr auto;
+    }
+    .header-center {
+      grid-column: span 2;
+      order: 3;
+      text-align: left;
+    }
+    .header-right {
+      text-align: right;
+    }
+    .config-group {
+      width: 100%;
+    }
+    .actions-group {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+    .main-grid > .panel:nth-child(3) {
+      grid-column: span 1;
+    }
+    .bottom-grid {
+      grid-template-columns: 1fr;
+    }
+    .bottom-grid > .panel:nth-child(3) {
+      grid-column: span 1;
+    }
+    .fetch-status {
+      text-align: left;
+    }
   }
 
-  .actions-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .actions-list li {
-    font-size: 12px;
-    color: var(--text-sec);
-    padding: 6px 10px;
-    background: var(--bg-hover);
-    border-radius: 4px;
-    display: flex;
-    gap: 8px;
-  }
-
-  .actions-list li::before {
-    content: '→';
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 1200px) {
-    .kpi-row { grid-template-columns: repeat(3, 1fr); }
-    .main-grid { grid-template-columns: 1fr 1fr; }
-    .bottom-grid { grid-template-columns: 1fr 1fr; }
+  /* Small Mobile Phones */
+  @media (max-width: 480px) {
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .header-right {
+      text-align: left;
+    }
+    .config-bar {
+      padding: 12px 16px;
+    }
+    .actions-group {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .btn-fetch, .btn-demo {
+      width: 100%;
+    }
+    .feed-item {
+      grid-template-columns: auto 1fr;
+    }
+    .feed-time {
+      grid-column: 2;
+      text-align: left;
+      margin-top: 4px;
+    }
   }
 </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
 <header>
   <div class="header-left">
     <div class="logo-badge">DCH</div>
@@ -884,26 +847,29 @@
   </div>
 </header>
 
-<!-- ── CONFIG BAR ── -->
 <div class="config-bar">
-  <label>GOOGLE SHEET URL</label>
-  <input type="text" id="sheet-url" placeholder="Paste your Google Sheets published CSV URL here" />
-  <label>RANGE</label>
-  <select id="date-range">
-    <option value="1">Today</option>
-    <option value="7" selected>Last 7 days</option>
-    <option value="30">Last 30 days</option>
-    <option value="999">All time</option>
-  </select>
-  <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
-  <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
+  <div class="config-group">
+    <label>GOOGLE SHEET URL</label>
+    <input type="text" id="sheet-url" placeholder="Paste your Google Sheets published CSV URL here" />
+  </div>
+  <div class="config-group" style="flex-grow: 0;">
+    <label>RANGE</label>
+    <select id="date-range">
+      <option value="1">Today</option>
+      <option value="7" selected>Last 7 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="999">All time</option>
+    </select>
+  </div>
+  <div class="actions-group">
+    <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
+    <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
+  </div>
   <span class="fetch-status" id="fetch-status">No data loaded · Click LOAD DEMO to preview</span>
 </div>
 
-<!-- ── MAIN ── -->
 <main>
 
-  <!-- KPI Row -->
   <div class="kpi-row">
     <div class="kpi-card total">
       <div class="kpi-label">Total Incidents</div>
@@ -937,10 +903,8 @@
     </div>
   </div>
 
-  <!-- Main Grid -->
   <div class="main-grid">
 
-    <!-- Incidents over time -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">INCIDENT TIMELINE</div>
@@ -951,18 +915,16 @@
       </div>
     </div>
 
-    <!-- Zone heatmap -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">ZONE HEATMAP</div>
-        <span class="panel-badge">HOTSPOT ANALYSIS (CLICK FOR DETAILS)</span>
+        <span class="panel-badge">HOTSPOT ANALYSIS</span>
       </div>
       <div class="zone-grid" id="zone-grid">
         <div class="empty-state">Load data to view</div>
       </div>
     </div>
 
-    <!-- Live incident feed -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">INCIDENT FEED</div>
@@ -975,10 +937,8 @@
 
   </div>
 
-  <!-- Bottom Grid -->
   <div class="bottom-grid">
 
-    <!-- Shift comparison -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">SHIFT ANALYSIS</div>
@@ -995,7 +955,6 @@
       </div>
     </div>
 
-    <!-- Top incident types -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">INCIDENT TYPES</div>
@@ -1006,11 +965,10 @@
       </div>
     </div>
 
-    <!-- AI Recommendations -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">AI RECOMMENDATIONS</div>
-        <span class="panel-badge" id="reco-shift-label">LIVE ACTIVE OPERATIONS</span>
+        <span class="panel-badge" id="reco-shift-label">CURRENT SHIFT</span>
       </div>
       <div class="reco-list" id="reco-list">
         <div class="empty-state" style="padding:20px">Load data to generate recommendations</div>
@@ -1019,7 +977,6 @@
 
   </div>
 
-  <!-- Shift Handover Preview -->
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">SHIFT HANDOVER SUMMARY</div>
@@ -1030,33 +987,17 @@
 
 </main>
 
-<!-- Slide-in detail panel -->
-<div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
-  <div class="slide-panel" onclick="event.stopPropagation()">
-    <div class="slide-header">
-      <div class="slide-title" id="slide-zone-name">ZONE DETAIL</div>
-      <button class="slide-close" onclick="hideZonePanel()">✕</button>
-    </div>
-    <div class="slide-body" id="slide-zone-body">
-      <!-- Injected via JavaScript -->
-    </div>
-  </div>
-</div>
-
-<!-- ── FOOTER ── -->
 <footer>
   <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY AI</span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
 </footer>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loading">
   <div class="loading-spinner"></div>
   <div class="loading-text">FETCHING SECURITY DATA…</div>
 </div>
 
-<!-- Incident Detail Modal -->
 <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
@@ -1073,23 +1014,13 @@ let allIncidents = [];
 let charts = {};
 let currentShift = 'Morning';
 
-// Helper to get true GST date/hour variables accurately regardless of local OS settings
-function getGSTDateTime(dateInput) {
-  const baseDate = dateInput ? new Date(dateInput) : new Date();
-  // Adjust localized display configurations
-  const gstString = baseDate.toLocaleString("en-US", {timeZone: "Asia/Dubai"});
-  const gstDate = new Date(gstString);
-  const hour = gstDate.getHours();
-  return { gstDate, hour };
-}
-
 // ── CLOCK ──
 function updateClock() {
-  const { gstDate } = getGSTDateTime();
+  const now = new Date();
   document.getElementById('live-clock').textContent =
-    gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+    now.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
   document.getElementById('live-date').textContent =
-    gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+    now.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -1125,14 +1056,8 @@ async function fetchData() {
       const text = await resp.text();
       if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
       allIncidents = parseCSV(text);
-      
-      // Enforce absolute chronological processing order across the data stream
-      sortIncidentsDescending(allIncidents);
-      
-      const { gstDate } = getGSTDateTime();
-      const timeStr = gstDate.toLocaleTimeString('en-AE');
-      document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} INCIDENTS · ${timeStr}`;
-      document.getElementById('last-refresh').textContent = 'LAST REFRESH: ' + timeStr;
+      document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} INCIDENTS · ${new Date().toLocaleTimeString('en-AE')}`;
+      document.getElementById('last-refresh').textContent = 'LAST REFRESH: ' + new Date().toLocaleTimeString('en-AE');
       document.getElementById('loading').classList.remove('show');
       renderAll();
       return;
@@ -1149,7 +1074,7 @@ async function fetchData() {
     'You are likely opening this file directly from your drive (file://) while n8n runs in WSL.\n\n' +
     'SOLUTION:\n' +
     '1. In WSL terminal run: python3 -m http.server 8080\n' +
-    '2. Open Chrome and go to: http://localhost:8080/security_dashboard.htmln' +
+    '2. Open Chrome and go to: http://localhost:8080/security_dashboard.html\n' +
     '3. Paste your Google Sheet CSV URL and click Fetch Data again.\n\n' +
     'OR use the LOAD DEMO button to preview with sample data.'
   );
@@ -1162,19 +1087,6 @@ function parseCSV(text) {
     const vals = parseCSVLine(line);
     const obj = {};
     headers.forEach((h,i) => obj[h] = (vals[i] || '').replace(/"/g,'').trim());
-    
-    // Normalize shifting parameters inside raw loads to prevent mismatching downstream calculations
-    if (obj.timestamp) {
-      const { hour } = getGSTDateTime(obj.timestamp);
-      if (hour >= 7 && hour < 19) {
-        obj.shift = 'Morning Shift (07:00-19:00)';
-      } else {
-        obj.shift = 'Night Shift (19:00-07:00)';
-      }
-      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-      const { gstDate } = getGSTDateTime(obj.timestamp);
-      obj.day_of_week = days[gstDate.getDay()];
-    }
     return obj;
   }).filter(r => r.timestamp || r.incident_type);
 }
@@ -1192,21 +1104,13 @@ function parseCSVLine(line) {
   return result;
 }
 
-function sortIncidentsDescending(arr) {
-  arr.sort((a, b) => {
-    const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-    const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-    return timeB - timeA;
-  });
-}
-
 // ── DEMO DATA ──
 function loadDemoData() {
-  const zones = ['The Cove', 'North Residence', 'South Residence', 'The Grand', 'Creek Edge', 'Creek Crescent', '17 Icon Bay', 'Creek Gate', 'Harbour Gate', 'Creek Rise', 'Creek Horizon', 'Harbour Views', 'Creekside 18', 'Master Community', 'Creek Beach', 'Marina Walk', 'Central Park', 'Parking', 'CCTV Room', 'Infrastructure'];
+  const zones = ['Creek Marina','The Tower Plaza','Harbour Promenade','Residential Towers','Retail District','Parking Levels','Events Lawn','Infrastructure'];
   const types = ['Trespassing','Theft','Suspicious_Activity','Noise_Complaint','Access_Control','Patrol_Report','Altercation','Vandalism','Medical','Lost_Property'];
   const severities = ['Critical','High','Medium','Medium','Low','Low','Low'];
   const officers = ['Ofc. Rahman','Ofc. Al Mansoori','Ofc. Singh','Ofc. Khalid','Ofc. Peters','Sgt. Al Hamdan'];
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const summaries = [
     'Unauthorized individual spotted near restricted access point, challenged and escorted off premises.',
     'Retail unit reported missing merchandise, CCTV review initiated.',
@@ -1219,14 +1123,14 @@ function loadDemoData() {
   ];
 
   allIncidents = [];
-  const { gstDate: currentGst } = getGSTDateTime();
-  
+  const now = new Date();
   for (let i = 0; i < 120; i++) {
-    const d = new Date(currentGst.getTime() - Math.random() * 7 * 86400000);
+    const d = new Date(now - Math.random() * 7 * 86400000);
     const hour = d.getHours();
-    let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+    let shift;
+    if (hour >= 7 && hour < 19) shift = 'Morning Shift (07:00-19:00)';
+    else shift = 'Night Shift (19:00-07:00)';
     const sev = severities[Math.floor(Math.random() * severities.length)];
-    
     allIncidents.push({
       message_id: 'DEMO_' + i,
       timestamp: d.toISOString(),
@@ -1242,11 +1146,9 @@ function loadDemoData() {
       confidence: (0.75 + Math.random() * 0.24).toFixed(2)
     });
   }
-  
-  sortIncidentsDescending(allIncidents);
+  allIncidents.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
   document.getElementById('fetch-status').textContent = `DEMO DATA · ${allIncidents.length} INCIDENTS LOADED`;
-  const { gstDate } = getGSTDateTime();
-  document.getElementById('last-refresh').textContent = 'LAST REFRESH: DEMO · ' + gstDate.toLocaleTimeString('en-AE');
+  document.getElementById('last-refresh').textContent = 'LAST REFRESH: DEMO · ' + new Date().toLocaleTimeString('en-AE');
   renderAll();
 }
 
@@ -1254,9 +1156,7 @@ function loadDemoData() {
 function getFilteredIncidents() {
   const days = parseInt(document.getElementById('date-range').value);
   const cutoff = new Date(Date.now() - days * 86400000);
-  const filtered = allIncidents.filter(i => new Date(i.timestamp) >= cutoff || days >= 999);
-  sortIncidentsDescending(filtered);
-  return filtered;
+  return allIncidents.filter(i => new Date(i.timestamp) >= cutoff || days >= 999);
 }
 
 // ── RENDER ALL ──
@@ -1288,30 +1188,21 @@ function renderFeed(data) {
   const el = document.getElementById('feed-list');
   document.getElementById('feed-count').textContent = data.length + ' REPORTS';
   if (!data.length) { el.innerHTML = '<div class="empty-state">No incidents in range</div>'; return; }
-  
-  // Ensure strict chronological alignment during injection loops
-  let feedData = [...data];
-  sortIncidentsDescending(feedData);
-  
-  el.innerHTML = feedData.slice(0,30).map((inc) => {
-    // Find the correct indexing from the primary source collection to avoid breaking modal displays
-    const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
-    return `
-      <div class="feed-item" onclick="showModal(${masterIdx})">
-        <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
-        <div class="feed-main">
-          <div class="feed-type">${inc.incident_type.replace(/_/g,' ')}</div>
-          <div class="feed-summary">${inc.summary}</div>
-          <div class="feed-meta">
-            <span class="tag zone">${inc.location_zone}</span>
-            <span class="tag type">${inc.severity}</span>
-            <span class="tag">${inc.sender}</span>
-          </div>
+  el.innerHTML = data.slice(0,30).map((inc, idx) => `
+    <div class="feed-item" onclick="showModal(${idx})">
+      <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
+      <div class="feed-main">
+        <div class="feed-type">${inc.incident_type.replace(/_/g,' ')}</div>
+        <div class="feed-summary">${inc.summary}</div>
+        <div class="feed-meta">
+          <span class="tag zone">${inc.location_zone}</span>
+          <span class="tag type">${inc.severity}</span>
+          <span class="tag">${inc.sender}</span>
         </div>
-        <div class="feed-time">${formatTime(inc.timestamp)}</div>
       </div>
-    `;
-  }).join('');
+      <div class="feed-time">${formatTime(inc.timestamp)}</div>
+    </div>
+  `).join('');
 }
 
 function formatTime(ts) {
@@ -1327,22 +1218,16 @@ function formatTime(ts) {
 function renderTimeline(data) {
   const days = parseInt(document.getElementById('date-range').value);
   const buckets = {};
-  const { gstDate: nowGst } = getGSTDateTime();
-  
+  const now = new Date();
   for (let i = Math.min(days, 30) - 1; i >= 0; i--) {
-    const d = new Date(nowGst.getTime() - i * 86400000);
+    const d = new Date(now - i * 86400000);
     const key = d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
     buckets[key] = { Critical:0, High:0, Medium:0, Low:0 };
   }
-  
   data.forEach(inc => {
-    if (inc.timestamp) {
-      const { gstDate } = getGSTDateTime(inc.timestamp);
-      const key = gstDate.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
-      if (buckets[key]) buckets[key][inc.severity] = (buckets[key][inc.severity] || 0) + 1;
-    }
+    const key = new Date(inc.timestamp).toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+    if (buckets[key]) buckets[key][inc.severity] = (buckets[key][inc.severity] || 0) + 1;
   });
-  
   const labels = Object.keys(buckets);
   const makeDS = (sev, color, borderColor) => ({
     label: sev,
@@ -1382,6 +1267,18 @@ function renderTimeline(data) {
 
 // ── ZONE HEATMAP ──
 function renderZoneHeatmap(data) {
+  const ZONE_D_ORDER = [
+    'The Cove','North Residence','South Residence','The Grand',
+    'Creek Edge','Creek Crescent','17 Icon Bay','Creek Gate',
+    'Harbour Gate','Creek Rise','Creek Horizon','Harbour Views',
+    'Creekside 18','Master Community','Creek Beach',
+    'Marina Walk','Central Park','Parking','CCTV Room','Infrastructure','Unknown'
+  ];
+  function zoneSortKey(entry) {
+    const idx = ZONE_D_ORDER.indexOf(entry[0]);
+    return idx === -1 ? 999 : idx;
+  }
+
   const el = document.getElementById('zone-grid');
   const zones = {};
   data.forEach(i => { zones[i.location_zone] = (zones[i.location_zone]||0) + 1; });
@@ -1395,101 +1292,18 @@ function renderZoneHeatmap(data) {
     ['rgba(58,143,232,0.12)','#3a8fe8'],
     ['rgba(52,199,123,0.1)','#34c77b'],
   ];
-  
-  el.innerHTML = sorted.slice(0,8).map(([ zone, count ]) => {
+  el.innerHTML = sorted.slice(0,8).map(([ zone, count ], i) => {
     const intensity = count / max;
     const ci = Math.min(Math.floor((1 - intensity) * colors.length), colors.length - 1);
     const [bg, bar] = colors[ci];
-    // Sanitize string keys safely before packing into JS event listener execution blocks
-    const cleanZone = zone.replace(/'/g, "\\'");
     return `
-      <div class="zone-cell" style="background:${bg};" onclick="showZonePanel('${cleanZone}')">
-        <div class="zone-name">${zone}</div>
+      <div class="zone-cell" style="background:${bg};">
+        <div class="zone-name" title="${zone}">${zone}</div>
         <div class="zone-count" style="color:${bar}">${count}</div>
         <div class="zone-bar" style="background:${bar}"></div>
       </div>
     `;
   }).join('');
-}
-
-// ── HEATMAP SLIDE-IN OVERLAY INTERACTION LOGIC ──
-function showZonePanel(zoneName) {
-  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — METRIC PROFILE';
-  const data = getFilteredIncidents();
-  const zoneIncidents = data.filter(i => i.location_zone === zoneName);
-  sortIncidentsDescending(zoneIncidents);
-  
-  const bodyEl = document.getElementById('slide-zone-body');
-  if(!zoneIncidents.length) {
-    bodyEl.innerHTML = '<div class="empty-state">No recorded records found inside filter boundaries.</div>';
-  } else {
-    const total = zoneIncidents.length;
-    const crit = zoneIncidents.filter(i => i.severity === 'Critical').length;
-    const high = zoneIncidents.filter(i => i.severity === 'High').length;
-    const med = zoneIncidents.filter(i => i.severity === 'Medium').length;
-    const low = zoneIncidents.filter(i => i.severity === 'Low').length;
-    const openItems = zoneIncidents.filter(i => i.action_required === 'TRUE').length;
-    
-    // Compile ranked incident types for this area
-    const types = {};
-    zoneIncidents.forEach(i => { types[i.incident_type] = (types[i.incident_type]||0) + 1; });
-    const topTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
-
-    let html = `
-      <div>
-        <div class="slide-sub-title">Overview Profile</div>
-        <div class="shift-stats" style="padding:10px 0;">
-          <div class="shift-row"><span class="shift-row-label">Total Volume</span><span class="shift-row-val">${total}</span></div>
-          <div class="shift-row"><span class="shift-row-label">Active Action Flags</span><span class="shift-row-val" style="color:var(--accent)">${openItems}</span></div>
-          <div class="shift-row"><span class="shift-row-label">Critical Threat Count</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
-          <div class="shift-row"><span class="shift-row-label">High Urgency Count</span><span class="shift-row-val" style="color:#e87820">${high}</span></div>
-        </div>
-      </div>
-      
-      <div>
-        <div class="slide-sub-title">Primary Incident Trends</div>
-        <div class="type-list" style="padding:10px 0;">
-          ${topTypes.map(([t, c]) => `
-            <div class="type-row">
-              <div class="type-name" style="width:160px;">${t.replace(/_/g,' ')}</div>
-              <div class="type-bar-track"><div class="type-bar-fill" style="width:${Math.round(c/total*100)}%"></div></div>
-              <div class="type-count">${c}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <div>
-        <div class="slide-sub-title">Recent Activity Log (Max 5)</div>
-        <div class="feed-list" style="max-height:300px; padding:5px 0;">
-          ${zoneIncidents.slice(0,5).map(inc => {
-            const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
-            return `
-              <div class="feed-item" style="padding:10px 5px;" onclick="showModal(${masterIdx})">
-                <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
-                <div class="feed-main">
-                  <div class="feed-type" style="font-size:11px;">${inc.incident_type.replace(/_/g,' ')}</div>
-                  <div class="feed-summary" style="font-size:10px; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${inc.summary}</div>
-                </div>
-                <div class="feed-time" style="font-size:9px;">${formatTime(inc.timestamp)}</div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-    bodyEl.innerHTML = html;
-  }
-  
-  document.getElementById('slide-backdrop').classList.add('show');
-}
-
-function hideZonePanel() {
-  document.getElementById('slide-backdrop').classList.remove('show');
-}
-
-function closeZonePanel(e) {
-  if (e.target === document.getElementById('slide-backdrop')) hideZonePanel();
 }
 
 // ── INCIDENT TYPES ──
@@ -1502,7 +1316,7 @@ function renderTypes(data) {
   const max = sorted[0][1];
   el.innerHTML = sorted.map(([type, count]) => `
     <div class="type-row">
-      <div class="type-name">${type}</div>
+      <div class="type-name" title="${type}">${type}</div>
       <div class="type-bar-track">
         <div class="type-bar-fill" style="width:${Math.round(count/max*100)}%"></div>
       </div>
@@ -1520,6 +1334,7 @@ function setShift(shift, btn) {
   renderShiftStats(data);
 }
 
+// Two shifts configuration mapping context 
 function renderShiftStats(data) {
   const shiftKey = currentShift;
   const shiftData = data.filter(i => i.shift && i.shift.startsWith(shiftKey));
@@ -1574,21 +1389,8 @@ function renderShiftChart(data) {
 // ── AI RECOMMENDATIONS ──
 function renderRecommendations(data) {
   const el = document.getElementById('reco-list');
-  const labelEl = document.getElementById('reco-shift-label');
-  
-  const { hour } = getGSTDateTime();
-  const activeShiftLabel = (hour >= 7 && hour < 19) ? 'MORNING SHIFT ACTIVE' : 'NIGHT SHIFT ACTIVE';
-  const targetShiftFilter = (hour >= 7 && hour < 19) ? 'Morning' : 'Night';
-  
-  // Calculate active operation thresholds based entirely on raw shift logs
-  const realTimeShiftData = data.filter(i => i.shift && i.shift.startsWith(targetShiftFilter));
-  const openCount = realTimeShiftData.filter(i => i.action_required === 'TRUE').length;
-  
-  labelEl.textContent = `${activeShiftLabel} · ${realTimeShiftData.length} RUNNING INCIDENTS · ${openCount} OPEN ACTIONS`;
-  
-  // Base decision trees on current operational data blocks
-  const recos = generateRecommendations(realTimeShiftData.length > 0 ? realTimeShiftData : data);
-  if (!recos.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No real-time actionable events located.</div>'; return; }
+  const recos = generateRecommendations(data);
+  if (!recos.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">Load data first</div>'; return; }
   el.innerHTML = recos.map((r,i) => `
     <div class="reco-item">
       <div class="reco-num">${i+1}</div>
@@ -1609,7 +1411,6 @@ function generateRecommendations(data) {
     'Marina Walk','Central Park','Parking','CCTV Room'
   ];
 
-  // 1. Hottest community profile
   const zones = {};
   data.forEach(i => {
     if (i.location_zone && i.location_zone !== 'Unknown')
@@ -1621,7 +1422,6 @@ function generateRecommendations(data) {
     recos.push(`Deploy additional patrol to <strong>${zone}</strong> — highest incident density with ${count} reports. Request CCTV room to increase monitoring frequency for this community.`);
   }
 
-  // 2. CCTV and ANPR system tracking
   const infraIncidents = data.filter(i =>
     i.incident_type === 'Maintenance_Security' || i.location_zone === 'CCTV Room' || i.location_zone === 'Infrastructure'
   );
@@ -1629,13 +1429,13 @@ function generateRecommendations(data) {
     recos.push(`<strong>${infraIncidents.length} infrastructure/CCTV incidents</strong> recorded — verify all 16 CCTV control rooms are operational and escalate camera faults to technical team immediately.`);
   }
 
-  // 3. High threat distribution rules
-  const shiftCritical = data.filter(i => i.severity === 'Critical' || i.severity === 'High');
-  if (shiftCritical.length > 0) {
-    recos.push(`Reinforce defensive parameters across 14 security offices — ${shiftCritical.length} Critical/High incidents recorded under processing filter. Verify all 204 WeOne Security officers are accounted for.`);
+  const nightCritical = data.filter(i =>
+    i.shift && i.shift.startsWith('Night') && (i.severity === 'Critical' || i.severity === 'High')
+  );
+  if (nightCritical.length > 2) {
+    recos.push(`Reinforce <strong>night shift</strong> across 14 security offices — ${nightCritical.length} Critical/High incidents recorded 19:00–07:00. Verify all 204 WeOne Security officers are accounted for and deployed.`);
   }
 
-  // 4. Incident matrix frequency analysis
   const types = {};
   data.forEach(i => { if(i.incident_type) types[i.incident_type] = (types[i.incident_type]||0)+1; });
   const topType = Object.entries(types).sort((a,b)=>b[1]-a[1])[0];
@@ -1648,21 +1448,37 @@ function generateRecommendations(data) {
     recos.push(`Most frequent incident: <strong>${typeLabel}</strong> (${topType[1]} reports). ${affectedCommunities ? 'Affected communities: ' + affectedCommunities + '.' : ''} Review standard operating procedure and brief all 14 community supervisors.`);
   }
 
-  // 5. Scaling calculations for residential boundaries
   const accessIncidents = data.filter(i =>
     i.incident_type === 'Access_Control' || i.incident_type === 'Trespassing'
   );
-  if (accessIncidents.length > 0) {
+  if (accessIncidents.length > 2) {
     recos.push(`<strong>${accessIncidents.length} access control/trespassing incidents</strong> — with 6566 apartments, 101 villas and 527 HHO units across Zone D, verify all building access points and ANPR cameras (44 total) are functioning correctly.`);
+  }
+
+  const open = data.filter(i => i.action_required === 'TRUE').length;
+  if (open > 3) {
+    recos.push(`<strong>${open} incidents require action</strong> — assign to respective community security supervisors before shift handover. Escalate unresolved items from Zone-D Minor to Zone-D Red & Yellow if not closed.`);
+  }
+
+  const dayCount = {};
+  data.forEach(i => { if(i.day_of_week) dayCount[i.day_of_week] = (dayCount[i.day_of_week]||0)+1; });
+  const topDay = Object.entries(dayCount).sort((a,b)=>b[1]-a[1])[0];
+  if (topDay && topDay[1] > 3) {
+    recos.push(`<strong>${topDay[0]}</strong> is the highest incident day (${topDay[1]} reports) — pre-position additional officers across Zone D communities on ${topDay[0]}s, particularly at Master Community, Creek Beach and Marina Walk areas.`);
+  }
+
+  const affectedCommunityCount = Object.keys(zones).filter(z => ZONE_D_COMMUNITIES.includes(z)).length;
+  if (affectedCommunityCount >= 4) {
+    recos.push(`Incidents spread across <strong>${affectedCommunityCount} communities</strong> simultaneously — consider activating central coordination via CCTV control rooms and briefing all 14 security offices.`);
   }
 
   return recos.slice(0, 5);
 }
 
-// ── SHIFT HANDOVER ──
+// ── SHIFT HANDOVER REPORT GENERATION ──
 async function fetchDubaiWeather() {
   try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weathercode&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FDubai';
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weathercode&hourly=temperature_2m,precipitation_probability&forecast_days=1&timezone=Asia%2FDubai';
     const resp = await fetch(url);
     const json = await resp.json();
     const c = json.current;
@@ -1675,9 +1491,11 @@ async function fetchDubaiWeather() {
     const advisory = getWeatherAdvisory(temp, wind, wcode);
 
     const hourly = json.hourly;
-    const { hour: currentHourIndex } = getGSTDateTime();
-    const next6hPrecip = hourly.precipitation_probability.slice(currentHourIndex, currentHourIndex + 6);
-    const maxPrecip = next6hPrecip.length ? Math.max(...next6hPrecip) : 0;
+    const now = new Date();
+    const currentHourIndex = now.getHours();
+    const next6hPrecip = hourly.precipitation_probability
+      .slice(currentHourIndex, currentHourIndex + 6);
+    const maxPrecip = Math.max(...next6hPrecip);
 
     return { temp, humidity, wind, windDir, condition, advisory, maxPrecip, ok: true };
   } catch(e) {
@@ -1719,8 +1537,9 @@ function getWeatherAdvisory(temp, wind, code) {
 }
 
 function getDCHTrafficAdvisory() {
-  const { hour: gstHour, gstDate } = getGSTDateTime();
-  const day = gstDate.getDay(); 
+  const now = new Date();
+  const gstHour = (now.getUTCHours() + 4) % 24;
+  const day = now.getDay(); 
   const isWeekend = (day === 5 || day === 6);
   const advisories = [];
 
@@ -1755,7 +1574,9 @@ function renderHandover(data) {
   const el = document.getElementById('handover-box');
   if (!data.length) return;
 
-  const { hour, gstDate } = getGSTDateTime();
+  const now = new Date();
+  const gstNow = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+  const hour = gstNow.getUTCHours();
   let currentShiftName, nextShiftName;
   if (hour >= 7 && hour < 19) { currentShiftName = 'Morning Shift (07:00–19:00)'; nextShiftName = 'Night Shift (19:00–07:00)'; }
   else { currentShiftName = 'Night Shift (19:00–07:00)'; nextShiftName = 'Morning Shift (07:00–19:00)'; }
@@ -1770,7 +1591,7 @@ function renderHandover(data) {
   shift12h.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
   const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
-  const dateStr = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+  const dateStr = now.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
 
   fetchDubaiWeather().then(weather => {
     const trafficAdvisories = getDCHTrafficAdvisory();
@@ -1834,22 +1655,24 @@ Incoming supervisor sign-off: ____________________`;
   
   });
 
-  document.getElementById('handover-shift-label').textContent = 'GENERATED: ' + gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('handover-shift-label').textContent = 'GENERATED: ' + now.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'});
 }
 
 function getNext12h() {
-  const { hour, gstDate } = getGSTDateTime();
-  const next = new Date(gstDate);
+  const now = new Date();
+  const next = new Date(now);
+  const h = now.getHours();
   next.setMinutes(0); next.setSeconds(0);
-  if (hour < 7) next.setHours(7);
-  else if (hour < 19) next.setHours(19);
+  if (h < 7) next.setHours(7);
+  else if (h < 19) next.setHours(19);
   else { next.setDate(next.getDate()+1); next.setHours(7); }
   return next.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'}) + ' ' + next.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
 }
 
-// ── MODAL ──
+// ── MODAL UTILITIES ──
 function showModal(idx) {
-  const inc = allIncidents[idx];
+  const data = getFilteredIncidents();
+  const inc = data[idx];
   if (!inc) return;
   document.getElementById('modal-title').textContent = inc.incident_type.replace(/_/g,' ');
   const actions = inc.immediate_actions ? inc.immediate_actions.split(';').filter(Boolean) : [];
@@ -1877,7 +1700,6 @@ function closeModal(e) {
   if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
 }
 
-// Auto-refresh every 5 minutes if live URL is set
 setInterval(() => {
   const url = document.getElementById('sheet-url').value.trim();
   if (url && allIncidents.length > 0) fetchData();
