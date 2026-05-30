@@ -729,7 +729,7 @@
     padding-bottom: 4px; letter-spacing: 1px;
   }
 
-  /* ── FOOTER ── */
+  /* ── FOOTER STYLING & BRAIN ICON ── */
   footer {
     padding: 12px 32px;
     border-top: 2px solid var(--border);
@@ -741,6 +741,22 @@
     font-weight: 500;
     color: var(--text-sec);
     background: var(--bg-panel);
+  }
+
+  .brain-icon {
+    height: 12px;
+    width: auto;
+    vertical-align: -1px;
+    margin-left: 2px;
+    transition: filter 0.2s ease;
+  }
+
+  :root[data-theme="light"] .brain-icon {
+    filter: brightness(0) saturate(100%) invert(7%) sepia(21%) saturate(1512%) hue-rotate(180deg) brightness(95%) contrast(100%);
+  }
+
+  :root[data-theme="dark"] .brain-icon {
+    filter: brightness(0) saturate(100%) invert(64%) sepia(16%) saturate(632%) hue-rotate(174deg) brightness(89%) contrast(85%);
   }
 
   /* ── LOADING OVERLAY ── */
@@ -987,7 +1003,7 @@
 </div>
 
 <footer>
-  <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY AI</span>
+  <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY <img src="R.png" alt="Brain" class="brain-icon"></span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
 </footer>
@@ -1621,6 +1637,7 @@ async function fetchDubaiWeather() {
   } catch(e) { return { ok: false, error: e.message }; }
 }
 
+// Direction processing engine
 function getWindDir(deg) { return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8]; }
 function getWeatherCondition(code) {
   if (code === 0) return 'Clear skies';
