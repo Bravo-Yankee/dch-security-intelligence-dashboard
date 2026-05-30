@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root[data-theme="dark"] {
+  :root {
     --bg-deep:    #090d12;
     --bg-panel:   #0e1520;
     --bg-card:    #131d2b;
@@ -25,32 +25,6 @@
     --text-pri:   #e8edf5;
     --text-sec:   #7a8fa8;
     --text-dim:   #3d5068;
-    --scanline:   rgba(0,0,0,0.06);
-  }
-
-  /* High-Contrast Cream & Velvet Navy Light Mode */
-  :root[data-theme="light"] {
-    --bg-deep:    #f3eedf;         /* Warm warm-cream paper base (anti-glare) */
-    --bg-panel:   #eae3d2;         /* Solid contrast break for panels */
-    --bg-card:    #ffffff;         /* Crisp, high-contrast white surfaces */
-    --bg-hover:   #e2d9c3;         /* Distinct hover tracking state */
-    --border:     rgba(9,16,29,0.15); /* Sharper, darker component borders */
-    --border-bright: rgba(9,16,29,0.25);
-    --accent:     #b06600;         /* Deep burnt amber for distinct emphasis */
-    --accent-dim: rgba(176,102,0,0.1);
-    --red:        #b81414;         /* Intense tactical red */
-    --red-dim:    rgba(184,20,20,0.1);
-    --green:      #066b2e;         /* High-legibility forest green */
-    --green-dim:  rgba(6,107,46,0.1);
-    --blue:       #0f40b3;         /* Deep high-contrast blue */
-    --blue-dim:   rgba(15,64,179,0.1);
-    --text-pri:   #09101d;         /* Velvet black-navy text for extreme legibility */
-    --text-sec:   #2b3a51;         /* Deep secondary text */
-    --text-dim:   #546681;         /* Readable captions and labels */
-    --scanline:   rgba(255,255,255,0.15);
-  }
-
-  :root {
     --font-display: 'Bebas Neue', sans-serif;
     --font-mono:    'DM Mono', monospace;
     --font-body:    'DM Sans', sans-serif;
@@ -65,9 +39,9 @@
     color: var(--text-pri);
     min-height: 100vh;
     overflow-x: hidden;
-    transition: background 0.2s ease, color 0.2s ease;
   }
 
+  /* Subtle scanline texture */
   body::before {
     content: '';
     position: fixed;
@@ -76,8 +50,8 @@
       0deg,
       transparent,
       transparent 2px,
-      var(--scanline) 2px,
-      var(--scanline) 4px
+      rgba(0,0,0,0.06) 2px,
+      rgba(0,0,0,0.06) 4px
     );
     pointer-events: none;
     z-index: 9999;
@@ -89,7 +63,7 @@
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     padding: 16px 32px;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 1px solid var(--border);
     background: var(--bg-panel);
     position: sticky;
     top: 0;
@@ -104,28 +78,27 @@
 
   .logo-badge {
     width: 36px; height: 36px;
-    background: var(--text-pri);
+    background: var(--accent);
     border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
     font-family: var(--font-display);
     font-size: 18px;
-    color: var(--bg-card);
+    color: #000;
     letter-spacing: 0.5px;
   }
 
   .header-title {
     font-family: var(--font-display);
-    font-size: 24px;
+    font-size: 22px;
     letter-spacing: 2px;
     color: var(--text-pri);
     line-height: 1;
   }
 
   .header-sub {
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
     color: var(--text-sec);
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     margin-top: 3px;
     font-family: var(--font-mono);
@@ -140,12 +113,11 @@
     align-items: center;
     gap: 7px;
     background: var(--green-dim);
-    border: 1px solid var(--green);
+    border: 1px solid rgba(52,199,123,0.3);
     border-radius: 20px;
     padding: 4px 12px;
     font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 600;
     color: var(--green);
     letter-spacing: 1px;
   }
@@ -168,18 +140,17 @@
 
   #live-clock {
     font-family: var(--font-display);
-    font-size: 30px;
-    letter-spacing: 2px;
+    font-size: 28px;
+    letter-spacing: 3px;
     color: var(--accent);
     line-height: 1;
   }
 
   .clock-date {
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
     color: var(--text-sec);
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     margin-top: 2px;
   }
 
@@ -187,18 +158,16 @@
   .config-bar {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     gap: 12px;
     padding: 10px 32px;
     background: var(--bg-panel);
-    border-bottom: 2px solid var(--border);
+    border-bottom: 1px solid var(--border);
     font-size: 12px;
   }
 
   .config-bar label {
-    color: var(--text-pri);
+    color: var(--text-sec);
     font-family: var(--font-mono);
-    font-weight: 600;
     letter-spacing: 1px;
     font-size: 10px;
     text-transform: uppercase;
@@ -211,8 +180,7 @@
     color: var(--text-pri);
     padding: 6px 10px;
     font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11px;
     outline: none;
   }
 
@@ -220,11 +188,11 @@
     border-color: var(--accent);
   }
 
-  .config-bar input[type="text"] { width: 320px; max-width: 100%; }
+  .config-bar input[type="text"] { width: 320px; }
 
   .btn-fetch {
-    background: var(--text-pri);
-    color: var(--bg-card);
+    background: var(--accent);
+    color: #000;
     border: none;
     border-radius: var(--r);
     padding: 7px 18px;
@@ -233,52 +201,34 @@
     font-size: 12px;
     cursor: pointer;
     letter-spacing: 0.5px;
+    transition: opacity 0.15s;
   }
 
-  .btn-fetch:hover { opacity: 0.9; }
+  .btn-fetch:hover { opacity: 0.85; }
   .btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .btn-demo {
-    background: var(--bg-card);
+    background: transparent;
     color: var(--text-sec);
     border: 1px solid var(--border-bright);
     border-radius: var(--r);
     padding: 7px 18px;
     font-family: var(--font-body);
-    font-weight: 500;
     font-size: 12px;
     cursor: pointer;
+    transition: all 0.15s;
   }
 
   .btn-demo:hover {
     color: var(--text-pri);
-    border-color: var(--text-pri);
-  }
-
-  .btn-theme-toggle {
-    background: var(--bg-card);
-    color: var(--text-pri);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 14px;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 11px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-theme-toggle:hover {
-    background: var(--bg-hover);
+    border-color: var(--accent);
   }
 
   .fetch-status {
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
     color: var(--text-sec);
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     margin-left: auto;
   }
 
@@ -293,62 +243,62 @@
   /* ── KPI ROW ── */
   .kpi-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(6, 1fr);
     gap: 12px;
   }
 
   .kpi-card {
     background: var(--bg-card);
-    border: 1px solid var(--border-bright);
+    border: 1px solid var(--border);
     border-radius: var(--r);
     padding: 16px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: border-color 0.2s;
   }
+
+  .kpi-card:hover { border-color: var(--border-bright); }
 
   .kpi-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
+    height: 2px;
   }
 
   .kpi-card.critical::before { background: var(--red); }
-  .kpi-card.high::before { background: #d06010; }
+  .kpi-card.high::before { background: #e87820; }
   .kpi-card.medium::before { background: var(--accent); }
   .kpi-card.low::before { background: var(--green); }
   .kpi-card.total::before { background: var(--blue); }
-  .kpi-card.active::before { background: #7326cc; }
+  .kpi-card.active::before { background: #a34de8; }
 
   .kpi-label {
     font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
+    font-size: 9px;
+    letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--text-sec);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   .kpi-value {
     font-family: var(--font-display);
-    font-size: 46px;
+    font-size: 42px;
     line-height: 1;
     letter-spacing: 1px;
   }
 
   .kpi-card.critical .kpi-value { color: var(--red); }
-  .kpi-card.high .kpi-value { color: #d06010; }
+  .kpi-card.high .kpi-value { color: #e87820; }
   .kpi-card.medium .kpi-value { color: var(--accent); }
   .kpi-card.low .kpi-value { color: var(--green); }
   .kpi-card.total .kpi-value { color: var(--blue); }
-  .kpi-card.active .kpi-value { color: #7326cc; }
+  .kpi-card.active .kpi-value { color: #a34de8; }
 
   .kpi-delta {
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
     color: var(--text-dim);
     margin-top: 4px;
   }
@@ -356,16 +306,15 @@
   /* ── MAIN GRID ── */
   .main-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 360px;
+    grid-template-columns: 1fr 1fr 340px;
     gap: 16px;
   }
 
   .panel {
     background: var(--bg-card);
-    border: 1px solid var(--border-bright);
+    border: 1px solid var(--border);
     border-radius: var(--r);
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
   }
 
   .panel-header {
@@ -374,27 +323,24 @@
     justify-content: space-between;
     padding: 14px 18px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-panel);
   }
 
   .panel-title {
     font-family: var(--font-display);
-    font-size: 16px;
-    letter-spacing: 1.5px;
+    font-size: 14px;
+    letter-spacing: 2px;
     color: var(--text-pri);
   }
 
   .panel-badge {
     font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-size: 9px;
+    letter-spacing: 1px;
     text-transform: uppercase;
     padding: 3px 8px;
     border-radius: 3px;
-    background: var(--bg-deep);
+    background: var(--bg-hover);
     color: var(--text-sec);
-    border: 1px solid var(--border);
   }
 
   /* ── CHART PANELS ── */
@@ -414,20 +360,19 @@
 
   .zone-cell {
     border-radius: var(--r);
-    padding: 12px;
+    padding: 10px 12px;
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.01);
-    transition: transform 0.12s;
+    transition: transform 0.15s, border-color 0.15s;
+    border: 1px solid transparent;
   }
 
-  .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
+  .zone-cell:hover { transform: scale(1.02); border-color: var(--border-bright); }
 
   .zone-name {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 500;
     color: var(--text-pri);
     margin-bottom: 4px;
     position: relative;
@@ -436,7 +381,7 @@
 
   .zone-count {
     font-family: var(--font-display);
-    font-size: 28px;
+    font-size: 26px;
     line-height: 1;
     position: relative;
     z-index: 1;
@@ -445,7 +390,8 @@
   .zone-bar {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 4px;
+    height: 3px;
+    border-radius: 0 0 var(--r) var(--r);
   }
 
   /* ── INCIDENT FEED ── */
@@ -453,6 +399,7 @@
     max-height: 380px;
     overflow-y: auto;
     scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 
   .feed-item {
@@ -462,67 +409,68 @@
     grid-template-columns: auto 1fr auto;
     gap: 12px;
     align-items: start;
+    transition: background 0.15s;
     cursor: pointer;
   }
 
-  .feed-item:hover { background: var(--bg-panel); }
+  .feed-item:hover { background: var(--bg-hover); }
 
   .severity-dot {
-    width: 10px; height: 10px;
+    width: 8px; height: 8px;
     border-radius: 50%;
     margin-top: 4px;
     flex-shrink: 0;
-    border: 1px solid rgba(0,0,0,0.1);
   }
 
-  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
-  .severity-dot.high { background: #d06010; }
+  .severity-dot.critical { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse-red 1.5s infinite; }
+  .severity-dot.high { background: #e87820; }
   .severity-dot.medium { background: var(--accent); }
   .severity-dot.low { background: var(--green); }
 
   @keyframes pulse-red {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.6; }
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--red); }
+    50% { opacity: 0.5; box-shadow: 0 0 4px var(--red); }
   }
 
+  .feed-main {}
+
   .feed-type {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-pri);
+    letter-spacing: 0.3px;
   }
 
   .feed-summary {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-sec);
-    margin-top: 3px;
+    margin-top: 2px;
     line-height: 1.4;
   }
 
   .feed-meta {
     display: flex;
     gap: 6px;
-    margin-top: 6px;
+    margin-top: 5px;
     flex-wrap: wrap;
   }
 
   .tag {
     font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 9px;
     padding: 2px 6px;
     border-radius: 3px;
-    background: var(--bg-deep);
+    background: var(--bg-hover);
     color: var(--text-sec);
-    border: 1px solid var(--border);
+    letter-spacing: 0.5px;
   }
 
-  .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
-  .tag.type { color: var(--accent); background: var(--accent-dim); border-color: rgba(176,102,0,0.2); }
+  .tag.zone { color: var(--blue); background: var(--blue-dim); }
+  .tag.type { color: var(--accent); background: var(--accent-dim); }
 
   .feed-time {
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10px;
     color: var(--text-dim);
     white-space: nowrap;
   }
@@ -530,25 +478,27 @@
   /* ── BOTTOM GRID ── */
   .bottom-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 360px;
+    grid-template-columns: 1fr 1fr 340px;
     gap: 16px;
   }
 
   /* ── SHIFT PANEL ── */
   .shift-selector {
     display: flex;
+    gap: 0;
   }
 
   .shift-btn {
     flex: 1;
-    padding: 6px 12px;
-    background: var(--bg-deep);
+    padding: 6px;
+    background: var(--bg-hover);
     border: 1px solid var(--border);
     color: var(--text-sec);
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 1px;
     cursor: pointer;
+    transition: all 0.15s;
     text-transform: uppercase;
   }
 
@@ -556,9 +506,9 @@
   .shift-btn:last-child { border-radius: 0 var(--r) var(--r) 0; }
 
   .shift-btn.active {
-    background: var(--text-pri);
-    border-color: var(--text-pri);
-    color: var(--bg-card);
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .shift-stats {
@@ -573,13 +523,15 @@
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    border-bottom: 1px dashed var(--border);
-    padding-bottom: 4px;
   }
 
-  .shift-row:last-child { border-bottom: none; }
-  .shift-row-label { color: var(--text-sec); font-weight: 500; }
-  .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
+  .shift-row-label { color: var(--text-sec); }
+
+  .shift-row-val {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--text-pri);
+  }
 
   /* ── RECOMMENDATIONS ── */
   .reco-list {
@@ -594,19 +546,20 @@
     gap: 10px;
     align-items: flex-start;
     padding: 10px 12px;
-    background: var(--bg-panel);
+    background: var(--bg-hover);
     border-radius: var(--r);
-    border-left: 3px solid var(--accent);
+    border-left: 2px solid var(--accent);
     font-size: 12px;
     line-height: 1.5;
     color: var(--text-sec);
+    transition: background 0.15s;
   }
 
-  .reco-item strong { color: var(--text-pri); }
+  .reco-item:hover { background: var(--bg-panel); color: var(--text-pri); }
 
   .reco-num {
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: 18px;
     color: var(--accent);
     line-height: 1;
     flex-shrink: 0;
@@ -617,7 +570,7 @@
     padding: 12px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .type-row {
@@ -631,27 +584,27 @@
     width: 140px;
     flex-shrink: 0;
     color: var(--text-sec);
-    font-weight: 500;
+    font-size: 11px;
   }
 
   .type-bar-track {
     flex: 1;
-    height: 6px;
-    background: var(--bg-panel);
-    border-radius: 3px;
+    height: 4px;
+    background: var(--bg-hover);
+    border-radius: 2px;
     overflow: hidden;
-    border: 1px solid rgba(0,0,0,0.05);
   }
 
   .type-bar-fill {
     height: 100%;
-    background: var(--text-pri);
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.6s ease;
   }
 
   .type-count {
     font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
     color: var(--text-pri);
     width: 24px;
     text-align: right;
@@ -659,175 +612,270 @@
 
   /* ── SHIFT HANDOVER PANEL ── */
   .handover-box {
-    padding: 16px 20px;
+    padding: 14px 18px;
     font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-pri);
-    line-height: 1.6;
+    font-size: 11px;
+    color: var(--text-sec);
+    line-height: 1.8;
     white-space: pre-wrap;
-    max-height: 250px;
+    max-height: 200px;
     overflow-y: auto;
-    background: var(--bg-panel);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
     border-top: 1px solid var(--border);
   }
 
-  .handover-highlight { color: var(--blue); font-weight: 600; }
-  .handover-critical { color: var(--red); font-weight: bold; background: rgba(184,20,20,0.05); padding: 0 4px; }
-  .handover-ok { color: var(--green); font-weight: 600; }
+  .handover-highlight { color: var(--accent); }
+  .handover-critical { color: var(--red); }
+  .handover-ok { color: var(--green); }
 
-  /* ── OVERLAY PROFILE PANEL ── */
+  /* ── SLIDE-IN OVERLAY PANEL ── */
   .slide-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
   }
-  .slide-backdrop.show { opacity: 1; visibility: visible; }
-  
+  .slide-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+  }
   .slide-panel {
     position: fixed;
-    top: 0; right: -420px;
-    width: 420px; height: 100vh;
-    background: var(--bg-card);
-    border-left: 2px solid var(--border);
+    top: 0;
+    right: -420px;
+    width: 420px;
+    height: 100vh;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-bright);
     z-index: 1001;
-    box-shadow: -5px 0 20px rgba(0,0,0,0.08);
+    box-shadow: -5px 0 25px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
-    transition: right 0.2s ease;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-pri);
   }
-  .slide-backdrop.show .slide-panel { right: 0; }
-  
+  .slide-backdrop.show .slide-panel {
+    right: 0;
+  }
   .slide-header {
     padding: 20px;
-    background: var(--bg-panel);
     border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   .slide-title {
     font-family: var(--font-display);
-    font-size: 22px;
+    font-size: 20px;
     letter-spacing: 1px;
-    color: var(--text-pri);
+    color: var(--accent);
   }
   .slide-close {
-    background: none; border: none;
-    color: var(--text-sec); font-size: 22px; cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--text-sec);
+    font-size: 20px;
+    cursor: pointer;
   }
+  .slide-close:hover { color: var(--text-pri); }
   .slide-body {
-    padding: 20px; overflow-y: auto; flex: 1;
-    display: flex; flex-direction: column; gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scrollbar-width: thin;
   }
   .slide-sub-title {
     font-family: var(--font-mono);
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    color: var(--text-sec); border-bottom: 2px solid var(--border);
-    padding-bottom: 4px; letter-spacing: 1px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    letter-spacing: 1px;
   }
 
-  /* ── FOOTER STYLING & BRAIN ICON ── */
+  /* ── FOOTER ── */
   footer {
     padding: 12px 32px;
-    border-top: 2px solid var(--border);
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
     background: var(--bg-panel);
   }
 
-  .brain-icon {
-    height: 12px;
+  .footer-right-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .footer-logo {
+    height: 18px;
     width: auto;
-    vertical-align: -1px;
-    margin-left: 2px;
-    transition: filter 0.2s ease;
+    vertical-align: middle;
+    opacity: 0.7;
+    transition: opacity 0.2s;
   }
 
-  :root[data-theme="light"] .brain-icon {
-    filter: brightness(0) saturate(100%) invert(7%) sepia(21%) saturate(1512%) hue-rotate(180deg) brightness(95%) contrast(100%);
-  }
-
-  :root[data-theme="dark"] .brain-icon {
-    filter: brightness(0) saturate(100%) invert(64%) sepia(16%) saturate(632%) hue-rotate(174deg) brightness(89%) contrast(85%);
+  .footer-logo:hover {
+    opacity: 1;
   }
 
   /* ── LOADING OVERLAY ── */
   .loading-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(243,238,223,0.95);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9000; display: none;
+    background: rgba(9,13,18,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    display: none;
   }
+
   .loading-overlay.show { display: flex; }
+
   .loading-spinner {
     width: 40px; height: 40px;
-    border: 3px solid var(--border);
+    border: 2px solid var(--border-bright);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin-bottom: 16px;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
 
-  /* ── MODAL ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-sec);
+    letter-spacing: 2px;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* ── MODAL (incident detail) ── */
   .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 8000; display: none;
-    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.7);
+    z-index: 8000;
+    display: none;
+    align-items: center;
+    justify-content: center;
   }
+
   .modal-backdrop.show { display: flex; }
+
   .modal {
     background: var(--bg-card);
-    border: 2px solid var(--text-pri);
-    border-radius: 6px;
-    width: 540px; max-width: 90vw; max-height: 80vh;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    width: 540px;
+    max-width: 90vw;
+    max-height: 80vh;
     overflow-y: auto;
   }
+
   .modal-header {
-    padding: 16px 22px;
-    background: var(--bg-panel);
+    padding: 18px 22px;
     border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  .modal-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; color: var(--text-pri); }
-  .modal-close { background: none; border: none; color: var(--text-sec); font-size: 22px; cursor: pointer; }
-  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-  
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-sec);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .modal-close:hover { color: var(--text-pri); }
+
+  .modal-body {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
   .modal-field label {
-    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
-    text-transform: uppercase; color: var(--text-sec); display: block; margin-bottom: 2px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    display: block;
+    margin-bottom: 4px;
   }
-  .modal-field p { font-size: 13px; color: var(--text-pri); line-height: 1.5; font-weight: 400; }
 
-  .actions-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .modal-field p {
+    font-size: 13px;
+    color: var(--text-pri);
+    line-height: 1.5;
+  }
+
+  .actions-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   .actions-list li {
-    font-size: 12px; color: var(--text-pri); padding: 6px 10px;
-    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-sec);
+    padding: 6px 10px;
+    background: var(--bg-hover);
+    border-radius: 4px;
+    display: flex;
+    gap: 8px;
   }
 
-  .empty-state { padding: 40px; text-align: center; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; }
+  .actions-list li::before {
+    content: '→';
+    color: var(--accent);
+    flex-shrink: 0;
+  }
 
+  /* RESPONSIVE */
   @media (max-width: 1200px) {
-    .main-grid, .bottom-grid { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 900px) {
-    header { grid-template-columns: 1fr; gap: 12px; text-align: center; }
-    .header-left, .header-right { justify-content: center; text-align: center; }
-    .main-grid, .bottom-grid { grid-template-columns: 1fr; }
-    .config-bar { justify-content: center; }
-    .fetch-status { margin-left: 0; text-align: center; width: 100%; }
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .main-grid { grid-template-columns: 1fr 1fr; }
+    .bottom-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -865,11 +913,6 @@
   </select>
   <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
   <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
-  
-  <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
-    <span>🌙</span><span id="theme-text">Dark Mode</span>
-  </button>
-  
   <span class="fetch-status" id="fetch-status">No data loaded · Click LOAD DEMO to preview</span>
 </div>
 
@@ -998,14 +1041,18 @@
       <div class="slide-title" id="slide-zone-name">ZONE DETAIL</div>
       <button class="slide-close" onclick="hideZonePanel()">✕</button>
     </div>
-    <div class="slide-body" id="slide-zone-body"></div>
+    <div class="slide-body" id="slide-zone-body">
+      </div>
   </div>
 </div>
 
 <footer>
-  <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY <img src="R.png" alt="Brain" class="brain-icon"></span>
+  <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY AI</span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
-  <span id="last-refresh">LAST REFRESH: —</span>
+  <div class="footer-right-wrap">
+    <span id="last-refresh">LAST REFRESH: —</span>
+    <img src="R.png" alt="Logo" class="footer-logo" onerror="this.style.display='none'">
+  </div>
 </footer>
 
 <div class="loading-overlay" id="loading">
@@ -1024,45 +1071,15 @@
 </div>
 
 <script>
-// ── THEME ENGINES INTEGRATION ──
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeTogglerUI(savedTheme);
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeTogglerUI(newTheme);
-  
-  if (charts.timeline || charts.shift) {
-    renderAll();
-  }
-}
-
-function updateThemeTogglerUI(theme) {
-  const toggler = document.getElementById('theme-toggler');
-  const txt = document.getElementById('theme-text');
-  if (theme === 'dark') {
-    toggler.querySelector('span:first-child').textContent = '🌙';
-    txt.textContent = 'Dark Mode';
-  } else {
-    toggler.querySelector('span:first-child').textContent = '☀️';
-    txt.textContent = 'Light Mode';
-  }
-}
-initTheme();
-
 // ── GLOBAL STATE ──
 let allIncidents = [];
 let charts = {};
 let currentShift = 'Morning';
 
+// Helper to get true GST date/hour variables accurately regardless of local OS settings
 function getGSTDateTime(dateInput) {
   const baseDate = dateInput ? new Date(dateInput) : new Date();
+  // Adjust localized display configurations
   const gstString = baseDate.toLocaleString("en-US", {timeZone: "Asia/Dubai"});
   const gstDate = new Date(gstString);
   const hour = gstDate.getHours();
@@ -1080,7 +1097,7 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ── FETCH FROM GOOGLE SHEETS ──
+// ── FETCH FROM GOOGLE SHEETS (published as CSV) ──
 async function fetchData() {
   const url = document.getElementById('sheet-url').value.trim();
   if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
@@ -1112,6 +1129,7 @@ async function fetchData() {
       if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
       allIncidents = parseCSV(text);
       
+      // Enforce absolute chronological processing order across the data stream
       sortIncidentsDescending(allIncidents);
       
       const { gstDate } = getGSTDateTime();
@@ -1128,8 +1146,16 @@ async function fetchData() {
   }
 
   document.getElementById('loading').classList.remove('show');
-  document.getElementById('fetch-status').textContent = 'FETCH FAILED';
-  alert('Could not fetch data automatically. Please try the LOAD DEMO button to preview structure.');
+  document.getElementById('fetch-status').textContent = 'FETCH FAILED — see instructions below';
+  alert(
+    'Could not fetch data automatically.\n\n' +
+    'You are likely opening this file directly from your drive (file://) while n8n runs in WSL.\n\n' +
+    'SOLUTION:\n' +
+    '1. In WSL terminal run: python3 -m http.server 8080\n' +
+    '2. Open Chrome and go to: http://localhost:8080/security_dashboard.html\n' +
+    '3. Paste your Google Sheet CSV URL and click Fetch Data again.\n\n' +
+    'OR use the LOAD DEMO button to preview with sample data.'
+  );
 }
 
 function parseCSV(text) {
@@ -1140,6 +1166,7 @@ function parseCSV(text) {
     const obj = {};
     headers.forEach((h,i) => obj[h] = (vals[i] || '').replace(/"/g,'').trim());
     
+    // Normalize shifting parameters inside raw loads to prevent mismatching downstream calculations
     if (obj.timestamp) {
       const { hour } = getGSTDateTime(obj.timestamp);
       if (hour >= 7 && hour < 19) {
@@ -1226,6 +1253,7 @@ function loadDemoData() {
   renderAll();
 }
 
+// ── FILTER BY DATE RANGE ──
 function getFilteredIncidents() {
   const days = parseInt(document.getElementById('date-range').value);
   const cutoff = new Date(Date.now() - days * 86400000);
@@ -1234,7 +1262,7 @@ function getFilteredIncidents() {
   return filtered;
 }
 
-// ── RENDER PIPELINES ──
+// ── RENDER ALL ──
 function renderAll() {
   const data = getFilteredIncidents();
   renderKPIs(data);
@@ -1247,6 +1275,7 @@ function renderAll() {
   renderHandover(data);
 }
 
+// ── KPIs ──
 function renderKPIs(data) {
   const count = v => data.filter(i => i.severity === v).length;
   document.getElementById('kpi-total').textContent = data.length;
@@ -1257,15 +1286,18 @@ function renderKPIs(data) {
   document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
 }
 
+// ── INCIDENT FEED ──
 function renderFeed(data) {
   const el = document.getElementById('feed-list');
   document.getElementById('feed-count').textContent = data.length + ' REPORTS';
   if (!data.length) { el.innerHTML = '<div class="empty-state">No incidents in range</div>'; return; }
   
+  // Ensure strict chronological alignment during injection loops
   let feedData = [...data];
   sortIncidentsDescending(feedData);
   
   el.innerHTML = feedData.slice(0,30).map((inc) => {
+    // Find the correct indexing from the primary source collection to avoid breaking modal displays
     const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
     return `
       <div class="feed-item" onclick="showModal(${masterIdx})">
@@ -1294,6 +1326,7 @@ function formatTime(ts) {
   return d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
 }
 
+// ── TIMELINE CHART ──
 function renderTimeline(data) {
   const days = parseInt(document.getElementById('date-range').value);
   const buckets = {};
@@ -1324,11 +1357,6 @@ function renderTimeline(data) {
     stack: 'stack'
   });
 
-  const theme = document.documentElement.getAttribute('data-theme');
-  const textDark = '#09101d';
-  const tickColor = theme === 'light' ? textDark : '#7a8fa8';
-  const gridColor = theme === 'light' ? 'rgba(9,16,29,0.08)' : 'rgba(255,255,255,0.04)';
-
   if (charts.timeline) charts.timeline.destroy();
   const ctx = document.getElementById('timelineChart').getContext('2d');
   charts.timeline = new Chart(ctx, {
@@ -1336,25 +1364,26 @@ function renderTimeline(data) {
     data: {
       labels,
       datasets: [
-        makeDS('Critical', 'rgba(184,20,20,0.85)', '#b81414'),
-        makeDS('High',     'rgba(208,96,16,0.85)', '#d06010'),
-        makeDS('Medium',   'rgba(176,102,0,0.85)', '#b06600'),
-        makeDS('Low',      'rgba(6,107,46,0.85)', '#066b2e'),
+        makeDS('Critical', 'rgba(232,64,64,0.8)', '#e84040'),
+        makeDS('High',     'rgba(232,120,32,0.8)', '#e87820'),
+        makeDS('Medium',   'rgba(232,160,32,0.8)', '#e8a020'),
+        makeDS('Low',      'rgba(52,199,123,0.6)', '#34c77b'),
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      animation: { duration: 400 },
+      animation: { duration: 600 },
       plugins: { legend: { display: false } },
       scales: {
-        x: { stacked: true, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: 'DM Mono', size: 10, weight: '600' }, maxRotation: 45 } },
-        y: { stacked: true, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: 'DM Mono', size: 10, weight: '600' } }, beginAtZero: true }
+        x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7a8fa8', font: { family: 'DM Mono', size: 9 }, maxRotation: 45 } },
+        y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7a8fa8', font: { family: 'DM Mono', size: 9 } }, beginAtZero: true }
       }
     }
   });
   document.getElementById('chart-range-label').textContent = Math.min(days,30) + 'D';
 }
 
+// ── ZONE HEATMAP ──
 function renderZoneHeatmap(data) {
   const el = document.getElementById('zone-grid');
   const zones = {};
@@ -1362,29 +1391,22 @@ function renderZoneHeatmap(data) {
   const sorted = Object.entries(zones).sort((a,b)=>b[1]-a[1]);
   if (!sorted.length) { el.innerHTML = '<div class="empty-state">No data</div>'; return; }
   const max = sorted[0][1];
-  
-  const theme = document.documentElement.getAttribute('data-theme');
-  const colors = theme === 'light' ? [
-    ['rgba(184,20,20,0.15)', '#b81414'],
-    ['rgba(208,96,16,0.12)', '#d06010'],
-    ['rgba(176,102,0,0.1)', '#b06600'],
-    ['rgba(15,64,179,0.08)', '#0f40b3'],
-    ['rgba(6,107,46,0.08)', '#066b2e']
-  ] : [
+  const colors = [
     ['rgba(232,64,64,0.25)','#e84040'],
     ['rgba(232,120,32,0.2)','#e87820'],
     ['rgba(232,160,32,0.15)','#e8a020'],
     ['rgba(58,143,232,0.12)','#3a8fe8'],
-    ['rgba(52,199,123,0.1)','#34c77b']
+    ['rgba(52,199,123,0.1)','#34c77b'],
   ];
   
   el.innerHTML = sorted.slice(0,8).map(([ zone, count ]) => {
     const intensity = count / max;
     const ci = Math.min(Math.floor((1 - intensity) * colors.length), colors.length - 1);
     const [bg, bar] = colors[ci];
+    // Sanitize string keys safely before packing into JS event listener execution blocks
     const cleanZone = zone.replace(/'/g, "\\'");
     return `
-      <div class="zone-cell" style="background:${bg}; border-color:${bar};" onclick="showZonePanel('${cleanZone}')">
+      <div class="zone-cell" style="background:${bg};" onclick="showZonePanel('${cleanZone}')">
         <div class="zone-name">${zone}</div>
         <div class="zone-count" style="color:${bar}">${count}</div>
         <div class="zone-bar" style="background:${bar}"></div>
@@ -1393,8 +1415,9 @@ function renderZoneHeatmap(data) {
   }).join('');
 }
 
+// ── HEATMAP SLIDE-IN OVERLAY INTERACTION LOGIC ──
 function showZonePanel(zoneName) {
-  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — PROFILE';
+  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — METRIC PROFILE';
   const data = getFilteredIncidents();
   const zoneIncidents = data.filter(i => i.location_zone === zoneName);
   sortIncidentsDescending(zoneIncidents);
@@ -1406,8 +1429,11 @@ function showZonePanel(zoneName) {
     const total = zoneIncidents.length;
     const crit = zoneIncidents.filter(i => i.severity === 'Critical').length;
     const high = zoneIncidents.filter(i => i.severity === 'High').length;
+    const med = zoneIncidents.filter(i => i.severity === 'Medium').length;
+    const low = zoneIncidents.filter(i => i.severity === 'Low').length;
     const openItems = zoneIncidents.filter(i => i.action_required === 'TRUE').length;
     
+    // Compile ranked incident types for this area
     const types = {};
     zoneIncidents.forEach(i => { types[i.incident_type] = (types[i.incident_type]||0) + 1; });
     const topTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -1419,7 +1445,7 @@ function showZonePanel(zoneName) {
           <div class="shift-row"><span class="shift-row-label">Total Volume</span><span class="shift-row-val">${total}</span></div>
           <div class="shift-row"><span class="shift-row-label">Active Action Flags</span><span class="shift-row-val" style="color:var(--accent)">${openItems}</span></div>
           <div class="shift-row"><span class="shift-row-label">Critical Threat Count</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
-          <div class="shift-row"><span class="shift-row-label">High Urgency Count</span><span class="shift-row-val" style="color:#d06010">${high}</span></div>
+          <div class="shift-row"><span class="shift-row-label">High Urgency Count</span><span class="shift-row-val" style="color:#e87820">${high}</span></div>
         </div>
       </div>
       
@@ -1429,7 +1455,7 @@ function showZonePanel(zoneName) {
           ${topTypes.map(([t, c]) => `
             <div class="type-row">
               <div class="type-name" style="width:160px;">${t.replace(/_/g,' ')}</div>
-              <div class="type-bar-track"><div class="type-bar-fill" style="width:${Math.round(c/total*100)}%; background:var(--text-pri)"></div></div>
+              <div class="type-bar-track"><div class="type-bar-fill" style="width:${Math.round(c/total*100)}%"></div></div>
               <div class="type-count">${c}</div>
             </div>
           `).join('')}
@@ -1437,7 +1463,7 @@ function showZonePanel(zoneName) {
       </div>
 
       <div>
-        <div class="slide-sub-title">Recent Activity Log</div>
+        <div class="slide-sub-title">Recent Activity Log (Max 5)</div>
         <div class="feed-list" style="max-height:300px; padding:5px 0;">
           ${zoneIncidents.slice(0,5).map(inc => {
             const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
@@ -1445,10 +1471,10 @@ function showZonePanel(zoneName) {
               <div class="feed-item" style="padding:10px 5px;" onclick="showModal(${masterIdx})">
                 <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
                 <div class="feed-main">
-                  <div class="feed-type" style="font-size:12px;">${inc.incident_type.replace(/_/g,' ')}</div>
-                  <div class="feed-summary" style="font-size:11px; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${inc.summary}</div>
+                  <div class="feed-type" style="font-size:11px;">${inc.incident_type.replace(/_/g,' ')}</div>
+                  <div class="feed-summary" style="font-size:10px; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${inc.summary}</div>
                 </div>
-                <div class="feed-time" style="font-size:10px;">${formatTime(inc.timestamp)}</div>
+                <div class="feed-time" style="font-size:9px;">${formatTime(inc.timestamp)}</div>
               </div>
             `;
           }).join('')}
@@ -1461,9 +1487,15 @@ function showZonePanel(zoneName) {
   document.getElementById('slide-backdrop').classList.add('show');
 }
 
-function hideZonePanel() { document.getElementById('slide-backdrop').classList.remove('show'); }
-function closeZonePanel(e) { if (e.target === document.getElementById('slide-backdrop')) hideZonePanel(); }
+function hideZonePanel() {
+  document.getElementById('slide-backdrop').classList.remove('show');
+}
 
+function closeZonePanel(e) {
+  if (e.target === document.getElementById('slide-backdrop')) hideZonePanel();
+}
+
+// ── INCIDENT TYPES ──
 function renderTypes(data) {
   const el = document.getElementById('type-list');
   const types = {};
@@ -1482,6 +1514,7 @@ function renderTypes(data) {
   `).join('');
 }
 
+// ── SHIFT ANALYSIS ──
 function setShift(shift, btn) {
   currentShift = shift;
   document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
@@ -1519,10 +1552,6 @@ function renderShiftChart(data) {
     if (i.shift && i.shift.startsWith('Morning')) shiftCounts.Morning++;
     else if (i.shift && i.shift.startsWith('Night')) shiftCounts.Night++;
   });
-
-  const theme = document.documentElement.getAttribute('data-theme');
-  const tickColor = theme === 'light' ? '#09101d' : '#7a8fa8';
-
   if (charts.shift) charts.shift.destroy();
   const ctx = document.getElementById('shiftChart').getContext('2d');
   charts.shift = new Chart(ctx, {
@@ -1531,20 +1560,21 @@ function renderShiftChart(data) {
       labels: ['Morning 07:00–19:00', 'Night 19:00–07:00'],
       datasets: [{
         data: [shiftCounts.Morning, shiftCounts.Night],
-        backgroundColor: theme === 'light' ? ['rgba(176,102,0,0.85)','rgba(15,64,179,0.85)'] : ['rgba(232,160,32,0.7)','rgba(58,143,232,0.7)'],
-        borderColor: theme === 'light' ? ['#b06600','#0f40b3'] : ['#e8a020','#3a8fe8'],
+        backgroundColor: ['rgba(232,160,32,0.7)','rgba(58,143,232,0.7)'],
+        borderColor: ['#e8a020','#3a8fe8'],
         borderWidth: 1.5
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '65%',
       plugins: {
-        legend: { position: 'bottom', labels: { color: tickColor, font: { family: 'DM Mono', size: 11, weight: '600' }, boxWidth: 12, padding: 10 } }
+        legend: { position: 'bottom', labels: { color: '#7a8fa8', font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 10 } }
       }
     }
   });
 }
 
+// ── AI RECOMMENDATIONS ──
 function renderRecommendations(data) {
   const el = document.getElementById('reco-list');
   const labelEl = document.getElementById('reco-shift-label');
@@ -1553,11 +1583,13 @@ function renderRecommendations(data) {
   const activeShiftLabel = (hour >= 7 && hour < 19) ? 'MORNING SHIFT ACTIVE' : 'NIGHT SHIFT ACTIVE';
   const targetShiftFilter = (hour >= 7 && hour < 19) ? 'Morning' : 'Night';
   
+  // Calculate active operation thresholds based entirely on raw shift logs
   const realTimeShiftData = data.filter(i => i.shift && i.shift.startsWith(targetShiftFilter));
   const openCount = realTimeShiftData.filter(i => i.action_required === 'TRUE').length;
   
   labelEl.textContent = `${activeShiftLabel} · ${realTimeShiftData.length} RUNNING INCIDENTS · ${openCount} OPEN ACTIONS`;
   
+  // Base decision trees on current operational data blocks
   const recos = generateRecommendations(realTimeShiftData.length > 0 ? realTimeShiftData : data);
   if (!recos.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No real-time actionable events located.</div>'; return; }
   el.innerHTML = recos.map((r,i) => `
@@ -1572,6 +1604,15 @@ function generateRecommendations(data) {
   if (!data.length) return [];
   const recos = [];
 
+  const ZONE_D_COMMUNITIES = [
+    'The Cove','North Residence','South Residence','The Grand',
+    'Creek Edge','Creek Crescent','17 Icon Bay','Creek Gate',
+    'Harbour Gate','Creek Rise','Creek Horizon','Harbour Views',
+    'Creekside 18','Master Community','Creek Beach',
+    'Marina Walk','Central Park','Parking','CCTV Room'
+  ];
+
+  // 1. Hottest community profile
   const zones = {};
   data.forEach(i => {
     if (i.location_zone && i.location_zone !== 'Unknown')
@@ -1583,6 +1624,7 @@ function generateRecommendations(data) {
     recos.push(`Deploy additional patrol to <strong>${zone}</strong> — highest incident density with ${count} reports. Request CCTV room to increase monitoring frequency for this community.`);
   }
 
+  // 2. CCTV and ANPR system tracking
   const infraIncidents = data.filter(i =>
     i.incident_type === 'Maintenance_Security' || i.location_zone === 'CCTV Room' || i.location_zone === 'Infrastructure'
   );
@@ -1590,11 +1632,13 @@ function generateRecommendations(data) {
     recos.push(`<strong>${infraIncidents.length} infrastructure/CCTV incidents</strong> recorded — verify all 16 CCTV control rooms are operational and escalate camera faults to technical team immediately.`);
   }
 
+  // 3. High threat distribution rules
   const shiftCritical = data.filter(i => i.severity === 'Critical' || i.severity === 'High');
   if (shiftCritical.length > 0) {
     recos.push(`Reinforce defensive parameters across 14 security offices — ${shiftCritical.length} Critical/High incidents recorded under processing filter. Verify all 204 WeOne Security officers are accounted for.`);
   }
 
+  // 4. Incident matrix frequency analysis
   const types = {};
   data.forEach(i => { if(i.incident_type) types[i.incident_type] = (types[i.incident_type]||0)+1; });
   const topType = Object.entries(types).sort((a,b)=>b[1]-a[1])[0];
@@ -1607,6 +1651,7 @@ function generateRecommendations(data) {
     recos.push(`Most frequent incident: <strong>${typeLabel}</strong> (${topType[1]} reports). ${affectedCommunities ? 'Affected communities: ' + affectedCommunities + '.' : ''} Review standard operating procedure and brief all 14 community supervisors.`);
   }
 
+  // 5. Scaling calculations for residential boundaries
   const accessIncidents = data.filter(i =>
     i.incident_type === 'Access_Control' || i.incident_type === 'Trespassing'
   );
@@ -1617,43 +1662,61 @@ function generateRecommendations(data) {
   return recos.slice(0, 5);
 }
 
-// ── SHIFT HANDOVER INTEGRATIONS ──
+// ── SHIFT HANDOVER ──
 async function fetchDubaiWeather() {
   try {
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weathercode&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FDubai';
     const resp = await fetch(url);
     const json = await resp.json();
     const c = json.current;
-    return { 
-      temp: Math.round(c.temperature_2m), 
-      humidity: c.relative_humidity_2m, 
-      wind: Math.round(c.wind_speed_10m), 
-      windDir: getWindDir(c.wind_direction_10m), 
-      condition: getWeatherCondition(c.weathercode), 
-      advisory: getWeatherAdvisory(Math.round(c.temperature_2m), Math.round(c.wind_speed_10m), c.weathercode), 
-      maxPrecip: json.hourly.precipitation_probability.slice(getGSTDateTime().hour, getGSTDateTime().hour + 6).reduce((a,b)=>Math.max(a,b),0), 
-      ok: true 
-    };
-  } catch(e) { return { ok: false, error: e.message }; }
+    const temp = Math.round(c.temperature_2m);
+    const humidity = c.relative_humidity_2m;
+    const wind = Math.round(c.wind_speed_10m);
+    const windDir = getWindDir(c.wind_direction_10m);
+    const wcode = c.weathercode;
+    const condition = getWeatherCondition(wcode);
+    const advisory = getWeatherAdvisory(temp, wind, wcode);
+
+    const hourly = json.hourly;
+    const { hour: currentHourIndex } = getGSTDateTime();
+    const next6hPrecip = hourly.precipitation_probability.slice(currentHourIndex, currentHourIndex + 6);
+    const maxPrecip = next6hPrecip.length ? Math.max(...next6hPrecip) : 0;
+
+    return { temp, humidity, wind, windDir, condition, advisory, maxPrecip, ok: true };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
 }
 
-// Direction processing engine
-function getWindDir(deg) { return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8]; }
+function getWindDir(deg) {
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(deg / 45) % 8];
+}
+
 function getWeatherCondition(code) {
   if (code === 0) return 'Clear skies';
   if (code <= 3) return 'Partly cloudy';
   if (code <= 9) return 'Hazy / dusty';
+  if (code <= 19) return 'Light fog';
+  if (code <= 29) return 'Drizzle';
+  if (code <= 39) return 'Dusty conditions';
   if (code <= 49) return 'Foggy';
-  if (code <= 99) return 'Rain / Thunderstorm';
-  return 'Standard';
+  if (code <= 59) return 'Drizzle';
+  if (code <= 69) return 'Rain';
+  if (code <= 79) return 'Snow / sleet';
+  if (code <= 99) return 'Thunderstorm';
+  return 'Unknown';
 }
 
 function getWeatherAdvisory(temp, wind, code) {
   const advisories = [];
   if (temp >= 40) advisories.push('EXTREME HEAT — Mandate hydration breaks every 30 min for external patrols');
   else if (temp >= 36) advisories.push('HIGH HEAT — Hydration breaks every hour for outdoor officers');
-  if (wind >= 25) advisories.push('MODERATE/HIGH WINDS — Secure loose structural assets');
-  if (code >= 80) advisories.push('RAIN/STORM — Check structural entry parameters, wet surface vectors');
+  if (wind >= 40) advisories.push('HIGH WINDS — Secure loose items, restrict rooftop access');
+  else if (wind >= 25) advisories.push('MODERATE WINDS — Exercise caution on elevated areas');
+  if (code >= 80 && code <= 99) advisories.push('RAIN/STORM — Deploy additional officers to parking and entrances, wet surfaces hazard');
+  else if (code >= 40 && code <= 49) advisories.push('FOG ADVISORY — Reduce vehicle speed, increase lighting at access points');
+  else if (code >= 30 && code <= 39) advisories.push('DUST ADVISORY — Protect CCTV lenses, officers to wear dust protection');
   if (advisories.length === 0) advisories.push('No adverse weather conditions — standard operations');
   return advisories;
 }
@@ -1662,14 +1725,33 @@ function getDCHTrafficAdvisory() {
   const { hour: gstHour, gstDate } = getGSTDateTime();
   const day = gstDate.getDay(); 
   const isWeekend = (day === 5 || day === 6);
+  const advisories = [];
+
   if (!isWeekend) {
-    if (gstHour >= 7 && gstHour <= 9) return ['MORNING PEAK — Heavy congestion expected on Ras Al Khor Road. Visitor arrivals elevated. Gate 1 and Gate 3 access may be slow.'];
-    if (gstHour >= 16 && gstHour <= 20) return ['EVENING PEAK — Heavy outbound traffic on Al Ain Road. Elevated visitor and resident vehicle movements. Deploy additional officer to Parking Gate.'];
-    return ['Traffic conditions normal for current hour. Monitor primary junctions.'];
+    if (gstHour >= 7 && gstHour <= 9) {
+      advisories.push('MORNING PEAK — Heavy congestion expected on Ras Al Khor Road and Al Ain Road. Delivery vehicles and visitor arrivals elevated. Gate 1 and Gate 3 access may be slow.');
+    } else if (gstHour >= 12 && gstHour <= 14) {
+      advisories.push('MIDDAY — Moderate traffic on Creek Road. Lunch hour visitor spike expected at Retail District.');
+    } else if (gstHour >= 16 && gstHour <= 20) {
+      advisories.push('EVENING PEAK — Heavy outbound traffic on Al Ain Road. Elevated visitor and resident vehicle movements. Expect congestion at parking levels. Deploy additional officer to Parking Gate.');
+    } else {
+      advisories.push('Traffic conditions normal for current time. Monitor Ras Al Khor Road for incident updates.');
+    }
   } else {
-    if (gstHour >= 16 && gstHour <= 23) return ['WEEKEND EVENING — High visitor footfall expected. Retail District and Promenade busy. Parking Levels may reach capacity.'];
-    return ['Weekend off-peak — standard environment parameters.'];
+    if (gstHour >= 16 && gstHour <= 23) {
+      advisories.push('WEEKEND EVENING — High visitor footfall expected. Retail District and Events Lawn at elevated capacity. Parking Levels may reach full capacity by 19:00. Coordinate with parking team.');
+    } else if (gstHour >= 10 && gstHour <= 15) {
+      advisories.push('WEEKEND DAY — Moderate to high visitor activity. Creek Marina and Harbour Promenade busy. Monitor crowd density near waterfront.');
+    } else {
+      advisories.push('Weekend off-peak — normal traffic and visitor levels expected.');
+    }
   }
+
+  if (day === 5 && gstHour >= 11 && gstHour <= 14) {
+    advisories.push('FRIDAY PRAYER — Significant traffic reduction 12:00–13:30. Increased pedestrian activity near mosque areas post-prayer.');
+  }
+
+  return advisories;
 }
 
 function renderHandover(data) {
@@ -1677,15 +1759,18 @@ function renderHandover(data) {
   if (!data.length) return;
 
   const { hour, gstDate } = getGSTDateTime();
-  let currentShiftName = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00–19:00)' : 'Night Shift (19:00–07:00)';
-  let nextShiftName = (hour >= 7 && hour < 19) ? 'Night Shift (19:00–07:00)' : 'Morning Shift (07:00–19:00)';
+  let currentShiftName, nextShiftName;
+  if (hour >= 7 && hour < 19) { currentShiftName = 'Morning Shift (07:00–19:00)'; nextShiftName = 'Night Shift (19:00–07:00)'; }
+  else { currentShiftName = 'Night Shift (19:00–07:00)'; nextShiftName = 'Morning Shift (07:00–19:00)'; }
 
   const cutoff12h = new Date(Date.now() - 12 * 3600000);
   const shift12h = data.filter(i => new Date(i.timestamp) >= cutoff12h);
   const sev = s => shift12h.filter(i => i.severity === s).length;
-  const types = {}; shift12h.forEach(i => types[i.incident_type] = (types[i.incident_type]||0)+1);
+  const types = {};
+  shift12h.forEach(i => types[i.incident_type] = (types[i.incident_type]||0)+1);
   const topTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const zones = {}; shift12h.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
+  const zones = {};
+  shift12h.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
   const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]).slice(0,3);
 
   const dateStr = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
@@ -1694,16 +1779,27 @@ function renderHandover(data) {
     const trafficAdvisories = getDCHTrafficAdvisory();
     const recos = generateRecommendations(data).map((r,i) => `${i+1}. ${r.replace(/<[^>]+>/g,'')}`).join('\n');
 
-    let weatherBlock = weather.ok ? `
+    let weatherBlock = '';
+    if (weather.ok) {
+      weatherBlock = `
 <span class="handover-highlight">━━━ WEATHER — INCOMING SHIFT ━━━</span>
 Condition        : ${weather.condition}
 Temperature      : ${weather.temp}°C
 Humidity         : ${weather.humidity}%
 Wind             : ${weather.wind} km/h ${weather.windDir}
-Rain Probability : ${weather.maxPrecip}%
+Rain Probability : ${weather.maxPrecip}% (next 6 hours)
 
 ADVISORY:
-${weather.advisory.map(a => '⚠ ' + a).join('\n')}` : `\n<span class="handover-highlight">━━━ WEATHER ━━━</span>\nWeather metrics disconnected.`;
+${weather.advisory.map(a => '⚠ ' + a).join('\n')}`;
+    } else {
+      weatherBlock = `
+<span class="handover-highlight">━━━ WEATHER ━━━</span>
+Weather data unavailable — check manually`;
+    }
+
+    const trafficBlock = `
+<span class="handover-highlight">━━━ TRAFFIC & ENVIRONMENT ━━━</span>
+${trafficAdvisories.map(a => '🚦 ' + a).join('\n')}`;
 
     el.innerHTML = `<span class="handover-highlight">═══════════════════════════════════════════════════
 SHIFT HANDOVER REPORT — AUTO GENERATED
@@ -1716,7 +1812,7 @@ ${dateStr}
 
 <span class="handover-highlight">━━━ INCIDENTS (LAST 12 HOURS) ━━━</span>
 Total Incidents  : ${shift12h.length}
-${sev('Critical') > 0 ? `<span class="handover-critical">CRITICAL         : ${sev('Critical')}  ← REQUIRES IMMED HANDOVER BRIEFING</span>` : `Critical         : ${sev('Critical')}`}
+${sev('Critical') > 0 ? `<span class="handover-critical">CRITICAL         : ${sev('Critical')}  ← REQUIRES HANDOVER BRIEFING</span>` : `Critical         : ${sev('Critical')}`}
 High Priority    : ${sev('High')}
 Medium           : ${sev('Medium')}
 Low / Routine    : ${sev('Low')}
@@ -1728,9 +1824,7 @@ ${topTypes.map(([t,c]) => `${t.replace(/_/g,' ').padEnd(25)} ${c} reports`).join
 <span class="handover-highlight">━━━ HOTSPOT ZONES ━━━</span>
 ${topZones.map(([z,c],i) => `${i+1}. ${z.padEnd(30)} ${c} incidents`).join('\n') || 'No zone data'}
 ${weatherBlock}
-
-<span class="handover-highlight">━━━ TRAFFIC & ENVIRONMENT ━━━</span>
-${trafficAdvisories.map(a => '🚦 ' + a).join('\n')}
+${trafficBlock}
 
 <span class="handover-highlight">━━━ RECOMMENDATIONS FOR INCOMING SHIFT ━━━</span>
 ${recos}
@@ -1740,6 +1834,7 @@ Next auto-summary: ${getNext12h()}
 
 Outgoing supervisor sign-off: ____________________
 Incoming supervisor sign-off: ____________________`;
+  
   });
 
   document.getElementById('handover-shift-label').textContent = 'GENERATED: ' + gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'});
@@ -1747,43 +1842,45 @@ Incoming supervisor sign-off: ____________________`;
 
 function getNext12h() {
   const { hour, gstDate } = getGSTDateTime();
-  const next = new Date(gstDate); next.setMinutes(0); next.setSeconds(0);
+  const next = new Date(gstDate);
+  next.setMinutes(0); next.setSeconds(0);
   if (hour < 7) next.setHours(7);
   else if (hour < 19) next.setHours(19);
   else { next.setDate(next.getDate()+1); next.setHours(7); }
   return next.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'}) + ' ' + next.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
 }
 
-// ── DETAIL MODAL ──
+// ── MODAL ──
 function showModal(idx) {
   const inc = allIncidents[idx];
   if (!inc) return;
   document.getElementById('modal-title').textContent = inc.incident_type.replace(/_/g,' ');
   const actions = inc.immediate_actions ? inc.immediate_actions.split(';').filter(Boolean) : [];
   document.getElementById('modal-body').innerHTML = `
-    <div class="modal-field"><label>Severity</label><p style="color:${sevColor(inc.severity)}; font-weight:bold;">${inc.severity}</p></div>
+    <div class="modal-field"><label>Severity</label><p style="color:${sevColor(inc.severity)}">${inc.severity}</p></div>
     <div class="modal-field"><label>Zone</label><p>${inc.location_zone}</p></div>
     <div class="modal-field"><label>Reported by</label><p>${inc.sender}</p></div>
     <div class="modal-field"><label>Time</label><p>${new Date(inc.timestamp).toLocaleString('en-AE')}</p></div>
     <div class="modal-field"><label>Shift</label><p>${inc.shift || '—'}</p></div>
     <div class="modal-field"><label>Summary</label><p>${inc.summary}</p></div>
     ${actions.length ? `<div class="modal-field"><label>Immediate Actions</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
-    <div class="modal-field"><label>AI Confidence</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
-    <div class="modal-field"><label>Raw Message</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;">${inc.raw_message || '—'}</p></div>
-    <div class="modal-field"><label>Incident ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id}</p></div>
+    <div class="modal-field"><label>AI Confidence</label><p style="color:var(--text-sec)">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
+    <div class="modal-field"><label>Raw Message</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec)">${inc.raw_message || '—'}</p></div>
+    <div class="modal-field"><label>Incident ID</label><p style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim)">${inc.message_id}</p></div>
   `;
   document.getElementById('modal').classList.add('show');
 }
 
 function sevColor(s) {
-  return {Critical:'var(--red)',High:'#d06010',Medium:'var(--accent)',Low:'var(--green)'}[s] || 'var(--text-sec)';
+  const m = {Critical:'var(--red)',High:'#e87820',Medium:'var(--accent)',Low:'var(--green)'};
+  return m[s] || 'var(--text-sec)';
 }
 
 function closeModal(e) {
   if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
 }
 
-// Live auto-refresh engine
+// Auto-refresh every 5 minutes if live URL is set
 setInterval(() => {
   const url = document.getElementById('sheet-url').value.trim();
   if (url && allIncidents.length > 0) fetchData();
