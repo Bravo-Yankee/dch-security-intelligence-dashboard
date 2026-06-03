@@ -103,16 +103,28 @@
   }
 
   .logo-badge {
-    width: 36px; height: 36px;
-    background: var(--text-pri);
+    width: 36px; 
+    height: 36px;
+    background: var(--accent);
     border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
     font-family: var(--font-display);
     font-size: 18px;
-    color: var(--bg-card);
+    color: #000;
     letter-spacing: 0.5px;
+    transition: background 0.3s ease;
+    overflow: hidden; /* Prevent huge images from spilling out */
   }
 
+  /* Add this specific wizard rule to force proper image containment */
+  .logo-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image fills the 36x36 box perfectly without distorting */
+    display: block;
+  }
   .header-title {
     font-family: var(--font-display);
     font-size: 24px;
