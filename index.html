@@ -1085,8 +1085,8 @@ updateClock();
 
 // ── FETCH FROM GOOGLE SHEETS ──
 async function fetchData() {
-  const url = document.getElementById('sheet-url').value.trim();
-  if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
+  const DEFAULT_URL = 'https://docs.google.com/spreadsheets/d/1xsYryU9GdBbN4njvtxy9PGETZzVBGasFhCyEE5Ga7dQ/export?format=csv&gid=1090631214';
+  const url = document.getElementById('sheet-url').value.trim() || DEFAULT_URL;
 
   document.getElementById('loading').classList.add('show');
   document.getElementById('fetch-status').textContent = 'FETCHING…';
