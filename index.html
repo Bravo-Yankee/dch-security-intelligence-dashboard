@@ -315,7 +315,6 @@
   }
 
   .kpi-card.critical::before { background: var(--red); }
-  .kpi-card.high::before { background: #d06010; }
   .kpi-card.medium::before { background: var(--accent); }
   .kpi-card.low::before { background: var(--green); }
   .kpi-card.total::before { background: var(--blue); }
@@ -339,7 +338,6 @@
   }
 
   .kpi-card.critical .kpi-value { color: var(--red); }
-  .kpi-card.high .kpi-value { color: #d06010; }
   .kpi-card.medium .kpi-value { color: var(--accent); }
   .kpi-card.low .kpi-value { color: var(--green); }
   .kpi-card.total .kpi-value { color: var(--blue); }
@@ -886,15 +884,10 @@
       <div class="kpi-value" id="kpi-critical">—</div>
       <div class="kpi-delta">immediate action</div>
     </div>
-    <div class="kpi-card high">
-      <div class="kpi-label">High</div>
-      <div class="kpi-value" id="kpi-high">—</div>
-      <div class="kpi-delta">escalated</div>
-    </div>
     <div class="kpi-card medium">
       <div class="kpi-label">Medium</div>
       <div class="kpi-value" id="kpi-medium">—</div>
-      <div class="kpi-delta">monitored</div>
+      <div class="kpi-delta">escalated</div>
     </div>
     <div class="kpi-card low">
       <div class="kpi-label">Low</div>
@@ -1251,8 +1244,7 @@ function renderKPIs(data) {
   const count = v => data.filter(i => i.severity === v).length;
   document.getElementById('kpi-total').textContent = data.length;
   document.getElementById('kpi-critical').textContent = count('Critical');
-  document.getElementById('kpi-high').textContent = count('High');
-  document.getElementById('kpi-medium').textContent = count('Medium');
+  document.getElementById('kpi-medium').textContent = count('High') + count('Medium');
   document.getElementById('kpi-low').textContent = count('Low');
   document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
 }
