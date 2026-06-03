@@ -118,13 +118,14 @@
     overflow: hidden; /* Prevent huge images from spilling out */
   }
 
-  /* Add this specific wizard rule to force proper image containment */
+  /* Force proper image containment inside top header */
   .logo-badge img {
     width: 100%;
     height: 100%;
     object-fit: cover; /* Ensures the image fills the 36x36 box perfectly without distorting */
     display: block;
   }
+  
   .header-title {
     font-family: var(--font-display);
     font-size: 24px;
@@ -739,7 +740,7 @@
     padding-bottom: 4px; letter-spacing: 1px;
   }
 
-  /* ── FOOTER STYLING & BRAIN ICON ── */
+  /* ── FOOTER STYLING ── */
   footer {
     padding: 12px 32px;
     border-top: 2px solid var(--border);
@@ -753,42 +754,10 @@
     background: var(--bg-panel);
   }
 
-  /* Target the container wrapping your footer icon */
-  .footer-credit {
+  .footer-left-content {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    color: var(--text-dim);
-    font-size: 11px;
-    font-family: var(--font-sans);
-  }
-
-  /* 🧠 The Wizard Fix: Force the brain icon to size and scale perfectly */
-  .footer-credit img, 
-  .footer-credit svg {
-    width: 14px;
-    height: 14px;
-    display: inline-block;
-    vertical-align: middle;
-    object-fit: contain;
-    /* Keeps your custom orange/accent theme coloring consistent if using inline SVG */
-    fill: var(--accent); 
-  }
-
-  .brain-icon {
-    height: 12px;
-    width: auto;
-    vertical-align: -1px;
-    margin-left: 2px;
-    transition: filter 0.2s ease;
-  }
-
-  :root[data-theme="light"] .brain-icon {
-    filter: brightness(0) saturate(100%) invert(7%) sepia(21%) saturate(1512%) hue-rotate(180deg) brightness(95%) contrast(100%);
-  }
-
-  :root[data-theme="dark"] .brain-icon {
-    filter: brightness(0) saturate(100%) invert(64%) sepia(16%) saturate(632%) hue-rotate(174deg) brightness(89%) contrast(85%);
+    gap: 4px;
   }
 
   /* ── LOADING OVERLAY ── */
@@ -867,7 +836,10 @@
 
 <header>
   <div class="header-left">
-    <div class="logo-badge">DCH</div>
+    <!-- 🖼️ Fixed top logo injection mapping to logo.png -->
+    <div class="logo-badge">
+      <img src="logo.png" alt="SOC Corporate Logo">
+    </div>
     <div>
       <div class="header-title">ZONE D — SECURITY OPERATIONS CENTRE</div>
       <div class="header-sub">Dubai Creek Harbour Zone D · 14 Communities · 204 Officers · 8008 Cameras</div>
@@ -1030,7 +1002,11 @@
 </div>
 
 <footer>
-  <span>DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY <img src="R.png" alt="Brain" class="brain-icon"></span>
+  <!-- 🧠 Overhauled with logo.png reference and compression-proof inline style logic -->
+  <span class="footer-left-content">
+    DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY 
+    <img src="logo.png" alt="Brain System Logo" style="width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; display: inline-block !important; flex-shrink: 0 !important; object-fit: contain !important; margin: 0 2px 0 4px; vertical-align: middle;">
+  </span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
 </footer>
@@ -1663,7 +1639,6 @@ async function fetchDubaiWeather() {
   } catch(e) { return { ok: false, error: e.message }; }
 }
 
-// Direction processing engine
 function getWindDir(deg) { return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8]; }
 function getWeatherCondition(code) {
   if (code === 0) return 'Clear skies';
