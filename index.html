@@ -753,6 +753,28 @@
     background: var(--bg-panel);
   }
 
+  /* Target the container wrapping your footer icon */
+  .footer-credit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-family: var(--font-sans);
+  }
+
+  /* 🧠 The Wizard Fix: Force the brain icon to size and scale perfectly */
+  .footer-credit img, 
+  .footer-credit svg {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: middle;
+    object-fit: contain;
+    /* Keeps your custom orange/accent theme coloring consistent if using inline SVG */
+    fill: var(--accent); 
+  }
+
   .brain-icon {
     height: 12px;
     width: auto;
