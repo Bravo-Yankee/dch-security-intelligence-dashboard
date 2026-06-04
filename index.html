@@ -26,28 +26,30 @@
     --text-sec:   #7a8fa8;
     --text-dim:   #3d5068;
     --scanline:   rgba(0,0,0,0.06);
+    --horse-color: #e8a020; /* Matches dark theme amber accent */
   }
 
   /* High-Contrast Cream & Velvet Navy Light Mode */
   :root[data-theme="light"] {
-    --bg-deep:    #f3eedf;         /* Warm warm-cream paper base (anti-glare) */
-    --bg-panel:   #eae3d2;         /* Solid contrast break for panels */
-    --bg-card:    #ffffff;         /* Crisp, high-contrast white surfaces */
-    --bg-hover:   #e2d9c3;         /* Distinct hover tracking state */
-    --border:     rgba(9,16,29,0.15); /* Sharper, darker component borders */
+    --bg-deep:    #f3eedf;         
+    --bg-panel:   #eae3d2;         
+    --bg-card:    #ffffff;         
+    --bg-hover:   #e2d9c3;         
+    --border:     rgba(9,16,29,0.15); 
     --border-bright: rgba(9,16,29,0.25);
-    --accent:     #b06600;         /* Deep burnt amber for distinct emphasis */
+    --accent:     #b06600;         
     --accent-dim: rgba(176,102,0,0.1);
-    --red:        #b81414;         /* Intense tactical red */
+    --red:        #b81414;         
     --red-dim:    rgba(184,20,20,0.1);
-    --green:      #066b2e;         /* High-legibility forest green */
+    --green:      #066b2e;         
     --green-dim:  rgba(6,107,46,0.1);
-    --blue:       #0f40b3;         /* Deep high-contrast blue */
+    --blue:       #0f40b3;         
     --blue-dim:   rgba(15,64,179,0.1);
-    --text-pri:   #09101d;         /* Velvet black-navy text for extreme legibility */
-    --text-sec:   #2b3a51;         /* Deep secondary text */
-    --text-dim:   #546681;         /* Readable captions and labels */
+    --text-pri:   #09101d;         
+    --text-sec:   #2b3a51;         
+    --text-dim:   #546681;         
     --scanline:   rgba(255,255,255,0.15);
+    --horse-color: #b06600; /* Matches light theme burnt amber accent */
   }
 
   :root {
@@ -182,6 +184,29 @@
     color: var(--text-sec);
     letter-spacing: 1px;
     margin-top: 2px;
+  }
+
+  /* ── VECTOR HORSE CSS KEYFRAMES ── */
+  @keyframes horseRun {
+    0% { stroke-dashoffset: 24; }
+    50% { opacity: 0.85; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  @keyframes horseGallop {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-1.5px) rotate(1deg); }
+    50% { transform: translateY(0.5px) rotate(-1deg); }
+    75% { transform: translateY(-1px) rotate(0.5deg); }
+  }
+
+  .animated-vector-horse {
+    animation: horseGallop 0.55s infinite ease-in-out;
+  }
+
+  .animated-vector-horse path {
+    stroke-dasharray: 12;
+    animation: horseRun 0.8s linear infinite;
   }
 
   /* ── CONFIG PANEL ── */
@@ -843,7 +868,6 @@
 </header>
 
 <div class="config-bar">
-  <label>GOOGLE SHEET URL</label>
   <input type="text" id="sheet-url" placeholder="Paste your Google Sheets published CSV URL here" />
   <label>RANGE</label>
   <select id="date-range">
@@ -989,7 +1013,9 @@
 <footer>
   <span class="footer-left-content">
     DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY 
-    <img src="logo.png" alt="System Logo" style="width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; display: inline-block !important; flex-shrink: 0 !important; object-fit: contain !important; margin: 0 2px 0 4px; vertical-align: middle;">
+    <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block !important; flex-shrink: 0 !important; margin: 0 3px 0 5px; vertical-align: middle;">
+      <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   </span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
