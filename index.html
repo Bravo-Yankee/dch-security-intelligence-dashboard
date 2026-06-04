@@ -103,29 +103,17 @@
   }
 
   .logo-badge {
-    width: 36px; 
-    height: 36px;
+    width: 36px; height: 36px;
     background: var(--accent);
     border-radius: 4px;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-family: var(--font-display);
     font-size: 18px;
     color: #000;
     letter-spacing: 0.5px;
     transition: background 0.3s ease;
-    overflow: hidden; /* Prevent huge images from spilling out */
   }
 
-  /* Force proper image containment inside top header */
-  .logo-badge img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensures the image fills the 36x36 box perfectly without distorting */
-    display: block;
-  }
-  
   .header-title {
     font-family: var(--font-display);
     font-size: 24px;
@@ -836,10 +824,7 @@
 
 <header>
   <div class="header-left">
-    <!-- 🖼️ Fixed top logo injection mapping to logo.png -->
-    <div class="logo-badge">
-      <img src="logo.png" alt="SOC Corporate Logo">
-    </div>
+    <div class="logo-badge">DCH</div>
     <div>
       <div class="header-title">ZONE D — SECURITY OPERATIONS CENTRE</div>
       <div class="header-sub">Dubai Creek Harbour Zone D · 14 Communities · 204 Officers · 8008 Cameras</div>
@@ -1002,10 +987,9 @@
 </div>
 
 <footer>
-  <!-- 🧠 Overhauled with logo.png reference and compression-proof inline style logic -->
   <span class="footer-left-content">
     DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY 
-    <img src="logo.png" alt="Brain System Logo" style="width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; display: inline-block !important; flex-shrink: 0 !important; object-fit: contain !important; margin: 0 2px 0 4px; vertical-align: middle;">
+    <img src="logo.png" alt="System Logo" style="width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; display: inline-block !important; flex-shrink: 0 !important; object-fit: contain !important; margin: 0 2px 0 4px; vertical-align: middle;">
   </span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
@@ -1085,8 +1069,8 @@ updateClock();
 
 // ── FETCH FROM GOOGLE SHEETS ──
 async function fetchData() {
-  const DEFAULT_URL = 'https://docs.google.com/spreadsheets/d/1xsYryU9GdBbN4njvtxy9PGETZzVBGasFhCyEE5Ga7dQ/export?format=csv&gid=1090631214';
-  const url = document.getElementById('sheet-url').value.trim() || DEFAULT_URL;
+  const url = document.getElementById('sheet-url').value.trim();
+  if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
 
   document.getElementById('loading').classList.add('show');
   document.getElementById('fetch-status').textContent = 'FETCHING…';
