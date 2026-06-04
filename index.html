@@ -1,641 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dubai Creek Harbour — Security Operations Centre</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-  :root[data-theme="dark"] {
-    --bg-deep:    #090d12;
-    --bg-panel:   #0e1520;
-    --bg-card:    #131d2b;
-    --bg-hover:   #1a2638;
-    --border:     rgba(255,255,255,0.07);
-    --border-bright: rgba(255,255,255,0.14);
-    --accent:     #e8a020;
-    --accent-dim: rgba(232,160,32,0.15);
-    --red:        #e84040;
-    --red-dim:    rgba(232,64,64,0.15);
-    --green:      #34c77b;
-    --green-dim:  rgba(52,199,123,0.12);
-    --blue:       #3a8fe8;
-    --blue-dim:   rgba(58,143,232,0.12);
-    --text-pri:   #e8edf5;
-    --text-sec:   #7a8fa8;
-    --text-dim:   #3d5068;
-    --scanline:   rgba(0,0,0,0.06);
-    --horse-color: #e8a020;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Operations Dashboard</title>
+  <style>
+    :root {
+      --bg-main: #0f1115;
+      --bg-card: #161920;
+      --bg-card-hover: #1c212a;
+      --border-color: #242936;
+      --text-main: #e2e8f0;
+      --text-dim: #718096;
+      --primary: #38bdf8;
+      
+      /* Severity Colors */
+      --severity-high: #f97316;   /* Orange */
+      --severity-medium: #f97316; /* Orange */
+      --severity-low: #22c55e;    /* Green */
+      
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
 
-  :root[data-theme="light"] {
-    --bg-deep:    #f3eedf;         
-    --bg-panel:   #eae3d2;         
-    --bg-card:    #ffffff;         
-    --bg-hover:   #e2d9c3;         
-    --border:     rgba(9,16,29,0.15); 
-    --border-bright: rgba(9,16,29,0.25);
-    --accent:     #b06600;         
-    --accent-dim: rgba(176,102,0,0.1);
-    --red:        #b81414;         
-    --red-dim:    rgba(184,20,20,0.1);
-    --green:      #066b2e;         
-    --green-dim:  rgba(6,107,46,0.1);
-    --blue:       #0f40b3;         
-    --blue-dim:   rgba(15,64,179,0.1);
-    --text-pri:   #09101d;         
-    --text-sec:   #2b3a51;         
-    --text-dim:   #546681;         
-    --scanline:   rgba(255,255,255,0.15);
-    --horse-color: #b06600;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  :root {
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-mono:    'DM Mono', monospace;
-    --font-body:    'DM Sans', sans-serif;
-    --r:          6px;
-  }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px;
+      line-height: 1.5;
+    }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
 
-  body {
-    font-family: var(--font-body);
-    background: var(--bg-deep);
-    color: var(--text-pri);
-    min-height: 100vh;
-    overflow-x: hidden;
-    transition: background 0.2s ease, color 0.2s ease;
-  }
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scanline) 2px, var(--scanline) 4px);
-    pointer-events: none;
-    z-index: 9999;
-  }
+    .header-badge {
+      background: #1e293b;
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
 
-  header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    padding: 16px 32px;
-    border-bottom: 2px solid var(--border);
-    background: var(--bg-panel);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
 
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .logo-badge {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-display);
-    font-size: 18px;
-    color: #000;
-    letter-spacing: 0.5px;
-  }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      border-radius: 6px;
+    }
 
-  .header-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 2px; color: var(--text-pri); line-height: 1; }
-  .header-sub { font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; font-family: var(--font-mono); }
-  .header-center { text-align: center; }
-  .live-indicator { display: inline-flex; align-items: center; gap: 7px; background: var(--green-dim); border: 1px solid var(--green); border-radius: 20px; padding: 4px 12px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--green); letter-spacing: 1px; }
-  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse-green 2s infinite; }
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
 
-  @keyframes pulse-green { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
-  .header-right { text-align: right; }
-  #live-clock { font-family: var(--font-display); font-size: 30px; letter-spacing: 2px; color: var(--accent); line-height: 1; }
-  .clock-date { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1px; margin-top: 2px; }
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
 
-  @keyframes horseRun { 0% { stroke-dashoffset: 24; } 100% { stroke-dashoffset: 0; } }
-  @keyframes horseGallop { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-1.5px) rotate(1deg); } 50% { transform: translateY(0.5px) rotate(-1deg); } 75% { transform: translateY(-1px) rotate(0.5deg); } }
-  .animated-vector-horse { animation: horseGallop 0.55s infinite ease-in-out; }
-  .animated-vector-horse path { stroke-dasharray: 12; animation: horseRun 0.8s linear infinite; }
+    .metric-value.high-med { color: var(--severity-high); }
+    .metric-value.low { color: var(--severity-low); }
 
-  .config-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 10px 32px; background: var(--bg-panel); border-bottom: 2px solid var(--border); font-size: 12px; }
-  .config-bar label { color: var(--text-pri); font-family: var(--font-mono); font-weight: 600; letter-spacing: 1px; font-size: 10px; text-transform: uppercase; }
-  .config-bar input, .config-bar select { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); color: var(--text-pri); padding: 6px 10px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; outline: none; }
-  .config-bar input:focus, .config-bar select:focus { border-color: var(--accent); }
-  .config-bar input[type="text"] { width: 320px; max-width: 100%; }
+    /* Dashboard Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
 
-  .btn-fetch { background: var(--text-pri); color: var(--bg-card); border: none; border-radius: var(--r); padding: 7px 18px; font-family: var(--font-body); font-weight: 600; font-size: 12px; cursor: pointer; }
-  .btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-demo { background: var(--bg-card); color: var(--text-sec); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 7px 18px; font-family: var(--font-body); font-weight: 500; font-size: 12px; cursor: pointer; }
-  .btn-demo:hover { color: var(--text-pri); border-color: var(--text-pri); }
-  .btn-theme-toggle { background: var(--bg-card); color: var(--text-pri); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 7px 14px; font-family: var(--font-mono); font-weight: 600; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    @media (min-width: 992px) {
+      .dashboard-layout {
+        grid-template-columns: 450px 1fr;
+      }
+    }
 
-  main { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
-  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 16px; position: relative; overflow: hidden; }
-  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-  .kpi-card.critical::before { background: var(--red); }
-  .kpi-card.medium::before { background: var(--accent); }
-  .kpi-card.low::before { background: var(--green); }
-  .kpi-card.total::before { background: var(--blue); }
-  .kpi-card.active::before { background: #7326cc; }
+    /* Panel Components */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 8px; }
-  .kpi-value { font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: 1px; }
-  .kpi-card.critical .kpi-value { color: var(--red); }
-  .kpi-card.medium .kpi-value { color: var(--accent); }
-  .kpi-card.low .kpi-value { color: var(--green); }
-  .kpi-card.total .kpi-value { color: var(--blue); }
-  .kpi-card.active .kpi-value { color: #7326cc; }
-  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
+    .panel-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-  .main-grid { display: grid; grid-template-columns: 1fr 1fr 360px; gap: 16px; }
-  .panel { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; }
-  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
-  .panel-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
-  .panel-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-  .chart-wrap { padding: 16px; height: 220px; position: relative; }
-  
-  .heatmap-scroll-area { 
-    max-height: 380px; 
-    overflow-y: auto; 
-    scrollbar-width: thin;
-  }
-  .zone-grid { 
-    padding: 16px; 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-    gap: 12px; 
-  }
-  .zone-cell { border-radius: var(--r); padding: 14px 12px; position: relative; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.12s; min-height: 82px; display: flex; flex-direction: column; justify-content: space-between; }
-  .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
-  .zone-name { font-size: 11px; font-weight: 600; color: var(--text-pri); margin-bottom: 4px; position: relative; z-index: 1; letter-spacing: 0.3px; line-height: 1.3; text-transform: uppercase; }
-  .zone-count { font-family: var(--font-display); font-size: 32px; line-height: 1; position: relative; z-index: 1; margin-top: auto; }
-  .zone-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
+    /* Feed Layout */
+    .feed-container {
+      max-height: 600px;
+      overflow-y: auto;
+    }
 
-  .feed-list { max-height: 380px; overflow-y: auto; scrollbar-width: thin; }
-  .feed-item { padding: 12px 18px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; cursor: pointer; }
-  .feed-item:hover { background: var(--bg-panel); }
+    .feed-item {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
 
-  .severity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
-  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
-  .severity-dot.high { background: #d06010; }
-  .severity-dot.medium { background: var(--accent); }
-  .severity-dot.low { background: var(--green); }
-  @keyframes pulse-red { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.8); opacity: 0.6; } }
+    .feed-item:hover {
+      background: var(--bg-card-hover);
+    }
 
-  .feed-type { font-size: 13px; font-weight: 600; color: var(--text-pri); }
-  .feed-summary { font-size: 12px; color: var(--text-sec); margin-top: 3px; line-height: 1.4; }
-  .feed-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-  .tag { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
-  .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
-  .tag.type { color: var(--accent); background: var(--accent-dim); border-color: rgba(176,102,0,0.2); }
+    .severity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
 
-  .feed-time {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    white-space: nowrap;
-    text-align: right;
-    min-width: 65px;
-  }
+    .severity-dot.high, .severity-dot.medium { background-color: var(--severity-high); }
+    .severity-dot.low { background-color: var(--severity-low); }
 
-  .bottom-grid { display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 16px; }
+    .feed-type {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
 
-  .slide-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s; }
-  .slide-backdrop.show { opacity: 1; visibility: visible; }
-  .slide-panel { position: fixed; top: 0; right: -420px; width: 420px; height: 100vh; background: var(--bg-card); border-left: 2px solid var(--border); z-index: 1011; display: flex; flex-direction: column; transition: right 0.2s ease; }
-  .slide-backdrop.show .slide-panel { right: 0; }
-  .slide-header { padding: 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .slide-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 1px; color: var(--text-pri); }
-  .slide-close { background: none; border: none; color: var(--text-sec); font-size: 22px; cursor: pointer; }
-  .slide-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px; }
-  .slide-sub-title { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); padding-bottom: 4px; letter-spacing: 1px; }
+    .feed-summary {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
-  .profile-incident-row { padding: 10px 8px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s ease; border-radius: 4px; }
-  .profile-incident-row:hover { background: var(--bg-panel); }
+    .feed-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-  footer { padding: 12px 32px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); background: var(--bg-panel); }
-  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
+    .tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .tag.zone { color: var(--primary); }
 
-  .loading-overlay { position: fixed; inset: 0; background: rgba(243,238,223,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; display: none; }
-  .loading-overlay.show { display: flex; }
-  .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
+    .feed-time {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
 
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; display: none; align-items: center; justify-content: center; }
-  .modal-backdrop.show { display: flex; }
-  .modal { background: var(--bg-card); border: 2px solid var(--text-pri); border-radius: 6px; width: 540px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
-  .modal-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); }
-  .modal-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; }
-  .modal-close { background: none; border: none; color: var(--text-sec); font-size: 18px; cursor: pointer; }
-  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-  .modal-field label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 4px; letter-spacing: 0.5px; }
-  .modal-field p { font-size: 13px; line-height: 1.5; color: var(--text-pri); }
-  .actions-list { padding-left: 16px; font-size: 13px; color: var(--text-pri); line-height: 1.5; }
-</style>
+    /* Details Panel / Analytics Placeholder */
+    .details-placeholder {
+      padding: 40px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    /* Shift Info Panel */
+    .shift-box {
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 6px;
+      margin: 16px;
+      border: 1px dashed var(--border-color);
+    }
+
+    .shift-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .brain-icon {
+      font-size: 16px;
+      filter: grayscale(30%);
+    }
+  </style>
 </head>
 <body>
 
   <header>
-    <div class="header-left">
-      <div class="logo-badge">SOC</div>
-      <div>
-        <div class="header-title">DUBAI CREEK HARBOUR</div>
-        <div class="header-sub">COMMUNITY SECURITY MONITOR</div>
-      </div>
+    <div class="header-title">
+      <h1>Security Operations Center</h1>
     </div>
-    <div class="header-center">
-      <div class="live-indicator">
-        <div class="live-dot"></div>
-        <span>GST OPERATIONAL LIVE FEED</span>
-      </div>
-    </div>
-    <div class="header-right">
-      <div id="live-clock">00:00:00</div>
-      <div class="clock-date" id="live-date">Loading GST Clock...</div>
-    </div>
+    <!-- Changed header section badge text to LIVE MONITORING -->
+    <div class="header-badge">LIVE MONITORING</div>
   </header>
 
-  <div class="config-bar">
-    <label for="sheet-url">Google Sheets Export URL:</label>
-    <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv" value="">
-    <button class="btn-fetch" id="btn-trigger" onclick="fetchData()">FETCH LOGS</button>
-    <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO DATA</button>
-    <select id="date-range" onchange="renderAll()" style="margin-left:8px;">
-      <option value="1">Filter: Last 24 Hours</option>
-      <option value="3">Filter: Last 3 Days</option>
-      <option value="7" selected>Filter: Last 7 Days</option>
-      <option value="30">Filter: Last 30 Days</option>
-    </select>
-    <button class="btn-theme-toggle" onclick="toggleTheme()" id="theme-toggler">
-      <span>🌙</span> <span id="theme-text">Dark Mode</span>
-    </button>
-    <div class="fetch-status" id="fetch-status">STANDBY · INITIAL CONFIGURATION REQUIRED</div>
+  <!-- Incident Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Total Logs</div>
+      <div id="metric-total" class="metric-value">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">High & Medium Severity</div>
+      <div id="metric-high-med" class="metric-value high-med">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Low Severity</div>
+      <div id="metric-low" class="metric-value low">—</div>
+    </div>
   </div>
 
-  <main>
-    <div class="kpi-row">
-      <div class="kpi-card total">
-        <div class="kpi-label">Total Logs (Scope)</div>
-        <div class="kpi-value" id="kpi-total">—</div>
-        <div class="kpi-delta">Filtered range data</div>
+  <!-- Main Workspace Layout -->
+  <div class="dashboard-layout">
+    
+    <!-- Left Hand Feed -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Activity Stream</div>
       </div>
-      <div class="kpi-card critical">
-        <div class="kpi-label">Critical Incidents</div>
-        <div class="kpi-value" id="kpi-crit">—</div>
-        <div class="kpi-delta">Immediate response</div>
-      </div>
-      <div class="kpi-card medium">
-        <div class="kpi-label">High/Medium Risk</div>
-        <div class="kpi-value" id="kpi-high-med">—</div>
-        <div class="kpi-delta">Orange warning threshold</div>
-      </div>
-      <div class="kpi-card low">
-        <div class="kpi-label">Low Severity Logs</div>
-        <div class="kpi-value" id="kpi-low">—</div>
-        <div class="kpi-delta">Routine / Green tag</div>
-      </div>
-      <div class="kpi-card active">
-        <div class="kpi-label">Active Handover Actions</div>
-        <div class="kpi-value" id="kpi-actions">—</div>
-        <div class="kpi-delta">Requiring supervisor trace</div>
+      <div id="feed-container" class="feed-container">
+        <!-- Live elements inject here -->
       </div>
     </div>
 
-    <div class="main-grid">
-      <div class="panel" style="grid-column: span 2;">
-        <div class="panel-header">
-          <div class="panel-title">INCIDENT TIMELINE DENSITY TREND</div>
-          <div class="panel-badge">Chart.js Component</div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="timelineChart"></canvas>
-        </div>
+    <!-- Right Hand System Analysis & Context -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Operational Shifts & Context</div>
+      </div>
+      
+      <!-- Current Two-Shift Operational Structure Setup -->
+      <div class="shift-box">
+        <div class="shift-title">Morning Shift Operations</div>
+        <p style="font-size: 13px; color: var(--text-main);">07:00 – 19:00 (Handover window active at 18:45)</p>
       </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">DISTRIBUTION BY RISK CLASSIFICATION</div>
-          <div class="panel-badge">Severity Volume</div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="severityChart"></canvas>
-        </div>
+      <div class="shift-box">
+        <div class="shift-title">Night Shift Operations</div>
+        <p style="font-size: 13px; color: var(--text-main);">19:00 – 07:00 (Handover window active at 06:45)</p>
+      </div>
+
+      <div id="details-view" class="details-placeholder">
+        Select an incident from the stream to load full operational metadata records.
       </div>
     </div>
 
-    <div class="bottom-grid">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">LIVE MONITORING</div>
-          <div class="panel-badge">Real-Time</div>
-        </div>
-        <div class="feed-list" id="feed-container">
-          <div style="padding:24px; text-align:center; color:var(--text-dim); font-size:12px; font-family:var(--font-mono);">No telemetry data parsed. Please trigger fetch pipeline.</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">ZONE INCIDENT DENSITY HEATMAP</div>
-          <div class="panel-badge">Density Color Map</div>
-        </div>
-        <div class="heatmap-scroll-area">
-          <div class="zone-grid" id="zone-container">
-            <div style="text-align:center; color:var(--text-dim); padding:24px; font-size:12px; font-family:var(--font-mono);">Map offline. Waiting for data...</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <div class="slide-backdrop" id="slide-backdrop" onclick="closeSlidePanel()">
-    <div class="slide-panel" onclick="event.stopPropagation()">
-      <div class="slide-header">
-        <div class="slide-title" id="slide-zone-name">ZONE PROFILE</div>
-        <button class="slide-close" onclick="closeSlidePanel()">✕</button>
-      </div>
-      <div class="slide-body" id="slide-zone-body"></div>
-    </div>
   </div>
 
   <footer>
-    <div class="footer-left-content">
-      <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 18c0-1.5 1-2.5 2-2.5h2.5c.8 0 1.5-.7 1.5-1.5v-1c0-.8.7-1.5 1.5-1.5h1.3c.5 0 1-.2 1.4-.6l2.4-2.4c.4-.4.6-.9.6-1.4V5c0-.6-.4-1-1-1h-1.2c-.5 0-1 .2-1.4.6L11 6.8c-.4.4-.6.9-.6 1.4v.6H8.5C6 8.8 4 10.8 4 13.3V18z"/>
-        <path d="M11 14h2"/>
-        <path d="M7 18v3"/>
-        <path d="M10 18v2"/>
-        <path d="M14 15v5"/>
-        <path d="M17 14v6"/>
-      </svg>
-      <span>DUBAI CREEK HARBOUR MODEL INFRASTRUCTURE CORE · SECURITY TELEMETRY SYSTEM</span>
-    </div>
-    <span>SHIFT HANDOVER: EVERY 12H AT 07:00 & 19:00</span>
-    <span id="last-refresh">LAST REFRESH: —</span>
+    <div>DCH Security Automation Pipeline</div>
+    <!-- Replaced text with brain symbol icon -->
+    <div class="brain-icon">🧠</div>
   </footer>
 
-  <div class="loading-overlay" id="loading">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">FETCHING SECURITY DATA…</div>
-  </div>
-
-  <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title" id="modal-title">INCIDENT DETAIL</div>
-        <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
-      </div>
-      <div class="modal-body" id="modal-body"></div>
-    </div>
-  </div>
-
+  <!-- Mock Data Data Layer & Core Rendering Logic -->
   <script>
-    let allIncidents = [];
-    let charts = { timeline: null, severity: null };
-
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeTogglerUI(savedTheme);
-    }
-
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeTogglerUI(newTheme);
-      if (allIncidents.length) renderAll();
-    }
-
-    function updateThemeTogglerUI(theme) {
-      const toggler = document.getElementById('theme-toggler');
-      const txt = document.getElementById('theme-text');
-      if (theme === 'dark') {
-        toggler.querySelector('span:first-child').textContent = '🌙';
-        txt.textContent = 'Dark Mode';
-      } else {
-        toggler.querySelector('span:first-child').textContent = '☀️';
-        txt.textContent = 'Light Mode';
+    // Master log collection
+    let allIncidents = [
+      {
+        timestamp: "2026-06-04T08:14:00Z",
+        incident_type: "Access Control",
+        summary: "Contractor vehicle attempted entry without valid gate pass clearance at Gate 2.",
+        location_zone: "Zone B",
+        sender: "Supervisor Alpha",
+        severity: "Low"
+      },
+      {
+        timestamp: "2026-06-04T14:32:00Z",
+        incident_type: "System Alert",
+        summary: "CCTV Node 14 lost telemetry verification ping across the perimeter edge layer.",
+        location_zone: "Zone A",
+        sender: "System Event",
+        severity: "Medium"
+      },
+      {
+        timestamp: "2026-06-04T21:05:00Z",
+        incident_type: "Fire Alarm",
+        summary: "Spurious fire alarm panel trip triggered at Mechanical Room 3. Investigation confirmed clean.",
+        location_zone: "Zone C",
+        sender: "Supervisor Night",
+        severity: "High"
       }
+    ];
+
+    function formatTime(isoString) {
+      const d = new Date(isoString);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     }
 
-    function getGSTDateTime(timestampStr = null) {
-      let date = timestampStr ? new Date(timestampStr) : new Date();
-      if (timestampStr && !isNaN(timestampStr) && !timestampStr.includes('T') && !timestampStr.includes('Z')) {
-        if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}/.test(timestampStr.trim())) {
-          date = new Date(timestampStr.trim().replace(' ', 'T') + '+04:00');
-        }
-      }
-      const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-      const gstDate = new Date(utc + (3600000 * 4));
-      return { gstDate, hour: gstDate.getHours(), timeStr: gstDate.toLocaleTimeString('en-AE', {hour12:false}), dateStr: gstDate.toLocaleDateString('en-AE', {weekday:'short', year:'numeric', month:'short', day:'numeric'}) };
-    }
+    function calculateMetrics(data) {
+      const total = data.length;
+      const highMed = data.filter(i => i.severity === 'High' || i.severity === 'Medium').length;
+      const low = data.filter(i => i.severity === 'Low').length;
 
-    function updateLiveClock() {
-      const { timeStr, dateStr } = getGSTDateTime();
-      document.getElementById('live-clock').textContent = timeStr;
-      document.getElementById('live-date').textContent = dateStr + ' (GST)';
-    }
-    setInterval(updateLiveClock, 1000);
-    updateLiveClock();
-
-    function sortIncidentsDescending(arr) {
-      arr.sort((a, b) => {
-        const dA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-        const dB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return dB - dA; // Newest timestamps will bubble up directly to index 0
-      });
-    }
-
-    async function fetchData() {
-      const inputUrl = document.getElementById('sheet-url').value.trim();
-      if(!inputUrl) {
-        alert('Please enter a valid Google Sheets published CSV URL.');
-        return;
-      }
-      document.getElementById('loading').classList.add('show');
-      
-      const endpoints = [
-        inputUrl,
-        inputUrl.replace(/\/edit.*$/, '/export?format=csv'),
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(inputUrl)}`
-      ];
-
-      let success = false;
-      let lastError = '';
-
-      for (let url of endpoints) {
-        try {
-          const res = await fetch(url);
-          if(!res.ok) throw new Error(`HTTP network code ${res.status}`);
-          const text = await res.text();
-          if(!text || text.trim().startsWith('<!DOCTYPE')) throw new Error("Parsed HTML template string error.");
-          
-          allIncidents = parseCSV(text);
-          sortIncidentsDescending(allIncidents);
-          
-          success = true;
-          const { timeStr } = getGSTDateTime();
-          document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} INCIDENTS · ${timeStr}`;
-          document.getElementById('last-refresh').textContent = 'LAST REFRESH: ' + timeStr;
-          document.getElementById('loading').classList.remove('show');
-          renderAll();
-          return;
-        } catch(e) {
-          lastError = e.message;
-          continue;
-        }
-      }
-      document.getElementById('loading').classList.remove('show');
-      document.getElementById('fetch-status').textContent = 'FETCH FAILED';
-      alert('Could not fetch data pipeline elements. Check sharing accessibility configurations.');
-    }
-
-    function parseCSV(text) {
-      const lines = text.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-      return lines.slice(1).map(line => {
-        const vals = parseCSVLine(line);
-        const obj = {};
-        headers.forEach((h,i) => obj[h] = (vals[i] || '').replace(/"/g,'').trim());
-        if (obj.timestamp) {
-          const { hour } = getGSTDateTime(obj.timestamp);
-          if (hour >= 7 && hour < 19) {
-            obj.shift = 'Morning Shift (07:00-19:00)';
-          } else {
-            obj.shift = 'Night Shift (19:00-07:00)';
-          }
-          const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-          const { gstDate } = getGSTDateTime(obj.timestamp);
-          obj.day_of_week = days[gstDate.getDay()];
-        }
-        return obj;
-      }).filter(r => r.timestamp || r.incident_type);
-    }
-
-    function parseCSVLine(line) {
-      const result = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i=0; i<line.length; i++) {
-        const char = line[i];
-        if (char === '"') { inQuotes = !inQuotes; }
-        else if (char === ',' && !inQuotes) { result.push(current); current = ''; }
-        else { current += char; }
-      }
-      result.push(current);
-      return result;
-    }
-
-    function loadDemoData() {
-      const officers = ['Alpha-1','Bravo-2','Charlie-1','Super-Control','Mobile-Patrol-1'];
-      const types = ['Access Control Violation','Suspicious Package','Fire Alarm Trigger','Intruder Breach','CCTV Camera Offline','Medical Emergency','Traffic Gridlock','Property Damage'];
-      const severities = ['Critical','High','Medium','Low'];
-      const zones = ['Marina Walk','Creek Horizon','Harbour Gate','Central Park','Retail Boulevard','Island Park','Creek Promenade','Creek Beach','View Residences','Grand Pavilion','Lotus','Creek Edge','Palace Residences','The Cove','Breeze'];
-      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-      const summaries = [
-        'Contractor vehicle unauthorized entry through gate barrier alpha.',
-        'Unattended delivery bag spotted near promenade bench structure.',
-        'Smoke detector loop 4 activated in mechanical area basement B2.',
-        'Tailgating event registered by automated perimeter beam array.',
-        'Signal drop out on high altitude thermal imaging cluster.',
-        'Visitor slip and fall injury reported near water fountain features.',
-        'Delivery obstruction blocking logistics lane bypass track.',
-        'Spontaneous structural glass failure on facade panel element.',
-      ];
-
-      allIncidents = [];
-      const { gstDate: currentGst } = getGSTDateTime();
-      for (let i = 0; i < 150; i++) {
-        const d = new Date(currentGst.getTime() - Math.random() * 7 * 86400000);
-        const hour = d.getHours();
-        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
-        const sev = severities[Math.floor(Math.random() * severities.length)];
-        
-        allIncidents.push({
-          message_id: 'DEMO_' + i,
-          timestamp: d.toISOString(),
-          sender: officers[Math.floor(Math.random() * officers.length)],
-          shift: shift,
-          day_of_week: days[d.getDay()],
-          incident_type: types[Math.floor(Math.random() * types.length)],
-          severity: sev,
-          location_zone: zones[Math.floor(Math.random() * zones.length)],
-          summary: summaries[Math.floor(Math.random() * summaries.length)],
-          action_required: (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: sev === 'Critical' ? 'Contact supervisor; Dispatch additional officers; Review CCTV' : '',
-          confidence: (0.75 + Math.random() * 0.24).toFixed(2)
-        });
-      }
-      sortIncidentsDescending(allIncidents);
-      document.getElementById('fetch-status').textContent = `DEMO DATA · ${allIncidents.length} INCIDENTS LOADED`;
-      const { timeStr } = getGSTDateTime();
-      document.getElementById('last-refresh').textContent = 'LAST REFRESH: ' + timeStr;
-      renderAll();
-    }
-
-    function getFilteredIncidents() {
-      const daysScope = parseInt(document.getElementById('date-range').value);
-      const { gstDate: limitGst } = getGSTDateTime();
-      const limitMs = limitGst.getTime() - (daysScope * 86400000);
-      return allIncidents.filter(inc => {
-        if(!inc.timestamp) return false;
-        const incMs = new Date(inc.timestamp).getTime();
-        return incMs >= limitMs;
-      });
-    }
-
-    function renderAll() {
-      const data = getFilteredIncidents();
-      renderKPIs(data);
-      renderTimeline(data);
-      renderSeverityPie(data);
-      renderFeed(data);
-      renderHeatmap(data);
-    }
-
-    function renderKPIs(data) {
-      document.getElementById('kpi-total').textContent = data.length;
-      document.getElementById('kpi-crit').textContent = data.filter(i => i.severity === 'Critical').length;
-      
-      const highMedCount = data.filter(i => i.severity === 'High' || i.severity === 'Medium').length;
-      document.getElementById('kpi-high-med').textContent = highMedCount;
-      
-      document.getElementById('kpi-low').textContent = data.filter(i => i.severity === 'Low').length;
-      
-      const actionCount = data.filter(i => i.action_required === 'TRUE' || i.action_required === 'true').length;
-      document.getElementById('kpi-actions').textContent = actionCount;
-    }
-
-    function formatTime(ts) {
-      if (!ts) return '—';
-      const d = new Date(ts);
-      if (isNaN(d.getTime())) return '—';
-      
-      const { gstDate: nowGst } = getGSTDateTime();
-      const { gstDate: itemGst } = getGSTDateTime(ts);
-      const diff = nowGst - itemGst;
-
-      if (diff < 0 || diff > 86400000 * 30) {
-        return itemGst.toLocaleDateString('en-AE', { day: 'numeric', month: 'short' });
-      }
-
-      const diffMins = Math.floor(diff / 60000);
-      const diffHours = Math.floor(diff / 3600000);
-
-      if (diffMins < 60) {
-        return diffMins + 'm ago';
-      } else if (diffHours < 12) {
-        return diffHours + 'h ago';
-      } else {
-        return itemGst.toLocaleDateString('en-AE', { day: 'numeric', month: 'short' });
-      }
+      document.getElementById('metric-total').innerText = total;
+      document.getElementById('metric-high-med').innerText = highMed;
+      document.getElementById('metric-low').innerText = low;
     }
 
     function renderFeed(data) {
@@ -644,11 +367,16 @@
         container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--text-dim); font-size:12px; font-family:var(--font-mono);">No incident objects found.</div>';
         return;
       }
-      container.innerHTML = data.map((inc, index) => {
+      
+      // Clear container template text
+      container.innerHTML = '';
+      
+      // Loop through data array and append elements to match natural chronological flow
+      data.forEach((inc) => {
         const dotClass = (inc.severity || 'Low').toLowerCase();
         const masterIndex = allIncidents.indexOf(inc);
         
-        return `
+        const feedCardHTML = `
           <div class="feed-item" onclick="openModal(${masterIndex})">
             <div class="severity-dot ${dotClass}"></div>
             <div>
@@ -662,254 +390,37 @@
             <div class="feed-time">${formatTime(inc.timestamp)}</div>
           </div>
         `;
-      }).join('');
-    }
-
-    function renderTimeline(data) {
-      const days = parseInt(document.getElementById('date-range').value);
-      const buckets = {};
-      const { gstDate: nowGst } = getGSTDateTime();
-      
-      for (let i = Math.min(days, 30) - 1; i >= 0; i--) {
-        const d = new Date(nowGst.getTime() - i * 86400000);
-        const key = d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
-        buckets[key] = { Critical:0, High:0, Medium:0, Low:0 };
-      }
-
-      data.forEach(inc => {
-        if (inc.timestamp) {
-          const { gstDate } = getGSTDateTime(inc.timestamp);
-          const key = gstDate.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
-          if (buckets[key]) buckets[key][inc.severity] = (buckets[key][inc.severity] || 0) + 1;
-        }
-      });
-
-      const labels = Object.keys(buckets);
-      const makeDS = (sev, color, borderColor) => ({
-        label: sev,
-        data: labels.map(l => buckets[l][sev] || 0),
-        backgroundColor: color,
-        borderColor: borderColor,
-        borderWidth: 1.5,
-        borderRadius: 3,
-        stack: 'stack'
-      });
-
-      const theme = document.documentElement.getAttribute('data-theme');
-      const textDark = '#09101d';
-      const tickColor = theme === 'light' ? textDark : '#7a8fa8';
-      const gridColor = theme === 'light' ? 'rgba(9,16,29,0.08)' : 'rgba(255,255,255,0.04)';
-
-      if (charts.timeline) charts.timeline.destroy();
-      const ctx = document.getElementById('timelineChart').getContext('2d');
-      charts.timeline = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            makeDS('Critical', '#e84040', '#e84040'),
-            makeDS('High', '#d06010', '#d06010'),
-            makeDS('Medium', '#e8a020', '#e8a020'),
-            makeDS('Low', '#34c77b', '#34c77b')
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { stacked: true, grid: { display: false }, ticks: { color: tickColor, font: { family: 'DM Mono', size: 10 } } },
-            y: { stacked: true, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: 'DM Mono', size: 10 } } }
-          }
-        }
-      });
-    }
-
-    function renderSeverityPie(data) {
-      const crit = data.filter(i => i.severity === 'Critical').length;
-      const high = data.filter(i => i.severity === 'High').length;
-      const med = data.filter(i => i.severity === 'Medium').length;
-      const low = data.filter(i => i.severity === 'Low').length;
-
-      if (charts.severity) charts.severity.destroy();
-      const ctx = document.getElementById('severityChart').getContext('2d');
-      
-      const theme = document.documentElement.getAttribute('data-theme');
-      const borderThemeColor = theme === 'light' ? '#ffffff' : '#131d2b';
-
-      charts.severity = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Critical', 'High', 'Medium', 'Low'],
-          datasets: [{
-            data: [crit, high, med, low],
-            backgroundColor: ['#e84040', '#d06010', '#e8a020', '#34c77b'],
-            borderColor: borderThemeColor,
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          cutout: '72%'
-        }
-      });
-    }
-
-    function renderHeatmap(data) {
-      const container = document.getElementById('zone-container');
-      const zonesMap = {};
-      data.forEach(inc => {
-        if(inc.location_zone) zonesMap[inc.location_zone] = (zonesMap[inc.location_zone] || 0) + 1;
-      });
-
-      const entries = Object.entries(zonesMap);
-      if(!entries.length) {
-        container.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:24px; font-size:12px; font-family:var(--font-mono);">No spatial metrics parsed.</div>';
-        return;
-      }
-
-      const max = Math.max(...entries.map(e=>e[1]));
-      const theme = document.documentElement.getAttribute('data-theme');
-
-      const colorsDark = [
-        ['rgba(58,143,232,0.05)', '#224466'],
-        ['rgba(232,160,32,0.08)', '#885511'],
-        ['rgba(208,96,16,0.12)',  '#b04000'],
-        ['rgba(232,64,64,0.18)',  '#cc2222']
-      ];
-
-      const colorsLight = [
-        ['rgba(15,64,179,0.05)',  '#3a8fe8'],
-        ['rgba(176,102,0,0.08)',  '#e8a020'],
-        ['rgba(160,50,0,0.12)',   '#d06010'],
-        ['rgba(184,20,20,0.16)',  '#e84040']
-      ];
-
-      const colors = theme === 'light' ? colorsLight : colorsDark;
-
-      container.innerHTML = entries.map(([zone, count]) => {
-        const intensity = max > 0 ? (count / max) : 0;
-        const ci = Math.min(Math.floor(intensity * colors.length), colors.length - 1);
-        const [bg, bar] = colors[ci];
-        const cleanZone = zone.replace(/'/g, "\\'");
-        return `
-          <div class="zone-cell" style="background:${bg}; border-color:${bar};" onclick="showZonePanel('${cleanZone}')">
-            <div class="zone-name">${zone}</div>
-            <div class="zone-count" style="color:${bar}">${count}</div>
-            <div class="zone-bar" style="background:${bar}"></div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function showZonePanel(zoneName) {
-      document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — PROFILE';
-      const data = getFilteredIncidents();
-      const zoneIncidents = data.filter(i => i.location_zone === zoneName);
-      
-      // Secondary absolute timestamp descending sort execution context protection
-      sortIncidentsDescending(zoneIncidents);
-      
-      const bodyEl = document.getElementById('slide-zone-body');
-      if(!zoneIncidents.length) {
-        bodyEl.innerHTML = '<div class="empty-state">No records found.</div>';
-      } else {
-        const total = zoneIncidents.length;
-        const crit = zoneIncidents.filter(i => i.severity === 'Critical').length;
-        const high = zoneIncidents.filter(i => i.severity === 'High').length;
-        const med = zoneIncidents.filter(i => i.severity === 'Medium').length;
-        const low = zoneIncidents.filter(i => i.severity === 'Low').length;
         
-        bodyEl.innerHTML = `
-          <div class="kpi-row" style="grid-template-columns:1fr 1fr;">
-            <div class="kpi-card total" style="padding:10px;"><div class="kpi-label" style="font-size:9px;">Zone Volume</div><div class="kpi-value" style="font-size:28px;">${total}</div></div>
-            <div class="kpi-card critical" style="padding:10px;"><div class="kpi-label" style="font-size:9px;">Critical</div><div class="kpi-value" style="font-size:28px;">${crit}</div></div>
-          </div>
-          <div class="slide-sub-title">RISK SEVERITY COUNTS</div>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div class="feed-type" style="font-size:12px;">High Severity: <span style="color:#d06010; font-family:var(--font-mono);">${high}</span></div>
-            <div class="feed-type" style="font-size:12px;">Medium Severity: <span style="color:var(--accent); font-family:var(--font-mono);">${med}</span></div>
-            <div class="feed-type" style="font-size:12px;">Low Severity: <span style="color:var(--green); font-family:var(--font-mono);">${low}</span></div>
-          </div>
-          <div class="slide-sub-title">RECENT SPATIAL CHRONOLOGY</div>
-          <div class="feed-list" style="max-height:300px;">
-            ${zoneIncidents.map(i => {
-              const masterIndex = allIncidents.indexOf(i);
-              return `
-                <div class="profile-incident-row" onclick="openModal(${masterIndex})">
-                  <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--text-pri)">
-                    <span>${i.incident_type || 'Event Log'}</span>
-                    <span style="color:${sevColor(i.severity)}; font-family:var(--font-mono); margin-left:auto;">${i.severity}</span>
-                  </div>
-                  <div style="font-size:11px; color:var(--text-sec); margin-top:4px;">${i.summary || ''}</div>
-                  <div style="font-size:10px; color:var(--text-dim); font-family:var(--font-mono); margin-top:4px;">${formatTime(i.timestamp)}</div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `;
-      }
-      document.getElementById('slide-backdrop').classList.add('show');
+        // Inserts the newest parsed records to the top of the container DOM tree element
+        container.insertAdjacentHTML('afterbegin', feedCardHTML);
+      });
     }
 
-    function closeSlidePanel() { document.getElementById('slide-backdrop').classList.remove('show'); }
-
-    function openModal(masterIndex) {
-      const inc = allIncidents[masterIndex];
-      if(!inc) return;
-
-      document.getElementById('modal-title').textContent = `INCIDENT BROADCAST DETAIL — ID: ${inc.message_id || 'UNASSIGNED'}`;
+    function openModal(index) {
+      const incident = allIncidents[index];
+      const detailsView = document.getElementById('details-view');
       
-      let actions = [];
-      if(inc.immediate_actions) {
-        actions = inc.immediate_actions.split(';').filter(Boolean);
-      }
-
-      let formattedDate = '—';
-      if(inc.timestamp) {
-        const { gstDate } = getGSTDateTime(inc.timestamp);
-        formattedDate = gstDate.toLocaleString('en-AE', {hour12:false}) + ' (GST)';
-      }
-
-      document.getElementById('modal-body').innerHTML = `
-        <div class="modal-field"><label>Incident Type</label><p style="font-weight:600; font-size:15px; color:${sevColor(inc.severity)};">${inc.incident_type || '—'}</p></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="modal-field"><label>Risk Severity</label><p style="color:${sevColor(inc.severity)}; font-weight:600;">${inc.severity || '—'}</p></div>
-          <div class="modal-field"><label>Location Zone</label><p style="font-weight:600; color:var(--blue);">${inc.location_zone || '—'}</p></div>
+      detailsView.innerHTML = `
+        <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 6px; border: 1px solid var(--border-color);">
+          <h3 style="margin-bottom: 12px; font-size: 16px; color: var(--primary);">${incident.incident_type}</h3>
+          <p style="font-size: 14px; margin-bottom: 12px;">"${incident.summary}"</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; font-family: var(--font-mono); color: var(--text-dim);">
+            <div>ZONE: <span style="color:var(--text-main);">${incident.location_zone}</span></div>
+            <div>SEVERITY: <span style="color:var(--severity-${incident.severity.toLowerCase()}); font-weight:bold;">${incident.severity.toUpperCase()}</span></div>
+            <div>DISPATCHED: <span style="color:var(--text-main);">${incident.sender}</span></div>
+            <div>TIME STAMP: <span style="color:var(--text-main);">${formatTime(incident.timestamp)}</span></div>
+          </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="modal-field"><label>GST Logged Time</label><p>${formattedDate}</p></div>
-          <div class="modal-field"><label>Reporting Station</label><p>${inc.sender || '—'}</p></div>
-        </div>
-        <div class="modal-field"><label>Operational Shift Window</label><p>${inc.shift || '—'}</p></div>
-        <div class="modal-field"><label>Summary</label><p>${inc.summary || '—'}</p></div>
-        ${actions.length ? `<div class="modal-field"><label>Immediate Actions Taken / Required</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
-        <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
-        <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.raw_message || '—'}</p></div>
       `;
-      document.getElementById('modal').classList.add('show');
     }
 
-    function sevColor(s) {
-      return {Critical:'var(--red)', High:'#d06010', Medium:'var(--accent)', Low:'var(--green)'}[s] || 'var(--text-sec)';
+    // Initialize Page Content
+    function init() {
+      calculateMetrics(allIncidents);
+      renderFeed(allIncidents);
     }
 
-    function closeModal(e) {
-      if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
-    }
-
-    setInterval(() => {
-      const url = document.getElementById('sheet-url').value.trim();
-      if(url && allIncidents.length) {
-        fetchData();
-      }
-    }, 180000);
-
-    window.onload = () => {
-      initTheme();
-    };
+    window.onload = init;
   </script>
 </body>
 </html>
