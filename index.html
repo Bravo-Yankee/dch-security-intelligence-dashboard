@@ -345,7 +345,7 @@
 
   .main-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 380px;
+    grid-template-columns: 1fr 1fr 420px;
     gap: 16px;
   }
 
@@ -433,6 +433,7 @@
     height: 4px;
   }
 
+  /* ── FEED LIST LAYOUT DESIGN (MATCHES IMAGE_24F618.PNG) ── */
   .feed-list {
     max-height: 380px;
     overflow-y: auto;
@@ -479,20 +480,19 @@
   .tag-group {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: nowrap;
-    overflow: hidden;
   }
 
   .tag {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 3px 10px;
+    border-radius: 5px;
     text-transform: uppercase;
     white-space: nowrap;
-    flex-shrink: 0;
+    letter-spacing: 0.5px;
   }
 
   :root[data-theme="dark"] .tag.zone { color: #3a8fe8; background: rgba(58,143,232,0.12); border: 1px solid rgba(58,143,232,0.25); }
@@ -509,17 +509,18 @@
 
   .feed-time {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    color: var(--text-dim);
+    color: var(--text-sec);
     white-space: nowrap;
     text-align: right;
     flex-shrink: 0;
+    letter-spacing: 0.5px;
   }
 
   .bottom-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 380px;
+    grid-template-columns: 1fr 1fr 420px;
     gap: 16px;
   }
 
@@ -893,7 +894,7 @@
 
 <footer>
   <span class="footer-left-content">
-    DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY 
+    DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY
     <svg class="footer-brain-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-4.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2z"/>
       <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-4.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2z"/>
@@ -1117,11 +1118,12 @@ function renderKPIs(data) {
   const count = v => data.filter(i => i.severity === v).length;
   document.getElementById('kpi-total').textContent = data.length;
   document.getElementById('kpi-critical').textContent = count('Critical');
-  document.getElementById('kpi-medium').textContent = count('High') + count('Medium'); 
+  document.getElementById('kpi-medium').textContent = count('High') + count('Medium');
   document.getElementById('kpi-low').textContent = count('Low');
   document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
 }
 
+/* ── EXACT REPLICATED STRUCTURE AS VIEWED IN IMAGE_24F618.PNG ── */
 function renderFeed(data) {
   const el = document.getElementById('feed-list');
   document.getElementById('feed-count').textContent = data.length + ' REPORTS';
@@ -1156,7 +1158,6 @@ function renderFeed(data) {
   }).join('');
 }
 
-/* ── REWRITTEN TIMESTAMP CALCULATOR: SAFELY TARGETS TIMEZONE OFFSET BLOCKS ── */
 function formatTime(ts) {
   if (!ts) return '—';
   const d = new Date(ts);
@@ -1165,17 +1166,14 @@ function formatTime(ts) {
   const now = new Date();
   const diff = now - d;
   
-  // Guard checking for massive historical dates or future skewing strings
   if (diff < -60000 || diff > 2592000000) { 
     return d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
   }
   
-  // Precise relative measurements for true recent timeline indices
   if (diff < 60000) return 'Just now';
   if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
   if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
   
-  // Default to day index text if everything falls within safe range limits
   return d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
 }
 
