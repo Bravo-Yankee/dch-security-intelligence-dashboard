@@ -214,7 +214,6 @@
   .slide-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px; }
   .slide-sub-title { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-sec); border-bottom: 2px solid var(--border); padding-bottom: 4px; letter-spacing: 1px; }
 
-  /* Clickable Profile Incidents Style */
   .profile-incident-row { padding: 10px 8px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s ease; border-radius: 4px; }
   .profile-incident-row:hover { background: var(--bg-panel); }
 
@@ -332,7 +331,7 @@
     <div class="bottom-grid">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">LIVE SEVERITY INCIDENT FEED</div>
+          <div class="panel-title">LIVE MONITORING</div>
           <div class="panel-badge">Real-Time</div>
         </div>
         <div class="feed-list" id="feed-container">
@@ -450,7 +449,7 @@
       arr.sort((a, b) => {
         const dA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
         const dB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return dB - dA;
+        return dB - dA; // Newest timestamps will bubble up directly to index 0
       });
     }
 
@@ -647,8 +646,6 @@
       }
       container.innerHTML = data.map((inc, index) => {
         const dotClass = (inc.severity || 'Low').toLowerCase();
-        
-        // Find position index in the master array to ensure absolute indexing match
         const masterIndex = allIncidents.indexOf(inc);
         
         return `
@@ -811,6 +808,8 @@
       document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — PROFILE';
       const data = getFilteredIncidents();
       const zoneIncidents = data.filter(i => i.location_zone === zoneName);
+      
+      // Secondary absolute timestamp descending sort execution context protection
       sortIncidentsDescending(zoneIncidents);
       
       const bodyEl = document.getElementById('slide-zone-body');
@@ -837,7 +836,6 @@
           <div class="slide-sub-title">RECENT SPATIAL CHRONOLOGY</div>
           <div class="feed-list" style="max-height:300px;">
             ${zoneIncidents.map(i => {
-              // Locate true index match in master pool for modal deployment execution
               const masterIndex = allIncidents.indexOf(i);
               return `
                 <div class="profile-incident-row" onclick="openModal(${masterIndex})">
