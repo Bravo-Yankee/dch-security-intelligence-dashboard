@@ -6,9 +6,6 @@
 <title>Dubai Creek Harbour — Security Operations Centre</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
-<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-
 <style>
   :root[data-theme="dark"] {
     --bg-deep:    #090d12;
@@ -29,6 +26,7 @@
     --text-sec:   #7a8fa8;
     --text-dim:   #3d5068;
     --scanline:   rgba(0,0,0,0.06);
+    --horse-color: #e8a020; /* Matches dark theme amber accent */
   }
 
   /* High-Contrast Cream & Velvet Navy Light Mode */
@@ -51,6 +49,7 @@
     --text-sec:   #2b3a51;         
     --text-dim:   #546681;         
     --scanline:   rgba(255,255,255,0.15);
+    --horse-color: #b06600; /* Matches light theme burnt amber accent */
   }
 
   :root {
@@ -185,6 +184,29 @@
     color: var(--text-sec);
     letter-spacing: 1px;
     margin-top: 2px;
+  }
+
+  /* ── VECTOR HORSE CSS KEYFRAMES ── */
+  @keyframes horseRun {
+    0% { stroke-dashoffset: 24; }
+    50% { opacity: 0.85; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  @keyframes horseGallop {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-1.5px) rotate(1deg); }
+    50% { transform: translateY(0.5px) rotate(-1deg); }
+    75% { transform: translateY(-1px) rotate(0.5deg); }
+  }
+
+  .animated-vector-horse {
+    animation: horseGallop 0.55s infinite ease-in-out;
+  }
+
+  .animated-vector-horse path {
+    stroke-dasharray: 12;
+    animation: horseRun 0.8s linear infinite;
   }
 
   /* ── CONFIG PANEL ── */
@@ -478,7 +500,7 @@
   }
 
   .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
-  .severity-dot.high { background: var(--accent); } /* Merged colors rule configuration */
+  .severity-dot.high { background: #d06010; }
   .severity-dot.medium { background: var(--accent); }
   .severity-dot.low { background: var(--green); }
 
@@ -696,7 +718,7 @@
     width: 420px; height: 100vh;
     background: var(--bg-card);
     border-left: 2px solid var(--border);
-    z-index: 1010;
+    z-index: 1001;
     box-shadow: -5px 0 20px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
@@ -878,9 +900,9 @@
       <div class="kpi-delta">immediate action</div>
     </div>
     <div class="kpi-card medium">
-      <div class="kpi-label">High &amp; Medium</div>
+      <div class="kpi-label">Medium</div>
       <div class="kpi-value" id="kpi-medium">—</div>
-      <div class="kpi-delta">escalated parameters</div>
+      <div class="kpi-delta">escalated</div>
     </div>
     <div class="kpi-card low">
       <div class="kpi-label">Low</div>
@@ -991,14 +1013,9 @@
 <footer>
   <span class="footer-left-content">
     DCH ZONE D SECURITY · 14 COMMUNITIES · 6566 APTS · 101 VILLAS · 204 OFFICERS · POWERED BY 
-    <lottie-player 
-      src="https://lottie.host/80e90924-f7b5-4b08-9df2-5fa62bdf87f5/9y0Tq3N0ZJ.json" 
-      background="transparent" 
-      speed="1" 
-      style="width: 22px !important; height: 22px !important; display: inline-block !important; flex-shrink: 0 !important; margin: 0 2px 0 4px; vertical-align: middle;" 
-      loop 
-      autoplay>
-    </lottie-player>
+    <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block !important; flex-shrink: 0 !important; margin: 0 3px 0 5px; vertical-align: middle;">
+      <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   </span>
   <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
@@ -1247,7 +1264,7 @@ function renderKPIs(data) {
   const count = v => data.filter(i => i.severity === v).length;
   document.getElementById('kpi-total').textContent = data.length;
   document.getElementById('kpi-critical').textContent = count('Critical');
-  document.getElementById('kpi-medium').textContent = count('High') + count('Medium'); // Merged KPI metrics tracking
+  document.getElementById('kpi-medium').textContent = count('High') + count('Medium');
   document.getElementById('kpi-low').textContent = count('Low');
   document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
 }
@@ -1262,10 +1279,9 @@ function renderFeed(data) {
   
   el.innerHTML = feedData.slice(0,30).map((inc) => {
     const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
-    const dotClass = (inc.severity === 'Critical') ? 'critical' : (inc.severity === 'Low' ? 'low' : 'high');
     return `
       <div class="feed-item" onclick="showModal(${masterIdx})">
-        <div class="severity-dot ${dotClass}"></div>
+        <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
         <div class="feed-main">
           <div class="feed-type">${inc.incident_type.replace(/_/g,' ')}</div>
           <div class="feed-summary">${inc.summary}</div>
@@ -1310,8 +1326,8 @@ function renderTimeline(data) {
   });
   
   const labels = Object.keys(buckets);
-  const makeDS = (sev, label, color, borderColor) => ({
-    label: label,
+  const makeDS = (sev, color, borderColor) => ({
+    label: sev,
     data: labels.map(l => buckets[l][sev] || 0),
     backgroundColor: color,
     borderColor: borderColor,
@@ -1325,16 +1341,6 @@ function renderTimeline(data) {
   const tickColor = theme === 'light' ? textDark : '#7a8fa8';
   const gridColor = theme === 'light' ? 'rgba(9,16,29,0.08)' : 'rgba(255,255,255,0.04)';
 
-  const chartColors = theme === 'light' ? {
-    critBg: 'rgba(184,20,20,0.85)', critBorder: '#b81414',
-    orangeBg: 'rgba(208,96,16,0.85)', orangeBorder: '#d06010',
-    lowBg: 'rgba(6,107,46,0.85)', lowBorder: '#066b2e'
-  } : {
-    critBg: 'rgba(232,64,64,0.85)', critBorder: '#e84040',
-    orangeBg: 'rgba(232,160,32,0.85)', orangeBorder: '#e8a020',
-    lowBg: 'rgba(52,199,123,0.85)', lowBorder: '#34c77b'
-  };
-
   if (charts.timeline) charts.timeline.destroy();
   const ctx = document.getElementById('timelineChart').getContext('2d');
   charts.timeline = new Chart(ctx, {
@@ -1342,10 +1348,10 @@ function renderTimeline(data) {
     data: {
       labels,
       datasets: [
-        makeDS('Critical', 'Critical', chartColors.critBg, chartColors.critBorder),
-        makeDS('High', 'High', chartColors.orangeBg, chartColors.orangeBorder),
-        makeDS('Medium', 'Medium', chartColors.orangeBg, chartColors.orangeBorder),
-        makeDS('Low', 'Low', chartColors.lowBg, chartColors.lowBorder),
+        makeDS('Critical', 'rgba(184,20,20,0.85)', '#b81414'),
+        makeDS('High',     'rgba(208,96,16,0.85)', '#d06010'),
+        makeDS('Medium',   'rgba(176,102,0,0.85)', '#b06600'),
+        makeDS('Low',      'rgba(6,107,46,0.85)', '#066b2e'),
       ]
     },
     options: {
@@ -1411,7 +1417,7 @@ function showZonePanel(zoneName) {
   } else {
     const total = zoneIncidents.length;
     const crit = zoneIncidents.filter(i => i.severity === 'Critical').length;
-    const highAndMed = zoneIncidents.filter(i => i.severity === 'High' || i.severity === 'Medium').length;
+    const high = zoneIncidents.filter(i => i.severity === 'High').length;
     const openItems = zoneIncidents.filter(i => i.action_required === 'TRUE').length;
     
     const types = {};
@@ -1425,7 +1431,7 @@ function showZonePanel(zoneName) {
           <div class="shift-row"><span class="shift-row-label">Total Volume</span><span class="shift-row-val">${total}</span></div>
           <div class="shift-row"><span class="shift-row-label">Active Action Flags</span><span class="shift-row-val" style="color:var(--accent)">${openItems}</span></div>
           <div class="shift-row"><span class="shift-row-label">Critical Threat Count</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
-          <div class="shift-row"><span class="shift-row-label">High/Medium Urgency</span><span class="shift-row-val" style="color:var(--accent)">${highAndMed}</span></div>
+          <div class="shift-row"><span class="shift-row-label">High Urgency Count</span><span class="shift-row-val" style="color:#d06010">${high}</span></div>
         </div>
       </div>
       
@@ -1449,7 +1455,7 @@ function showZonePanel(zoneName) {
             const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
             return `
               <div class="feed-item" style="padding:10px 5px;" onclick="showModal(${masterIdx})">
-                <div class="severity-dot ${(inc.severity === 'Critical') ? 'critical' : (inc.severity === 'Low' ? 'low' : 'high')}"></div>
+                <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
                 <div class="feed-main">
                   <div class="feed-type" style="font-size:12px;">${inc.incident_type.replace(/_/g,' ')}</div>
                   <div class="feed-summary" style="font-size:11px; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${inc.summary}</div>
@@ -1511,8 +1517,7 @@ function renderShiftStats(data) {
 
   el.innerHTML = `
     <div class="shift-row"><span class="shift-row-label">Total incidents</span><span class="shift-row-val">${total}</span></div>
-    <div class="shift-row"><span class="shift-row-label">Critical</span><span class="shift-row-val" style="color:var(--red)">${count('Critical')}</span></div>
-    <div class="shift-row"><span class="shift-row-label">High &amp; Medium</span><span class="shift-row-val" style="color:var(--accent)">${count('High') + count('Medium')}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Critical / High</span><span class="shift-row-val" style="color:var(--red)">${count('Critical')} / ${count('High')}</span></div>
     <div class="shift-row"><span class="shift-row-label">Action required</span><span class="shift-row-val" style="color:var(--accent)">${shiftData.filter(i=>i.action_required==='TRUE').length}</span></div>
     <div class="shift-row"><span class="shift-row-label">Hottest zone</span><span class="shift-row-val" style="color:var(--blue)">${topZone ? topZone[0] : '—'}</span></div>
     <div class="shift-row"><span class="shift-row-label">% of all incidents</span><span class="shift-row-val">${pct(total, data.length)}</span></div>
@@ -1624,7 +1629,7 @@ function generateRecommendations(data) {
   return recos.slice(0, 5);
 }
 
-// ── SHIFT HANDOVER PANELS INTEGRATION ──
+// ── SHIFT HANDOVER INTEGRATIONS ──
 async function fetchDubaiWeather() {
   try {
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weathercode&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FDubai';
@@ -1776,7 +1781,7 @@ function showModal(idx) {
     ${actions.length ? `<div class="modal-field"><label>Immediate Actions</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
     <div class="modal-field"><label>AI Confidence</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
     <div class="modal-field"><label>Raw Message</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;">${inc.raw_message || '—'}</p></div>
-    <div class="modal-field"><label>Incident ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)\">${inc.message_id}</p></div>
+    <div class="modal-field"><label>Incident ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id}</p></div>
   `;
   document.getElementById('modal').classList.add('show');
 }
