@@ -251,7 +251,7 @@
     <div class="header-center">
       <div class="live-indicator">
         <div class="live-dot"></div>
-        <span>LIVE MONITORING</span>
+        <span>GST OPERATIONAL LIVE FEED</span>
       </div>
     </div>
     <div class="header-right">
@@ -331,7 +331,7 @@
     <div class="bottom-grid">
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">LIVE MONITORING</div>
+          <div class="panel-title">LIVE FEED</div>
           <div class="panel-badge">Real-Time</div>
         </div>
         <div class="feed-list" id="feed-container">
@@ -449,7 +449,7 @@
       arr.sort((a, b) => {
         const dA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
         const dB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return dB - dA; // Newest timestamps bubble directly to index 0
+        return dB - dA; // Newest timestamps will bubble up directly to index 0
       });
     }
 
@@ -645,14 +645,15 @@
         return;
       }
       
+      // Clear container cleanly to prevent stacking anomalies
       container.innerHTML = '';
       
-      // Fixed chronological processing sequence loop
+      // Since data is pre-sorted [0] = newest, iterating over it chronologically layout-renders elements with the newest at the top.
       data.forEach((inc) => {
         const dotClass = (inc.severity || 'Low').toLowerCase();
         const masterIndex = allIncidents.indexOf(inc);
         
-        const cardHTML = `
+        const itemHTML = `
           <div class="feed-item" onclick="openModal(${masterIndex})">
             <div class="severity-dot ${dotClass}"></div>
             <div>
@@ -666,8 +667,7 @@
             <div class="feed-time">${formatTime(inc.timestamp)}</div>
           </div>
         `;
-        // Appends components using afterbegin mapping layout architecture
-        container.insertAdjacentHTML('beforeend', cardHTML);
+        container.insertAdjacentHTML('beforeend', itemHTML);
       });
     }
 
