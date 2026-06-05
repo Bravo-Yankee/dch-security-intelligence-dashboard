@@ -202,6 +202,18 @@
     min-width: 65px;
   }
 
+  .toggle-btn-group { display: flex; gap: 4px; background: var(--bg-deep); padding: 2px; border-radius: 4px; border: 1px solid var(--border); }
+  .toggle-btn { background: none; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 3px; cursor: pointer; text-transform: uppercase; }
+  .toggle-btn.active { background: var(--text-pri); color: var(--bg-card); }
+
+  .empty-state { padding: 32px; text-align: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; }
+
+  .handover-box { padding: 18px; display: flex; flex-direction: column; gap: 14px; background: rgba(232,160,32,0.02); min-height: 110px; }
+  .handover-meta-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; border-bottom: 1px dashed var(--border); padding-bottom: 12px; }
+  .handover-meta-item { font-size: 12px; color: var(--text-sec); line-height: 1.4; }
+  .handover-meta-item strong { color: var(--text-pri); font-family: var(--font-mono); font-size: 11px; }
+  .handover-narrative { font-size: 13px; color: var(--text-pri); line-height: 1.5; white-space: pre-wrap; }
+
   .bottom-grid { display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 16px; }
 
   .slide-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s; }
@@ -221,6 +233,7 @@
   .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
 
   .loading-overlay { position: fixed; inset: 0; background: rgba(243,238,223,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; display: none; }
+  :root[data-theme="dark"] .loading-overlay { background: rgba(9,13,18,0.95); }
   .loading-overlay.show { display: flex; }
   .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -229,6 +242,7 @@
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; display: none; align-items: center; justify-content: center; }
   .modal-backdrop.show { display: flex; }
   .modal { background: var(--bg-card); border: 2px solid var(--text-pri); border-radius: 6px; width: 540px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+  :root[data-theme="dark"] .modal { border-color: var(--border-bright); }
   .modal-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); }
   .modal-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; }
   .modal-close { background: none; border: none; color: var(--text-sec); font-size: 18px; cursor: pointer; }
@@ -307,7 +321,7 @@
     </div>
 
     <div class="main-grid">
-      <div class="panel" style="grid-column: span 2;">
+      <div class="panel">
         <div class="panel-header">
           <div class="panel-title">INCIDENT TIMELINE DENSITY TREND</div>
           <div class="panel-badge">Chart.js Component</div>
@@ -326,6 +340,29 @@
           <canvas id="severityChart"></canvas>
         </div>
       </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">SHIFT ANALYSIS</div>
+          <div class="toggle-btn-group">
+            <button class="toggle-btn active" id="btn-shift-m" onclick="setShiftFilter('morning')">Morning</button>
+            <button class="toggle-btn" id="btn-shift-n" onclick="setShiftFilter('night')">Night</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="shiftChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">SHIFT HANDOVER SUMMARY</div>
+        <div class="panel-badge" id="handover-shift-badge">SELECTED SHIFT SCOPE</div>
+      </div>
+      <div class="handover-box" id="handover-box">
+        <div class="empty-state">Load data fields to compute active handover briefings.</div>
+      </div>
     </div>
 
     <div class="bottom-grid">
@@ -335,7 +372,7 @@
           <div class="panel-badge">Real-Time</div>
         </div>
         <div class="feed-list" id="feed-container">
-          <div style="padding:24px; text-align:center; color:var(--text-dim); font-size:12px; font-family:var(--font-mono);">No telemetry data parsed. Please trigger fetch pipeline.</div>
+          <div class="empty-state">No telemetry data parsed. Please trigger fetch pipeline.</div>
         </div>
       </div>
 
@@ -346,7 +383,7 @@
         </div>
         <div class="heatmap-scroll-area">
           <div class="zone-grid" id="zone-container">
-            <div style="text-align:center; color:var(--text-dim); padding:24px; font-size:12px; font-family:var(--font-mono);">Map offline. Waiting for data...</div>
+            <div class="empty-state">Map offline. Waiting for data...</div>
           </div>
         </div>
       </div>
@@ -396,7 +433,8 @@
 
   <script>
     let allIncidents = [];
-    let charts = { timeline: null, severity: null };
+    let currentShiftView = 'morning';
+    let charts = { timeline: null, severity: null, shift: null };
 
     function initTheme() {
       const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -449,7 +487,7 @@
       arr.sort((a, b) => {
         const dA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
         const dB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-        return dB - dA; // Newest timestamps will bubble up directly to index 0
+        return dB - dA; // Correct sorted rule: Newest elements bubble to the top
       });
     }
 
@@ -598,6 +636,7 @@
       renderSeverityPie(data);
       renderFeed(data);
       renderHeatmap(data);
+      renderShiftAnalysis(data);
     }
 
     function renderKPIs(data) {
@@ -641,14 +680,13 @@
     function renderFeed(data) {
       const container = document.getElementById('feed-container');
       if(!data.length) {
-        container.innerHTML = '<div style="padding:24px; text-align:center; color:var(--text-dim); font-size:12px; font-family:var(--font-mono);">No incident objects found.</div>';
+        container.innerHTML = '<div class="empty-state">No incident objects found.</div>';
         return;
       }
       
-      // Clear container cleanly to prevent stacking anomalies
       container.innerHTML = '';
       
-      // Since data is pre-sorted [0] = newest, iterating over it chronologically layout-renders elements with the newest at the top.
+      // Items are already sorted newest to oldest. Rendering output naturally forces the top item to be the absolute newest.
       data.forEach((inc) => {
         const dotClass = (inc.severity || 'Low').toLowerCase();
         const masterIndex = allIncidents.indexOf(inc);
@@ -763,6 +801,86 @@
       });
     }
 
+    // RESTORED: SHIFT ANALYSIS FILTERS AND RENDERING ENGINE
+    function setShiftFilter(shiftType) {
+      currentShiftView = shiftType;
+      document.getElementById('btn-shift-m').classList.toggle('active', shiftType === 'morning');
+      document.getElementById('btn-shift-n').classList.toggle('active', shiftType === 'night');
+      const data = getFilteredIncidents();
+      renderShiftAnalysis(data);
+    }
+
+    function renderShiftAnalysis(data) {
+      const targetLabel = currentShiftView === 'morning' ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+      document.getElementById('handover-shift-badge').textContent = targetLabel.toUpperCase();
+      
+      const shiftData = data.filter(i => i.shift === targetLabel);
+      
+      // Calculate volumes
+      const crit = shiftData.filter(i => i.severity === 'Critical').length;
+      const high = shiftData.filter(i => i.severity === 'High').length;
+      const med = shiftData.filter(i => i.severity === 'Medium').length;
+      const low = shiftData.filter(i => i.severity === 'Low').length;
+
+      // Update Doughnut Chart component
+      if (charts.shift) charts.shift.destroy();
+      const ctx = document.getElementById('shiftChart').getContext('2d');
+      const theme = document.documentElement.getAttribute('data-theme');
+      const borderThemeColor = theme === 'light' ? '#ffffff' : '#131d2b';
+
+      charts.shift = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Critical', 'High', 'Medium', 'Low'],
+          datasets: [{
+            data: [crit, high, med, low],
+            backgroundColor: ['#e84040', '#d06010', '#e8a020', '#34c77b'],
+            borderColor: borderThemeColor,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          cutout: '72%'
+        }
+      });
+
+      // Render out Handover Summary Box details
+      const box = document.getElementById('handover-box');
+      if(!shiftData.length) {
+        box.innerHTML = '<div class="empty-state">No incident telemetry recorded during this 12H operational shift window.</div>';
+        return;
+      }
+
+      const actionsRequired = shiftData.filter(i => i.action_required === 'TRUE' || i.action_required === 'true');
+      const uniqueZones = [...new Set(shiftData.map(i => i.location_zone).filter(Boolean))];
+
+      // Formulate automated summary text output
+      let narrative = `During this operational window, a total of ${shiftData.length} logs were classified. `;
+      if(crit > 0) {
+        narrative += `CRITICAL alert alert threshold was breached ${crit} time(s), requiring prompt supervisor dispatch. `;
+      } else {
+        narrative += `No high-tier Critical items breached system containment gates. `;
+      }
+      if(actionsRequired.length > 0) {
+        narrative += `${actionsRequired.length} logs remain marked as ongoing action items pending active shift trace handover.`;
+      } else {
+        narrative += `All logged situations are resolved and locked at status standby.`;
+      }
+
+      box.innerHTML = `
+        <div class="handover-meta-row">
+          <div class="handover-meta-item"><strong>TOTAL LOGGED EVENTS:</strong> ${shiftData.length} logs</div>
+          <div class="handover-meta-item"><strong>AFFECTED FOOTPRINT:</strong> ${uniqueZones.length} unique zone matrices</div>
+          <div class="handover-meta-item"><strong>CRITICAL CRITERIA:</strong> ${crit} logs detected</div>
+          <div class="handover-meta-item"><strong>PENDING TRACE ACTIONS:</strong> ${actionsRequired.length} items required</div>
+        </div>
+        <div class="handover-narrative">${narrative}</div>
+      `;
+    }
+
     function renderHeatmap(data) {
       const container = document.getElementById('zone-container');
       const zonesMap = {};
@@ -772,7 +890,7 @@
 
       const entries = Object.entries(zonesMap);
       if(!entries.length) {
-        container.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:24px; font-size:12px; font-family:var(--font-mono);">No spatial metrics parsed.</div>';
+        container.innerHTML = '<div class="empty-state">No spatial metrics parsed.</div>';
         return;
       }
 
