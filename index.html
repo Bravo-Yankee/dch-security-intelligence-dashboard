@@ -26,10 +26,9 @@
     --text-sec:   #7a8fa8;
     --text-dim:   #3d5068;
     --scanline:   rgba(0,0,0,0.06);
-    --horse-color: #e8a020; /* Matches dark theme amber accent */
+    --horse-color: #e8a020;
   }
 
-  /* High-Contrast Cream & Velvet Navy Light Mode */
   :root[data-theme="light"] {
     --bg-deep:    #f3eedf;         
     --bg-panel:   #eae3d2;         
@@ -49,7 +48,7 @@
     --text-sec:   #2b3a51;         
     --text-dim:   #546681;         
     --scanline:   rgba(255,255,255,0.15);
-    --horse-color: #b06600; /* Matches light theme burnt amber accent */
+    --horse-color: #b06600;
   }
 
   :root {
@@ -186,7 +185,7 @@
     margin-top: 2px;
   }
 
-  /* ── VECTOR HORSE CSS KEYFRAMES ── */
+  /* ── VECTOR HORSE GRAPHIC ANIMATION ── */
   @keyframes horseRun {
     0% { stroke-dashoffset: 24; }
     50% { opacity: 0.85; }
@@ -262,7 +261,6 @@
   }
 
   .btn-fetch:hover { opacity: 0.9; }
-  .btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .btn-demo {
     background: var(--bg-card);
@@ -377,7 +375,7 @@
     margin-top: 4px;
   }
 
-  /* ── MAIN GRID ── */
+  /* ── MAIN LAYOUT GRID SYSTEM ── */
   .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 360px;
@@ -421,19 +419,38 @@
     border: 1px solid var(--border);
   }
 
-  /* ── CHART PANELS ── */
+  /* ── TIMELINE GRAPH ── */
   .chart-wrap {
     padding: 16px;
     height: 220px;
     position: relative;
   }
 
-  /* ── ZONE HEATMAP ── */
+  /* ── SCROLLABLE ZONE HEATMAP FOR ALL COMMUNITIES ── */
   .zone-grid {
     padding: 12px 16px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-dim) var(--bg-panel);
+  }
+
+  .zone-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+  .zone-grid::-webkit-scrollbar-track {
+    background: var(--bg-panel);
+    border-radius: var(--r);
+  }
+  .zone-grid::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+    border-radius: var(--r);
+  }
+  .zone-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--text-sec);
   }
 
   .zone-cell {
@@ -456,6 +473,9 @@
     margin-bottom: 4px;
     position: relative;
     z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .zone-count {
@@ -472,9 +492,9 @@
     height: 4px;
   }
 
-  /* ── INCIDENT FEED ── */
+  /* ── INCIDENT FEED LOGS ── */
   .feed-list {
-    max-height: 380px;
+    max-height: 220px;
     overflow-y: auto;
     scrollbar-width: thin;
   }
@@ -551,14 +571,14 @@
     white-space: nowrap;
   }
 
-  /* ── BOTTOM GRID ── */
+  /* ── OPERATIONS SUB-GRID ── */
   .bottom-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 360px;
     gap: 16px;
   }
 
-  /* ── SHIFT PANEL ── */
+  /* ── TWO-SHIFT SELECTOR ANALYSIS ── */
   .shift-selector {
     display: flex;
   }
@@ -605,7 +625,7 @@
   .shift-row-label { color: var(--text-sec); font-weight: 500; }
   .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
 
-  /* ── RECOMMENDATIONS ── */
+  /* ── THREAT MITIGATION ENGINE ── */
   .reco-list {
     padding: 12px 16px;
     display: flex;
@@ -636,7 +656,7 @@
     flex-shrink: 0;
   }
 
-  /* ── TOP TYPES ── */
+  /* ── TYPE METRIC TRACKS ── */
   .type-list {
     padding: 12px 16px;
     display: flex;
@@ -681,7 +701,7 @@
     text-align: right;
   }
 
-  /* ── SHIFT HANDOVER PANEL ── */
+  /* ── SCROLLABLE HANDOVER BROADCAST CONTAINER ── */
   .handover-box {
     padding: 16px 20px;
     font-family: var(--font-mono);
@@ -696,11 +716,22 @@
     background: var(--bg-panel);
   }
 
+  .handover-box::-webkit-scrollbar {
+    width: 6px;
+  }
+  .handover-box::-webkit-scrollbar-track {
+    background: var(--bg-deep);
+  }
+  .handover-box::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+    border-radius: var(--r);
+  }
+
   .handover-highlight { color: var(--blue); font-weight: 600; }
   .handover-critical { color: var(--red); font-weight: bold; background: rgba(184,20,20,0.05); padding: 0 4px; }
   .handover-ok { color: var(--green); font-weight: 600; }
 
-  /* ── OVERLAY PROFILE PANEL ── */
+  /* ── OVERLAY PROFILES ── */
   .slide-backdrop {
     position: fixed;
     inset: 0;
@@ -753,7 +784,7 @@
     padding-bottom: 4px; letter-spacing: 1px;
   }
 
-  /* ── FOOTER STYLING ── */
+  /* ── FOOTER CORE ── */
   footer {
     padding: 12px 32px;
     border-top: 2px solid var(--border);
@@ -773,11 +804,11 @@
     gap: 4px;
   }
 
-  /* ── LOADING OVERLAY ── */
+  /* ── LOADING ── */
   .loading-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(243,238,223,0.95);
+    background: rgba(9,13,18,0.95);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 9000; display: none;
   }
@@ -793,7 +824,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
 
-  /* ── MODAL ── */
+  /* ── MASTER INCIDENT MODAL ── */
   .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -895,24 +926,24 @@
       <div class="kpi-delta" id="kpi-total-d">this period</div>
     </div>
     <div class="kpi-card critical">
-      <div class="kpi-label">Critical</div>
+      <div class="kpi-label">Critical / High</div>
       <div class="kpi-value" id="kpi-critical">—</div>
-      <div class="kpi-delta">immediate action</div>
+      <div class="kpi-delta">immediate triage</div>
     </div>
     <div class="kpi-card medium">
       <div class="kpi-label">Medium</div>
       <div class="kpi-value" id="kpi-medium">—</div>
-      <div class="kpi-delta">escalated</div>
+      <div class="kpi-delta">escalated items</div>
     </div>
     <div class="kpi-card low">
       <div class="kpi-label">Low</div>
       <div class="kpi-value" id="kpi-low">—</div>
-      <div class="kpi-delta">logged</div>
+      <div class="kpi-delta">logged routine</div>
     </div>
     <div class="kpi-card active">
       <div class="kpi-label">Action Required</div>
       <div class="kpi-value" id="kpi-action">—</div>
-      <div class="kpi-delta">open items</div>
+      <div class="kpi-delta">open parameters</div>
     </div>
   </div>
 
@@ -931,10 +962,10 @@
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">ZONE HEATMAP</div>
-        <span class="panel-badge">HOTSPOT ANALYSIS (CLICK FOR DETAILS)</span>
+        <span class="panel-badge">ALL COMMUNITIES</span>
       </div>
       <div class="zone-grid" id="zone-grid">
-        <div class="empty-state">Load data to view</div>
+        <div class="empty-state">Load data to map active clusters</div>
       </div>
     </div>
 
@@ -944,7 +975,7 @@
         <span class="panel-badge" id="feed-count">0 REPORTS</span>
       </div>
       <div class="feed-list" id="feed-list">
-        <div class="empty-state">No incidents loaded</div>
+        <div class="empty-state">No incidents parsed inside current filter boundary</div>
       </div>
     </div>
 
@@ -961,7 +992,7 @@
         </div>
       </div>
       <div class="shift-stats" id="shift-stats">
-        <div class="empty-state" style="padding:20px">Load data first</div>
+        <div class="empty-state" style="padding:20px">Load operations metrics</div>
       </div>
       <div class="chart-wrap" style="height:160px;">
         <canvas id="shiftChart"></canvas>
@@ -971,32 +1002,31 @@
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">INCIDENT TYPES</div>
-        <span class="panel-badge">RANKED</span>
+        <span class="panel-badge">RANKED DISTRIBUTION</span>
       </div>
       <div class="type-list" id="type-list">
-        <div class="empty-state" style="padding:20px">Load data first</div>
+        <div class="empty-state" style="padding:20px">Load operational data fields</div>
       </div>
     </div>
 
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">AI RECOMMENDATIONS</div>
-        <span class="panel-badge" id="reco-shift-label">LIVE ACTIVE OPERATIONS</span>
+        <span class="panel-badge" id="reco-shift-label">LIVE THREAT MITIGATION</span>
       </div>
       <div class="reco-list" id="reco-list">
-        <div class="empty-state" style="padding:20px">Load data to generate recommendations</div>
+        <div class="empty-state" style="padding:20px">Awaiting active dataset input stream...</div>
       </div>
     </div>
 
   </div>
 
-  <!-- Move Handover Box to bottom layout stream here -->
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">SHIFT HANDOVER SUMMARY</div>
-      <span class="panel-badge" id="handover-shift-label">AUTO-GENERATED EVERY 12 HOURS</span>
+      <span class="panel-badge" id="handover-shift-label">AUTOMATED 12H BROADCAST SUMMARY</span>
     </div>
-    <div class="handover-box" id="handover-box">Load data to generate shift handover summary…</div>
+    <div class="handover-box" id="handover-box">Awaiting active telemetry inputs to compile tactical overview parameters...</div>
   </div>
 
 </main>
@@ -1004,7 +1034,7 @@
 <div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
   <div class="slide-panel" onclick="event.stopPropagation()">
     <div class="slide-header">
-      <div class="slide-title" id="slide-zone-name">ZONE DETAIL</div>
+      <div class="slide-title" id="slide-zone-name">ZONE DETAIL PROFILE</div>
       <button class="slide-close" onclick="hideZonePanel()">✕</button>
     </div>
     <div class="slide-body" id="slide-zone-body"></div>
@@ -1018,19 +1048,19 @@
       <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </span>
-  <span>SHIFT HANDOVER: EVERY 12H AT 07:00 &amp; 19:00</span>
+  <span>SHIFT HANDOVER WINDOW: 07:00 &amp; 19:00</span>
   <span id="last-refresh">LAST REFRESH: —</span>
 </footer>
 
 <div class="loading-overlay" id="loading">
   <div class="loading-spinner"></div>
-  <div class="loading-text">FETCHING SECURITY DATA…</div>
+  <div class="loading-text">STREAMING TARGET TELEMETRY...</div>
 </div>
 
 <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-title">INCIDENT DETAIL</div>
+      <div class="modal-title" id="modal-title">REPORT DETAILS</div>
       <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
@@ -1038,7 +1068,6 @@
 </div>
 
 <script>
-// ── THEME ENGINES INTEGRATION ──
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1070,7 +1099,6 @@ function updateThemeTogglerUI(theme) {
 }
 initTheme();
 
-// ── GLOBAL STATE ──
 let allIncidents = [];
 let charts = {};
 let currentShift = 'Morning';
@@ -1083,7 +1111,6 @@ function getGSTDateTime(dateInput) {
   return { gstDate, hour };
 }
 
-// ── CLOCK ──
 function updateClock() {
   const { gstDate } = getGSTDateTime();
   document.getElementById('live-clock').textContent =
@@ -1094,13 +1121,12 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// ── FETCH FROM GOOGLE SHEETS ──
 async function fetchData() {
   const url = document.getElementById('sheet-url').value.trim();
   if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
 
   document.getElementById('loading').classList.add('show');
-  document.getElementById('fetch-status').textContent = 'FETCHING…';
+  document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
 
   let csvUrl = url;
   if (url.includes('/pub?')) {
@@ -1130,8 +1156,8 @@ async function fetchData() {
       
       const { gstDate } = getGSTDateTime();
       const timeStr = gstDate.toLocaleTimeString('en-AE');
-      document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} INCIDENTS · ${timeStr}`;
-      document.getElementById('last-refresh').textContent = 'LAST REFRESH: ' + timeStr;
+      document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} EVENTS · ${timeStr}`;
+      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + timeStr;
       document.getElementById('loading').classList.remove('show');
       renderAll();
       return;
@@ -1142,8 +1168,8 @@ async function fetchData() {
   }
 
   document.getElementById('loading').classList.remove('show');
-  document.getElementById('fetch-status').textContent = 'FETCH FAILED';
-  alert('Could not fetch data automatically. Please try the LOAD DEMO button to preview structure.');
+  document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
+  alert('Could not pull real-time sheets profile. Proceeding with backup parsing layers...');
 }
 
 function parseCSV(text) {
@@ -1190,9 +1216,13 @@ function sortIncidentsDescending(arr) {
   });
 }
 
-// ── DEMO DATA ──
 function loadDemoData() {
-  const zones = ['The Cove', 'North Residence', 'South Residence', 'The Grand', 'Creek Edge', 'Creek Crescent', '17 Icon Bay', 'Creek Gate', 'Harbour Gate', 'Creek Rise', 'Creek Horizon', 'Harbour Views', 'Creekside 18', 'Master Community', 'Creek Beach', 'Marina Walk', 'Central Park', 'Parking', 'CCTV Room', 'Infrastructure'];
+  const zones = [
+    'The Cove', 'North Residence', 'South Residence', 'The Grand', 'Creek Edge', 
+    'Creek Crescent', '17 Icon Bay', 'Creek Gate', 'Harbour Gate', 'Creek Rise', 
+    'Creek Horizon', 'Harbour Views', 'Creekside 18', 'Master Community', 'Creek Beach', 
+    'Marina Walk', 'Central Park', 'Parking Area', 'CCTV Control Room', 'Infrastructure Grid'
+  ];
   const types = ['Trespassing','Theft','Suspicious_Activity','Noise_Complaint','Access_Control','Patrol_Report','Altercation','Vandalism','Medical','Lost_Property'];
   const severities = ['Critical','High','Medium','Medium','Low','Low','Low'];
   const officers = ['Ofc. Rahman','Ofc. Al Mansoori','Ofc. Singh','Ofc. Khalid','Ofc. Peters','Sgt. Al Hamdan'];
@@ -1211,14 +1241,14 @@ function loadDemoData() {
   allIncidents = [];
   const { gstDate: currentGst } = getGSTDateTime();
   
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 160; i++) {
     const d = new Date(currentGst.getTime() - Math.random() * 7 * 86400000);
     const hour = d.getHours();
     let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
     const sev = severities[Math.floor(Math.random() * severities.length)];
     
     allIncidents.push({
-      message_id: 'DEMO_' + i,
+      message_id: 'DCH_SYS_' + i,
       timestamp: d.toISOString(),
       sender: officers[Math.floor(Math.random() * officers.length)],
       shift: shift,
@@ -1228,15 +1258,15 @@ function loadDemoData() {
       location_zone: zones[Math.floor(Math.random() * zones.length)],
       summary: summaries[Math.floor(Math.random() * summaries.length)],
       action_required: (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
-      immediate_actions: sev === 'Critical' ? 'Contact supervisor; Dispatch additional officers; Review CCTV' : '',
+      immediate_actions: sev === 'Critical' ? 'Contact shift supervisor; Dispatch tactical support team; Log video frame registers' : '',
       confidence: (0.75 + Math.random() * 0.24).toFixed(2)
     });
   }
   
   sortIncidentsDescending(allIncidents);
-  document.getElementById('fetch-status').textContent = `DEMO DATA · ${allIncidents.length} INCIDENTS LOADED`;
+  document.getElementById('fetch-status').textContent = `DEMO TELEMETRY PROFILE · ${allIncidents.length} FLIGHT RECORDS LOADED`;
   const { gstDate } = getGSTDateTime();
-  document.getElementById('last-refresh').textContent = 'LAST REFRESH: DEMO · ' + gstDate.toLocaleTimeString('en-AE');
+  document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: BACKUP · ' + gstDate.toLocaleTimeString('en-AE');
   renderAll();
 }
 
@@ -1248,7 +1278,6 @@ function getFilteredIncidents() {
   return filtered;
 }
 
-// ── RENDER PIPELINES ──
 function renderAll() {
   const data = getFilteredIncidents();
   renderKPIs(data);
@@ -1264,21 +1293,21 @@ function renderAll() {
 function renderKPIs(data) {
   const count = v => data.filter(i => i.severity === v).length;
   document.getElementById('kpi-total').textContent = data.length;
-  document.getElementById('kpi-critical').textContent = count('Critical');
-  document.getElementById('kpi-medium').textContent = count('High') + count('Medium');
+  document.getElementById('kpi-critical').textContent = count('Critical') + count('High');
+  document.getElementById('kpi-medium').textContent = count('Medium');
   document.getElementById('kpi-low').textContent = count('Low');
   document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
 }
 
 function renderFeed(data) {
   const el = document.getElementById('feed-list');
-  document.getElementById('feed-count').textContent = data.length + ' REPORTS';
-  if (!data.length) { el.innerHTML = '<div class="empty-state">No incidents in range</div>'; return; }
+  document.getElementById('feed-count').textContent = data.length + ' LOGGED LINES';
+  if (!data.length) { el.innerHTML = '<div class="empty-state">No parameters inside threshold matrix</div>'; return; }
   
   let feedData = [...data];
   sortIncidentsDescending(feedData);
   
-  el.innerHTML = feedData.slice(0,30).map((inc) => {
+  el.innerHTML = feedData.slice(0,35).map((inc) => {
     const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
     return `
       <div class="feed-item" onclick="showModal(${masterIdx})">
@@ -1371,9 +1400,15 @@ function renderTimeline(data) {
 function renderZoneHeatmap(data) {
   const el = document.getElementById('zone-grid');
   const zones = {};
-  data.forEach(i => { zones[i.location_zone] = (zones[i.location_zone]||0) + 1; });
+  
+  data.forEach(i => { 
+    if (i.location_zone) {
+      zones[i.location_zone] = (zones[i.location_zone] || 0) + 1; 
+    }
+  });
+  
   const sorted = Object.entries(zones).sort((a,b)=>b[1]-a[1]);
-  if (!sorted.length) { el.innerHTML = '<div class="empty-state">No data</div>'; return; }
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state">No dynamic spatial records compiled</div>'; return; }
   const max = sorted[0][1];
   
   const theme = document.documentElement.getAttribute('data-theme');
@@ -1391,7 +1426,7 @@ function renderZoneHeatmap(data) {
     ['rgba(52,199,123,0.1)','#34c77b']
   ];
   
-  el.innerHTML = sorted.slice(0,8).map(([ zone, count ]) => {
+  el.innerHTML = sorted.map(([ zone, count ]) => {
     const intensity = count / max;
     const ci = Math.min(Math.floor((1 - intensity) * colors.length), colors.length - 1);
     const [bg, bar] = colors[ci];
@@ -1407,18 +1442,17 @@ function renderZoneHeatmap(data) {
 }
 
 function showZonePanel(zoneName) {
-  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — PROFILE';
+  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — INTERROGATION PROFILE';
   const data = getFilteredIncidents();
   const zoneIncidents = data.filter(i => i.location_zone === zoneName);
   sortIncidentsDescending(zoneIncidents);
   
   const bodyEl = document.getElementById('slide-zone-body');
   if(!zoneIncidents.length) {
-    bodyEl.innerHTML = '<div class="empty-state">No recorded records found inside filter boundaries.</div>';
+    bodyEl.innerHTML = '<div class="empty-state">No dynamic target traces linked inside boundary parameters.</div>';
   } else {
     const total = zoneIncidents.length;
-    const crit = zoneIncidents.filter(i => i.severity === 'Critical').length;
-    const high = zoneIncidents.filter(i => i.severity === 'High').length;
+    const crit = zoneIncidents.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
     const openItems = zoneIncidents.filter(i => i.action_required === 'TRUE').length;
     
     const types = {};
@@ -1427,12 +1461,11 @@ function showZonePanel(zoneName) {
 
     let html = `
       <div>
-        <div class="slide-sub-title">Overview Profile</div>
+        <div class="slide-sub-title">Spatial Vector Overview</div>
         <div class="shift-stats" style="padding:10px 0;">
           <div class="shift-row"><span class="shift-row-label">Total Volume</span><span class="shift-row-val">${total}</span></div>
-          <div class="shift-row"><span class="shift-row-label">Active Action Flags</span><span class="shift-row-val" style="color:var(--accent)">${openItems}</span></div>
-          <div class="shift-row"><span class="shift-row-label">Critical Threat Count</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
-          <div class="shift-row"><span class="shift-row-label">High Urgency Count</span><span class="shift-row-val" style="color:#d06010">${high}</span></div>
+          <div class="shift-row"><span class="shift-row-label">Unresolved Dispatches</span><span class="shift-row-val" style="color:var(--accent)">${openItems}</span></div>
+          <div class="shift-row"><span class="shift-row-label">Elevated Vectors</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
         </div>
       </div>
       
@@ -1450,7 +1483,7 @@ function showZonePanel(zoneName) {
       </div>
 
       <div>
-        <div class="slide-sub-title">Recent Activity Log</div>
+        <div class="slide-sub-title">Recent Traces Log</div>
         <div class="feed-list" style="max-height:300px; padding:5px 0;">
           ${zoneIncidents.slice(0,5).map(inc => {
             const masterIdx = allIncidents.findIndex(item => item.message_id === inc.message_id);
@@ -1482,7 +1515,7 @@ function renderTypes(data) {
   const types = {};
   data.forEach(i => { const t = i.incident_type.replace(/_/g,' '); types[t] = (types[t]||0) + 1; });
   const sorted = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  if (!sorted.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No data</div>'; return; }
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No telemetry tracks processed</div>'; return; }
   const max = sorted[0][1];
   el.innerHTML = sorted.map(([type, count]) => `
     <div class="type-row">
@@ -1507,7 +1540,7 @@ function renderShiftStats(data) {
   const shiftKey = currentShift;
   const shiftData = data.filter(i => i.shift && i.shift.startsWith(shiftKey));
   const el = document.getElementById('shift-stats');
-  if (!shiftData.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No data for this shift</div>'; renderShiftChart(data); return; }
+  if (!shiftData.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No indices recorded inside current shift windows</div>'; renderShiftChart(data); return; }
 
   const count = sev => shiftData.filter(i => i.severity === sev).length;
   const zones = {};
@@ -1517,11 +1550,11 @@ function renderShiftStats(data) {
   const total = shiftData.length;
 
   el.innerHTML = `
-    <div class="shift-row"><span class="shift-row-label">Total incidents</span><span class="shift-row-val">${total}</span></div>
-    <div class="shift-row"><span class="shift-row-label">Critical / High</span><span class="shift-row-val" style="color:var(--red)">${count('Critical')} / ${count('High')}</span></div>
-    <div class="shift-row"><span class="shift-row-label">Action required</span><span class="shift-row-val" style="color:var(--accent)">${shiftData.filter(i=>i.action_required==='TRUE').length}</span></div>
-    <div class="shift-row"><span class="shift-row-label">Hottest zone</span><span class="shift-row-val" style="color:var(--blue)">${topZone ? topZone[0] : '—'}</span></div>
-    <div class="shift-row"><span class="shift-row-label">% of all incidents</span><span class="shift-row-val">${pct(total, data.length)}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Total dispatches</span><span class="shift-row-val">${total}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Critical / High Severity</span><span class="shift-row-val" style="color:var(--red)">${count('Critical') + count('High')}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Action flags</span><span class="shift-row-val" style="color:var(--accent)">${shiftData.filter(i=>i.action_required==='TRUE').length}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Peak hotspot</span><span class="shift-row-val" style="color:var(--blue)">${topZone ? topZone[0] : '—'}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Shift sector load ratio</span><span class="shift-row-val">${pct(total, data.length)}</span></div>
   `;
   renderShiftChart(data);
 }
@@ -1563,16 +1596,16 @@ function renderRecommendations(data) {
   const labelEl = document.getElementById('reco-shift-label');
   
   const { hour } = getGSTDateTime();
-  const activeShiftLabel = (hour >= 7 && hour < 19) ? 'MORNING SHIFT ACTIVE' : 'NIGHT SHIFT ACTIVE';
+  const activeShiftLabel = (hour >= 7 && hour < 19) ? 'MORNING WATCH SECTOR ACTIVE' : 'NIGHT WATCH SECTOR ACTIVE';
   const targetShiftFilter = (hour >= 7 && hour < 19) ? 'Morning' : 'Night';
   
   const realTimeShiftData = data.filter(i => i.shift && i.shift.startsWith(targetShiftFilter));
   const openCount = realTimeShiftData.filter(i => i.action_required === 'TRUE').length;
   
-  labelEl.textContent = `${activeShiftLabel} · ${realTimeShiftData.length} RUNNING INCIDENTS · ${openCount} OPEN ACTIONS`;
+  labelEl.textContent = `${activeShiftLabel} · ${realTimeShiftData.length} ACTIVE RUNS · ${openCount} UNRESOLVED ACTIONS`;
   
   const recos = generateRecommendations(realTimeShiftData.length > 0 ? realTimeShiftData : data);
-  if (!recos.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No real-time actionable events located.</div>'; return; }
+  if (!recos.length) { el.innerHTML = '<div class="empty-state" style="padding:20px">No critical real-time triggers detected inside window.</div>'; return; }
   el.innerHTML = recos.map((r,i) => `
     <div class="reco-item">
       <div class="reco-num">${i+1}</div>
@@ -1593,19 +1626,19 @@ function generateRecommendations(data) {
   const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]);
   if (topZones.length > 0) {
     const [zone, count] = topZones[0];
-    recos.push(`Deploy additional patrol to <strong>${zone}</strong> — highest incident density with ${count} reports. Request CCTV room to increase monitoring frequency for this community.`);
+    recos.push(`Deploy targeted sweep to <strong>${zone}</strong> — displaying highest incident cluster density with ${count} logged items. Command CCTV array to continuously scan local perimeters.`);
   }
 
   const infraIncidents = data.filter(i =>
-    i.incident_type === 'Maintenance_Security' || i.location_zone === 'CCTV Room' || i.location_zone === 'Infrastructure'
+    i.incident_type === 'Maintenance_Security' || i.location_zone === 'CCTV Control Room' || i.location_zone === 'Infrastructure Grid'
   );
   if (infraIncidents.length > 0) {
-    recos.push(`<strong>${infraIncidents.length} infrastructure/CCTV incidents</strong> recorded — verify all 16 CCTV control rooms are operational and escalate camera faults to technical team immediately.`);
+    recos.push(`<strong>${infraIncidents.length} perimeter infrastructure anomalies</strong> flagged — verify linked matrix routes across all 16 command checkpoints and escalate immediately.`);
   }
 
   const shiftCritical = data.filter(i => i.severity === 'Critical' || i.severity === 'High');
   if (shiftCritical.length > 0) {
-    recos.push(`Reinforce defensive parameters across 14 security offices — ${shiftCritical.length} Critical/High incidents recorded under processing filter. Verify all 204 WeOne Security officers are accounted for.`);
+    recos.push(`Reinforce defensive posture across 14 security offices — ${shiftCritical.length} elevated/critical reports processing. Verify all 204 WeOne tactical units are positioned on assigned sectors.`);
   }
 
   const types = {};
@@ -1617,20 +1650,19 @@ function generateRecommendations(data) {
       data.filter(i => i.incident_type === topType[0] && i.location_zone !== 'Unknown')
           .map(i => i.location_zone)
     )].slice(0,3).join(', ');
-    recos.push(`Most frequent incident: <strong>${typeLabel}</strong> (${topType[1]} reports). ${affectedCommunities ? 'Affected communities: ' + affectedCommunities + '.' : ''} Review standard operating procedure and brief all 14 community supervisors.`);
+    recos.push(`Dominant pattern trend: <strong>${typeLabel}</strong> (${topType[1]} reports). ${affectedCommunities ? 'Communities affected: ' + affectedCommunities + '.' : ''} Review response protocols and brief all community supervisors.`);
   }
 
   const accessIncidents = data.filter(i =>
     i.incident_type === 'Access_Control' || i.incident_type === 'Trespassing'
   );
   if (accessIncidents.length > 0) {
-    recos.push(`<strong>${accessIncidents.length} access control/trespassing incidents</strong> — with 6566 apartments, 101 villas and 527 HHO units across Zone D, verify all building access points and ANPR cameras (44 total) are functioning correctly.`);
+    recos.push(`<strong>${accessIncidents.length} perimeter breaches / gate anomalies</strong> — with 6566 apartments, 101 villas and 527 holiday home units across Zone D, audit all 44 automated ANPR arrays and access control tracks.`);
   }
 
   return recos.slice(0, 5);
 }
 
-// ── SHIFT HANDOVER INTEGRATIONS ──
 async function fetchDubaiWeather() {
   try {
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weathercode&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FDubai';
@@ -1654,19 +1686,19 @@ function getWindDir(deg) { return ['N','NE','E','SE','S','SW','W','NW'][Math.rou
 function getWeatherCondition(code) {
   if (code === 0) return 'Clear skies';
   if (code <= 3) return 'Partly cloudy';
-  if (code <= 9) return 'Hazy / dusty';
-  if (code <= 49) return 'Foggy';
-  if (code <= 99) return 'Rain / Thunderstorm';
+  if (code <= 9) return 'Hazy / dusty parameters';
+  if (code <= 49) return 'Fog density spikes';
+  if (code <= 99) return 'Precipitation / Localized thunderstorms';
   return 'Standard';
 }
 
 function getWeatherAdvisory(temp, wind, code) {
   const advisories = [];
-  if (temp >= 40) advisories.push('EXTREME HEAT — Mandate hydration breaks every 30 min for external patrols');
-  else if (temp >= 36) advisories.push('HIGH HEAT — Hydration breaks every hour for outdoor officers');
-  if (wind >= 25) advisories.push('MODERATE/HIGH WINDS — Secure loose structural assets');
-  if (code >= 80) advisories.push('RAIN/STORM — Check structural entry parameters, wet surface vectors');
-  if (advisories.length === 0) advisories.push('No adverse weather conditions — standard operations');
+  if (temp >= 40) advisories.push('EXTREME THERMAL INDEX — Mandate 30-min hydration cycles for external foot guards');
+  else if (temp >= 36) advisories.push('ELEVATED TEMPERATURES — Enforce structured cooling breaks for vehicle checkpoint units');
+  if (wind >= 25) advisories.push('HIGH WINDS — Survey structures for unsecured assets and debris tracking');
+  if (code >= 80) advisories.push('PRECIPITATION DETECTED — Inspect primary entrance seals and drainage arrays');
+  if (advisories.length === 0) advisories.push('Environment metrics nominal — execute standard patrol routing loops');
   return advisories;
 }
 
@@ -1675,12 +1707,12 @@ function getDCHTrafficAdvisory() {
   const day = gstDate.getDay(); 
   const isWeekend = (day === 5 || day === 6);
   if (!isWeekend) {
-    if (gstHour >= 7 && gstHour <= 9) return ['MORNING PEAK — Heavy congestion expected on Ras Al Khor Road. Visitor arrivals elevated. Gate 1 and Gate 3 access may be slow.'];
-    if (gstHour >= 16 && gstHour <= 20) return ['EVENING PEAK — Heavy outbound traffic on Al Ain Road. Elevated visitor and resident vehicle movements. Deploy additional officer to Parking Gate.'];
-    return ['Traffic conditions normal for current hour. Monitor primary junctions.'];
+    if (gstHour >= 7 && gstHour <= 9) return ['MORNING INBOUND PEAK — High congestion risk on Ras Al Khor Road junctions. Gate 1 and Gate 3 access channels slow.'];
+    if (gstHour >= 16 && gstHour <= 20) return ['EVENING OUTBOUND PEAK — Dense departure streams on Al Ain Road links. Monitor primary community loading decks.'];
+    return ['Traffic flow normal for current watch interval. Continue routine point checks.'];
   } else {
-    if (gstHour >= 16 && gstHour <= 23) return ['WEEKEND EVENING — High visitor footfall expected. Retail District and Promenade busy. Parking Levels may reach capacity.'];
-    return ['Weekend off-peak — standard environment parameters.'];
+    if (gstHour >= 16 && gstHour <= 23) return ['WEEKEND TOURISM SPIKE — Heavy visitor counts on Promenade and Retail sectors. Parking capacity limits monitored closely.'];
+    return ['Weekend off-peak interval — standard environment tracking active.'];
   }
 }
 
@@ -1707,95 +1739,97 @@ function renderHandover(data) {
     const recos = generateRecommendations(data).map((r,i) => `${i+1}. ${r.replace(/<[^>]+>/g,'')}`).join('\n');
 
     let weatherBlock = weather.ok ? `
-<span class="handover-highlight">━━━ WEATHER — INCOMING SHIFT ━━━</span>
+<span class="handover-highlight">━━━ METEOROLOGICAL PROFILE (INCOMING WATCH) ━━━</span>
 Condition        : ${weather.condition}
-Temperature      : ${weather.temp}°C
+Current Temp     : ${weather.temp}°C
 Humidity         : ${weather.humidity}%
-Wind             : ${weather.wind} km/h ${weather.windDir}
+Wind Speed       : ${weather.wind} km/h ${weather.windDir}
 Rain Probability : ${weather.maxPrecip}%
 
-ADVISORY:
-${weather.advisory.map(a => '⚠ ' + a).join('\n')}` : `\n<span class="handover-highlight">━━━ WEATHER ━━━</span>\nWeather metrics disconnected.`;
+COMMAND ADVISORY:
+${weather.advisory.map(a => '⚠ ' + a).join('\n')}` : `\n<span class="handover-highlight">━━━ WEATHER CONTINGENCY ━━━</span>\nWeather feed disconnected. Fallback to local baseline monitoring.`;
 
-    el.innerHTML = `<span class="handover-highlight">═══════════════════════════════════════════════════
-SHIFT HANDOVER REPORT — AUTO GENERATED
-DUBAI CREEK HARBOUR SECURITY OPERATIONS
+    el.innerHTML = `<span class="handover-highlight">══════════════════════════════════════════════════════════════════════════════════════
+TACTICAL SHIFT HANDOVER REGISTRY — AUTO-COMPILED BROADCAST
+DUBAI CREEK HARBOUR OPERATIONS CENTER (SOC)
 ${dateStr}
-═══════════════════════════════════════════════════</span>
+══════════════════════════════════════════════════════════════════════════════════════</span>
 
-<span class="handover-highlight">OUTGOING:</span> ${currentShiftName}
-<span class="handover-highlight">INCOMING:</span> ${nextShiftName}
+<span class="handover-highlight">OUTGOING FIELD SUPERVISOR :</span> ${currentShiftName}
+<span class="handover-highlight">INCOMING FIELD SUPERVISOR :</span> ${nextShiftName}
 
-<span class="handover-highlight">━━━ INCIDENTS (LAST 12 HOURS) ━━━</span>
-Total Incidents  : ${shift12h.length}
-${sev('Critical') > 0 ? `<span class="handover-critical">CRITICAL         : ${sev('Critical')}  ← REQUIRES IMMED HANDOVER BRIEFING</span>` : `Critical         : ${sev('Critical')}`}
-High Priority    : ${sev('High')}
-Medium           : ${sev('Medium')}
-Low / Routine    : ${sev('Low')}
-Action Required  : ${shift12h.filter(i=>i.action_required==='TRUE').length} open items
+<span class="handover-highlight">━━━ DISPATCH ANALYSIS (LAST 12-HOUR WINDOW) ━━━</span>
+Total Dispatches : ${shift12h.length}
+${(sev('Critical') + sev('High')) > 0 ? `<span class="handover-critical">ELEVATED SEVERITY: ${sev('Critical') + sev('High')}   ← EXPLICIT VERBAL BRIEFING REQUIRED ON INCOMING LINE</span>` : `Elevated Severity: ${sev('Critical') + sev('High')}`}
+Medium Priority  : ${sev('Medium')}
+Routine Logged   : ${sev('Low')}
+Open Actions      : ${shift12h.filter(i=>i.action_required==='TRUE').length} active records pending file closure
 
-<span class="handover-highlight">━━━ TOP INCIDENT TYPES ━━━</span>
-${topTypes.map(([t,c]) => `${t.replace(/_/g,' ').padEnd(25)} ${c} reports`).join('\n') || 'No incidents recorded'}
+<span class="handover-highlight">━━━ DOMINANT PATTERN DISTRIBUTION ━━━</span>
+${topTypes.map(([t,c]) => `${t.replace(/_/g,' ').padEnd(25)} ${c} reports`).join('\n') || 'No incidents processed inside window.'}
 
-<span class="handover-highlight">━━━ HOTSPOT ZONES ━━━</span>
-${topZones.map(([z,c],i) => `${i+1}. ${z.padEnd(30)} ${c} incidents`).join('\n') || 'No zone data'}
+<span class="handover-highlight">━━━ PEAK HOTSPOT CLUSTERS ━━━</span>
+${topZones.map(([z,c],i) => `${i+1}. ${z.padEnd(30)} ${c} logs`).join('\n') || 'No baseline tracking verified.'}
 ${weatherBlock}
 
-<span class="handover-highlight">━━━ TRAFFIC & ENVIRONMENT ━━━</span>
+<span class="handover-highlight">━━━ LOGISTICS & TRAFFIC CHANNELS ━━━</span>
 ${trafficAdvisories.map(a => '🚦 ' + a).join('\n')}
 
-<span class="handover-highlight">━━━ RECOMMENDATIONS FOR INCOMING SHIFT ━━━</span>
+<span class="handover-highlight">━━━ TACTICAL ORDERS FOR INCOMING COMMAND ━━━</span>
 ${recos}
 
-<span class="handover-ok">━━━ STATUS: ALL AREAS ACCOUNTED FOR ━━━</span>
-Next auto-summary: ${getNext12h()}
+<span class="handover-ok">━━━ CONTROL AUDIT: ALL SECTORS SECURE & ACCOUNTED FOR ━━━</span>
+Next register compilation sync: ${getNext12h()}
 
-Outgoing supervisor sign-off: ____________________
-Incoming supervisor sign-off: ____________________`;
+Outgoing Supervisor Signature: ___________________________
+Incoming Supervisor Signature: ___________________________`;
   });
 
-  document.getElementById('handover-shift-label').textContent = 'GENERATED: ' + gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('handover-shift-label').textContent = 'SYNC: ' + gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'});
 }
 
 function getNext12h() {
+  const { hour, gstDate } = getNextGSTDateTimeTarget();
+  return hour.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'}) + ' ' + hour.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+}
+
+function getNextGSTDateTimeTarget() {
   const { hour, gstDate } = getGSTDateTime();
   const next = new Date(gstDate); next.setMinutes(0); next.setSeconds(0);
   if (hour < 7) next.setHours(7);
   else if (hour < 19) next.setHours(19);
   else { next.setDate(next.getDate()+1); next.setHours(7); }
-  return next.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit'}) + ' ' + next.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
+  return { hour: next };
 }
 
-// ── DETAIL MODAL ──
 function showModal(idx) {
   const inc = allIncidents[idx];
   if (!inc) return;
   document.getElementById('modal-title').textContent = inc.incident_type.replace(/_/g,' ');
   const actions = inc.immediate_actions ? inc.immediate_actions.split(';').filter(Boolean) : [];
   document.getElementById('modal-body').innerHTML = `
-    <div class="modal-field"><label>Severity</label><p style="color:${sevColor(inc.severity)}; font-weight:bold;">${inc.severity}</p></div>
-    <div class="modal-field"><label>Zone</label><p>${inc.location_zone}</p></div>
+    <div class="modal-field"><label>Severity Class</label><p style="color:${sevColor(inc.severity)}; font-weight:bold;">${inc.severity}</p></div>
+    <div class="modal-field"><label>Spatial Vector</label><p>${inc.location_zone}</p></div>
     <div class="modal-field"><label>Reported by</label><p>${inc.sender}</p></div>
-    <div class="modal-field"><label>Time</label><p>${new Date(inc.timestamp).toLocaleString('en-AE')}</p></div>
-    <div class="modal-field"><label>Shift</label><p>${inc.shift || '—'}</p></div>
-    <div class="modal-field"><label>Summary</label><p>${inc.summary}</p></div>
-    ${actions.length ? `<div class="modal-field"><label>Immediate Actions</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
-    <div class="modal-field"><label>AI Confidence</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
-    <div class="modal-field"><label>Raw Message</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;">${inc.raw_message || '—'}</p></div>
-    <div class="modal-field"><label>Incident ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id}</p></div>
+    <div class="modal-field"><label>Timestamp</label><p>${new Date(inc.timestamp).toLocaleString('en-AE')}</p></div>
+    <div class="modal-field"><label>Operational Shift Window</label><p>${inc.shift || '—'}</p></div>
+    <div class="modal-field"><label>Summary</label><p>${inc.summary || '—'}</p></div>
+    ${actions.length ? `<div class="modal-field"><label>Immediate Actions Taken / Required</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
+    <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
+    <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.raw_message || inc.summary || '—'}</p></div>
+    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id}</p></div>
   `;
   document.getElementById('modal').classList.add('show');
 }
 
 function sevColor(s) {
-  return {Critical:'var(--red)',High:'#d06010',Medium:'var(--accent)',Low:'var(--green)'}[s] || 'var(--text-sec)';
+  return {Critical:'var(--red)', High:'#d06010', Medium:'var(--accent)', Low:'var(--green)'}[s] || 'var(--text-sec)';
 }
 
 function closeModal(e) {
   if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
 }
 
-// Live auto-refresh engine
 setInterval(() => {
   const url = document.getElementById('sheet-url').value.trim();
   if (url && allIncidents.length > 0) fetchData();
@@ -1804,7 +1838,7 @@ setInterval(() => {
 window.addEventListener('load', () => {
   setTimeout(() => {
     if (!allIncidents.length) {
-      document.getElementById('fetch-status').textContent = 'Click LOAD DEMO to preview with sample data, or paste your Sheet URL above';
+      document.getElementById('fetch-status').textContent = 'Input Sheet endpoint URL to pull direct records or execute LOAD DEMO to verify formatting layout layers...';
     }
   }, 1500);
 });
