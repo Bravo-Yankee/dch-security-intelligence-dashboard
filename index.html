@@ -135,6 +135,10 @@
 
   .header-center {
     text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
   }
 
   .live-indicator {
@@ -157,6 +161,28 @@
     border-radius: 50%;
     background: var(--green);
     animation: pulse-green 2s infinite;
+  }
+
+  .holiday-link {
+    display: inline-flex;
+    align-items: center;
+    background: var(--blue-dim);
+    border: 1px solid var(--blue);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--blue);
+    letter-spacing: 1px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.1s;
+  }
+  
+  .holiday-link:hover {
+    background: var(--blue);
+    color: #fff;
+    transform: translateY(-1px);
   }
 
   @keyframes pulse-green {
@@ -890,6 +916,9 @@
     <div class="live-indicator">
       <div class="live-dot"></div> LIVE FEED 
     </div>
+    <a href="holiday-home.html" class="holiday-link">
+      HH TRACKER ↗
+    </a>
   </div>
   <div class="header-right">
     <div id="live-clock">00:00:00</div>
@@ -1112,7 +1141,6 @@ updateClock();
 async function fetchData() {
   const url = document.getElementById('sheet-url').value.trim();
   if (!url) {
-    alert('Please paste your Google Sheets published CSV URL first.');
     return;
   }
   document.getElementById('loading').classList.add('show');
@@ -1240,13 +1268,13 @@ function sortIncidentsDescending(incidents) {
   incidents.sort((a, b) => b.jsDate - a.jsDate);
 }
 
-// Live auto-refresh engine
+/* Auto-refresh logic adjusted to run exactly every 5 minutes */
 setInterval(() => {
   const url = document.getElementById('sheet-url').value.trim();
   if (url && allIncidents.length > 0) {
     fetchData();
   }
-}, 30000);
+}, 300000);
 
 function loadDemoData() {
   const demoText = `Timestamp,Severity,Location Zone,Incident Type,Summary,Actions Taken,Confidence,Message ID,Status
