@@ -57,7 +57,6 @@
     --font-body:    'DM Sans', sans-serif;
     --r:          6px;
     
-    /* Google Gemini AI Theme Constants */
     --gemini-gradient: linear-gradient(135deg, #4285f4, #9b51e0, #e91e63, #f2994a);
     --gemini-glow: rgba(155, 81, 224, 0.25);
   }
@@ -251,7 +250,6 @@
 
   .config-bar input[type="text"] { width: 320px; max-width: 100%; }
 
-  /* ── GOOGLE GEMINI AI HOVERING EFFECTS ── */
   .btn-fetch, .btn-demo, .btn-theme-toggle, .btn-holiday {
     position: relative;
     border-radius: var(--r);
@@ -291,7 +289,6 @@
     opacity: 1;
   }
 
-  /* Specific base contrast for primary buttons */
   .btn-fetch {
     background: var(--text-pri);
     color: var(--bg-card);
@@ -444,7 +441,7 @@
     position: relative;
   }
 
-  /* ── SCROLLABLE ZONE HEATMAP FOR ALL COMMUNITIES ── */
+  /* ── SCROLLABLE ZONE HEATMAP ── */
   .zone-grid {
     padding: 12px 16px;
     display: grid;
@@ -719,7 +716,7 @@
     text-align: right;
   }
 
-  /* ── SCROLLABLE HANDOVER BROADCAST CONTAINER ── */
+  /* ── HANDOVER BROADCAST CONTAINER ── */
   .handover-box {
     padding: 16px 20px;
     font-family: var(--font-mono);
@@ -802,7 +799,7 @@
     padding-bottom: 4px; letter-spacing: 1px;
   }
 
-  /* ── FOOTER CORE ── */
+  /* ── FOOTER ── */
   footer {
     padding: 12px 32px;
     border-top: 2px solid var(--border);
@@ -1203,14 +1200,19 @@ function loadDemoData() {
 }
 
 function parseCSV(text) {
-  const lines = text.split('\n');
+  // Safe normalization for lines to strip out destructive carriage returns
+  const lines = text.split(/\r?\n/);
+  if (!lines.length || !lines[0].trim()) return [];
+  
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
   const results = [];
+  
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
     let currentline = [];
     let insideQuote = false;
     let entry = '';
+    
     for (let char of lines[i]) {
       if (char === '"') { insideQuote = !insideQuote; }
       else if (char === ',' && !insideQuote) { currentline.push(entry.trim()); entry = ''; }
@@ -1218,11 +1220,15 @@ function parseCSV(text) {
     }
     currentline.push(entry.trim());
     if (currentline.length < headers.length) continue;
+    
     const obj = {};
     headers.forEach((h, idx) => {
-      let val = currentline[idx] ? currentline[idx].replace(/^"|"$/g, '') : '';
-      if (h === 'ai_confidence') { obj[h] = parseFloat(val) || 0; }
-      else { obj[h] = val; }
+      let val = currentline[idx] ? currentline[idx].replace(/^"|"$/g, '').trim() : '';
+      if (h === 'ai_confidence') { 
+        obj[h] = parseFloat(val) || 0; 
+      } else { 
+        obj[h] = val; 
+      }
     });
     results.push(obj);
   }
@@ -1230,7 +1236,13 @@ function parseCSV(text) {
 }
 
 function sortIncidentsDescending(incidents) {
-  incidents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  incidents.sort((a, b) => {
+    if (!a.timestamp || !b.timestamp) return 0;
+    const dateA = new Date(a.timestamp.replace(/-/g, '/'));
+    const dateB = new Date(b.timestamp.replace(/-/g, '/'));
+    if (isNaN(dateA) || !isNaN(dateB)) return dateB - dateA;
+    return 0;
+  });
 }
 
 function filterByDays(incidents, days) {
@@ -1238,7 +1250,10 @@ function filterByDays(incidents, days) {
   const { gstDate } = getGSTDateTime();
   const targetDate = new Date(gstDate);
   targetDate.setDate(targetDate.getDate() - parseInt(days));
-  return incidents.filter(inc => new Date(inc.timestamp) >= targetDate);
+  return incidents.filter(inc => {
+    if (!inc.timestamp) return false;
+    return new Date(inc.timestamp.replace(/-/g, '/')) >= targetDate;
+  });
 }
 
 function renderAll() {
@@ -1246,7 +1261,6 @@ function renderAll() {
   const data = filterByDays(allIncidents, days);
   document.getElementById('chart-range-label').textContent = days === '999' ? 'ALL' : days + 'D';
   
-  // KPIs
   document.getElementById('kpi-total').textContent = data.length;
   const critHighCount = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
   document.getElementById('kpi-critical').textContent = critHighCount;
@@ -1272,8 +1286,9 @@ function renderTimelineChart(data) {
   
   const groups = {};
   data.forEach(i => {
+    if (!i.timestamp) return;
     const dStr = i.timestamp.split(' ')[0];
-    groups[dStr] = (groups[dStr] || 0) + 1;
+    if (dStr) groups[dStr] = (groups[dStr] || 0) + 1;
   });
   const labels = Object.keys(groups).sort();
   const counts = labels.map(l => groups[l]);
@@ -1341,16 +1356,16 @@ function renderIncidentFeed(data) {
   }
   container.innerHTML = data.map((inc, index) => `
     <div class="feed-item" onclick="openModal(${index})">
-      <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
+      <div class="severity-dot ${inc.severity ? inc.severity.toLowerCase() : 'low'}"></div>
       <div>
         <div class="feed-type">${inc.incident_type || 'Unspecified Incident'}</div>
         <div class="feed-summary">${inc.summary || 'No operational narrative provided.'}</div>
         <div class="feed-meta">
           <span class="tag zone">${inc.location_zone || 'Global'}</span>
-          <span class="tag type">${inc.severity}</span>
+          <span class="tag type">${inc.severity || 'Low'}</span>
         </div>
       </div>
-      <div class="feed-time">${inc.timestamp ? inc.timestamp.split(' ')[1].substring(0,5) : '—'}</div>
+      <div class="feed-time">${inc.timestamp && inc.timestamp.includes(' ') ? inc.timestamp.split(' ')[1].substring(0,5) : '—'}</div>
     </div>
   `).join('');
 }
@@ -1358,7 +1373,7 @@ function renderIncidentFeed(data) {
 function renderShiftAnalysis(data) {
   const shiftGroups = { Morning: [], Night: [] };
   data.forEach(inc => {
-    if (!inc.timestamp) return;
+    if (!inc.timestamp || !inc.timestamp.includes(' ')) return;
     const timePart = inc.timestamp.split(' ')[1];
     if (!timePart) return;
     const hr = parseInt(timePart.split(':')[0]);
@@ -1455,7 +1470,7 @@ function renderAIRecommendations(data) {
   container.innerHTML = uniqueZones.slice(0, 2).map((zone, idx) => `
     <div class="reco-item">
       <div class="reco-num">0${idx+1}</div>
-      <div><strong>Target Patrol Intensification [${zone}]:</strong> Clustered critical patterns detected. Deploy secondary command unit vectors immediately to secure vulnerable areas.</div>
+      <div><strong>Target Patrol Intensification [${zone || 'Global'}]:</strong> Clustered critical patterns detected. Deploy secondary command unit vectors immediately to secure vulnerable areas.</div>
     </div>
   `).join('');
 }
@@ -1475,7 +1490,7 @@ function renderHandoverSummary(allData) {
   document.getElementById('handover-shift-label').textContent = `AUTOMATED 12H BROADCAST SUMMARY · OUTGOING ${targetShift.toUpperCase()} SHIFT`;
   
   const shiftIncidents = allData.filter(inc => {
-    if (!inc.timestamp) return false;
+    if (!inc.timestamp || !inc.timestamp.includes(' ')) return false;
     const timePart = inc.timestamp.split(' ')[1];
     if (!timePart) return false;
     const tHour = parseInt(timePart.split(':')[0]);
@@ -1497,8 +1512,9 @@ function renderHandoverSummary(allData) {
   summaryText += `2. CRITICAL INCIDENT LOG MATRIX:\n`;
   if (criticals.length > 0) {
     criticals.forEach(c => {
-      summaryText += `   [${c.timestamp.split(' ')[1].substring(0,5)}] | <span class="handover-critical">${c.severity.toUpperCase()}</span> | ${c.location_zone} | ${c.incident_type}\n`;
-      summaryText += `   Narrative: "${c.summary}"\n`;
+      const timeDisplay = c.timestamp && c.timestamp.includes(' ') ? c.timestamp.split(' ')[1].substring(0,5) : '00:00';
+      summaryText += `   [${timeDisplay}] | <span class="handover-critical">${(c.severity || 'HIGH').toUpperCase()}</span> | ${c.location_zone || 'Unknown Zone'} | ${c.incident_type || 'Incident'}\n`;
+      summaryText += `   Narrative: "${c.summary || '—'}"\n`;
       summaryText += `   Tactical Resolution: ${c.actions_taken || 'Field parameters monitoring active.'}\n`;
       summaryText += `   ────────────────────────────────────────────────────────────\n`;
     });
@@ -1549,13 +1565,14 @@ function showZonePanel(zoneName) {
     html += '<div class="empty-state" style="padding:20px;">No historical exceptions logged.</div>';
   } else {
     zoneIncidents.forEach(inc => {
+      const dateDisplay = inc.timestamp ? inc.timestamp.split(' ')[0] : '—';
       html += `
         <div style="background:var(--bg-panel); padding:10px; border-radius:4px; border-left:3px solid ${sevColor(inc.severity)};">
           <div style="display:flex; justify-content:between; font-size:11px; font-family:var(--font-mono); font-weight:600; margin-bottom:4px;">
             <span style="color:var(--text-pri); flex:1;">${inc.incident_type || 'Incident'}</span>
-            <span style="color:var(--text-dim);">${inc.timestamp.split(' ')[0]}</span>
+            <span style="color:var(--text-dim);">${dateDisplay}</span>
           </div>
-          <div style="font-size:12px; color:var(--text-sec); line-height:1.4;">${inc.summary}</div>
+          <div style="font-size:12px; color:var(--text-sec); line-height:1.4;">${inc.summary || '—'}</div>
         </div>
       `;
     });
