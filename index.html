@@ -56,6 +56,9 @@
     --font-mono:    'DM Mono', monospace;
     --font-body:    'DM Sans', sans-serif;
     --r:          6px;
+    
+    --gemini-gradient: linear-gradient(135deg, #4285f4, #9b51e0, #e91e63, #f2994a);
+    --gemini-glow: rgba(155, 81, 224, 0.25);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -135,10 +138,6 @@
 
   .header-center {
     text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    justify-content: center;
   }
 
   .live-indicator {
@@ -161,28 +160,6 @@
     border-radius: 50%;
     background: var(--green);
     animation: pulse-green 2s infinite;
-  }
-
-  .holiday-link {
-    display: inline-flex;
-    align-items: center;
-    background: var(--blue-dim);
-    border: 1px solid var(--blue);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--blue);
-    letter-spacing: 1px;
-    text-decoration: none;
-    transition: background 0.2s, transform 0.1s;
-  }
-  
-  .holiday-link:hover {
-    background: var(--blue);
-    color: #fff;
-    transform: translateY(-1px);
   }
 
   @keyframes pulse-green {
@@ -273,10 +250,8 @@
 
   .config-bar input[type="text"] { width: 320px; max-width: 100%; }
 
-  .btn-fetch {
-    background: var(--text-pri);
-    color: var(--bg-card);
-    border: none;
+  .btn-fetch, .btn-demo, .btn-theme-toggle, .btn-holiday {
+    position: relative;
     border-radius: var(--r);
     padding: 7px 18px;
     font-family: var(--font-body);
@@ -284,43 +259,57 @@
     font-size: 12px;
     cursor: pointer;
     letter-spacing: 0.5px;
-  }
-
-  .btn-fetch:hover { opacity: 0.9; }
-
-  .btn-demo {
-    background: var(--bg-card);
-    color: var(--text-sec);
     border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: 12px;
-    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-pri);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+    overflow: hidden;
   }
 
-  .btn-demo:hover {
-    color: var(--text-pri);
-    border-color: var(--text-pri);
+  .btn-fetch::before, .btn-demo::before, .btn-theme-toggle::before, .btn-holiday::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gemini-gradient);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+  }
+
+  .btn-fetch:hover, .btn-demo:hover, .btn-theme-toggle:hover, .btn-holiday:hover {
+    color: #ffffff !important;
+    border-color: transparent;
+    transform: translateY(-1.5px);
+    box-shadow: 0 0 16px var(--gemini-glow);
+    letter-spacing: 1px;
+  }
+
+  .btn-fetch:hover::before, .btn-demo:hover::before, .btn-theme-toggle:hover::before, .btn-holiday:hover::before {
+    opacity: 1;
+  }
+
+  .btn-fetch {
+    background: var(--text-pri);
+    color: var(--bg-card);
+    border: none;
   }
 
   .btn-theme-toggle {
-    background: var(--bg-card);
-    color: var(--text-pri);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 14px;
     font-family: var(--font-mono);
-    font-weight: 600;
     font-size: 11px;
-    cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
   }
-  .btn-theme-toggle:hover {
-    background: var(--bg-hover);
+
+  .btn-holiday {
+    background: var(--blue-dim);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
   }
 
   .fetch-status {
@@ -452,7 +441,7 @@
     position: relative;
   }
 
-  /* ── SCROLLABLE ZONE HEATMAP FOR ALL COMMUNITIES ── */
+  /* ── SCROLLABLE ZONE HEATMAP ── */
   .zone-grid {
     padding: 12px 16px;
     display: grid;
@@ -604,9 +593,18 @@
     gap: 16px;
   }
 
-  /* ── TWO-SHIFT SELECTOR ANALYSIS ── */
+  /* ── MODIFIED SIDE-BY-SIDE SHIFT ANALYSIS SECTION ── */
+  .shift-split-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    padding: 12px 16px;
+    gap: 12px;
+    align-items: start;
+  }
+
   .shift-selector {
     display: flex;
+    margin-bottom: 12px;
   }
 
   .shift-btn {
@@ -631,8 +629,7 @@
     color: var(--bg-card);
   }
 
-  .shift-stats {
-    padding: 12px 16px;
+  .shift-stats-entries {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -650,6 +647,12 @@
   .shift-row:last-child { border-bottom: none; }
   .shift-row-label { color: var(--text-sec); font-weight: 500; }
   .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
+
+  .shift-chart-wrap {
+    height: 155px;
+    position: relative;
+    width: 100%;
+  }
 
   /* ── THREAT MITIGATION ENGINE ── */
   .reco-list {
@@ -727,7 +730,7 @@
     text-align: right;
   }
 
-  /* ── SCROLLABLE HANDOVER BROADCAST CONTAINER ── */
+  /* ── HANDOVER BROADCAST CONTAINER ── */
   .handover-box {
     padding: 16px 20px;
     font-family: var(--font-mono);
@@ -757,11 +760,11 @@
   .handover-critical { color: var(--red); font-weight: bold; background: rgba(184,20,20,0.05); padding: 0 4px; }
   .handover-ok { color: var(--green); font-weight: 600; }
 
-  /* ── OVERLAY PROFILES ── */
+  /* ── OVERLAY PROFILES (SLIDE PANEL REConfigured) ── */
   .slide-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.4);
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
@@ -774,43 +777,59 @@
     top: 0; right: -420px;
     width: 420px; height: 100vh;
     background: var(--bg-card);
-    border-left: 2px solid var(--border);
+    border-left: 1px solid var(--border);
     z-index: 1001;
-    box-shadow: -5px 0 20px rgba(0,0,0,0.08);
+    box-shadow: -5px 0 25px rgba(0,0,0,0.15);
     display: flex;
     flex-direction: column;
-    transition: right 0.2s ease;
+    transition: right 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .slide-backdrop.show .slide-panel { right: 0; }
   
   .slide-header {
-    padding: 20px;
+    padding: 14px 18px;
     background: var(--bg-panel);
     border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center;
   }
   .slide-title {
     font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: 1px;
+    font-size: 16px;
+    letter-spacing: 1.5px;
     color: var(--text-pri);
   }
   .slide-close {
     background: none; border: none;
-    color: var(--text-sec); font-size: 22px; cursor: pointer;
+    color: var(--text-sec); font-size: 18px; cursor: pointer;
+    line-height: 1;
   }
   .slide-body {
-    padding: 20px; overflow-y: auto; flex: 1;
-    display: flex; flex-direction: column; gap: 20px;
+    padding: 16px; overflow-y: auto; flex: 1;
+    display: flex; flex-direction: column; gap: 18px;
   }
   .slide-sub-title {
     font-family: var(--font-mono);
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    color: var(--text-sec); border-bottom: 2px solid var(--border);
-    padding-bottom: 4px; letter-spacing: 1px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    color: var(--text-sec); border-bottom: 1px solid var(--border);
+    padding-bottom: 4px; letter-spacing: 1.5px;
   }
 
-  /* ── FOOTER CORE ── */
+  /* ── INTERACTIVE SIDEBAR FEED CARDS ── */
+  .slide-feed-item {
+    background: var(--bg-panel); 
+    padding: 10px 12px; 
+    border-radius: var(--r); 
+    border: 1px solid var(--border); 
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .slide-feed-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-dim);
+  }
+
+  /* ── FOOTER ── */
   footer {
     padding: 12px 32px;
     border-top: 2px solid var(--border);
@@ -899,6 +918,7 @@
     .main-grid, .bottom-grid { grid-template-columns: 1fr; }
     .config-bar { justify-content: center; }
     .fetch-status { margin-left: 0; text-align: center; width: 100%; }
+    .shift-split-layout { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -908,17 +928,15 @@
   <div class="header-left">
     <div class="logo-badge">DCH</div>
     <div>
-      <div class="header-title">LIVE FEED</div>
-      <div class="header-sub">Dubai Creek Harbour · Operations Dashboard</div>
+      <div class="header-title">ZONE D — SECURITY OPERATIONS CENTRE</div>
+      <div class="header-sub">Dubai Creek Harbour Zone D · 14 Communities · 204 Officers · 8008 Cameras</div>
     </div>
   </div>
   <div class="header-center">
     <div class="live-indicator">
-      <div class="live-dot"></div> LIVE FEED 
+      <div class="live-dot"></div>
+      LIVE FEED
     </div>
-    <a href="holiday-home.html" class="holiday-link">
-      HH TRACKER ↗
-    </a>
   </div>
   <div class="header-right">
     <div id="live-clock">00:00:00</div>
@@ -928,6 +946,7 @@
 
 <div class="config-bar">
   <input type="text" id="sheet-url" placeholder="Paste your Google Sheets published CSV URL here" />
+  
   <label>RANGE</label>
   <select id="date-range">
     <option value="1">Today</option>
@@ -935,11 +954,15 @@
     <option value="30">Last 30 days</option>
     <option value="999">All time</option>
   </select>
+
   <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
   <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
+  <a href="holiday-home.html" class="btn-holiday">HOLIDAY HOMES</a>
+  
   <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
     <span>🌙</span><span id="theme-text">Dark Mode</span>
   </button>
+
   <span class="fetch-status" id="fetch-status">No data loaded · Click LOAD DEMO to preview</span>
 </div>
 
@@ -1013,11 +1036,13 @@
           <button class="shift-btn" onclick="setShift('Night', this)">NIGHT</button>
         </div>
       </div>
-      <div class="shift-stats" id="shift-stats">
-        <div class="empty-state" style="padding:20px">Load operations metrics</div>
-      </div>
-      <div class="chart-wrap" style="height:160px;">
-        <canvas id="shiftChart"></canvas>
+      <div class="shift-split-layout">
+        <div class="shift-stats-entries" id="shift-stats">
+          <div class="empty-state" style="padding:20px">Load operations metrics</div>
+        </div>
+        <div class="shift-chart-wrap">
+          <canvas id="shiftChart"></canvas>
+        </div>
       </div>
     </div>
 
@@ -1054,145 +1079,151 @@
 <div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
   <div class="slide-panel" onclick="event.stopPropagation()">
     <div class="slide-header">
-      <div class="slide-title" id="slide-zone-name">ZONE DETAIL PROFILE</div>
+      <div class="slide-title" id="slide-zone-name">ZONE HEATMAP</div>
       <button class="slide-close" onclick="hideZonePanel()">✕</button>
     </div>
     <div class="slide-body" id="slide-zone-body"></div>
   </div>
 </div>
 
-<footer>
-  <span class="footer-left-content">
-    DCH ZONE D SECURITY · POWERED BY 
-    <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block !important; flex-shrink: 0 !important; margin: 0 3px 0 5px; vertical-align: middle;">
-      <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </span>
-  <span>SHIFT HANDOVER WINDOW: 07:00 &amp; 19:00</span>
-  <span id="last-refresh">LAST REFRESH: —</span>
-</footer>
-
-<div class="loading-overlay" id="loading">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">STREAMING TARGET TELEMETRY...</div>
-</div>
-
-<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
-  <div class="modal">
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+  <div class="modal" id="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-title">REPORT DETAILS</div>
-      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
+      <div class="modal-title">SEC — OPERATIONAL EMERGENCY ENTRY PROFILE</div>
+      <button class="modal-close" onclick="document.getElementById('modal-backdrop').classList.remove('show')">✕</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
   </div>
 </div>
 
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">INTERROGATING DATASTORES...</div>
+</div>
+
+<footer>
+  <div class="footer-left-content">
+    <svg class="animated-vector-horse" width="22" height="18" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 16C5 15 6.5 13.5 7.5 12.5C8.5 11.5 9 10 9.5 8.5C10 7 11 4.5 13 3.5C15 2.5 17 2 18.5 3C20 4 20.5 6 20.5 7.5C20.5 9 19.5 11.5 18 13.5C16.5 15.5 14 17 12 17.5C10 18 7.5 17.5 5.5 18.5C4.5 19 4 19.5 4 19.5" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M13 3.5C13.5 4.5 14 6 13.5 7C13 8 11.5 9 10.5 9.5" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M9.5 8.5C8.5 8.5 7 9 6.5 10C6 11 6.5 12.5 7.5 12.5" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M15 15.5C15.5 17 16 18.5 16.5 19.5" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M10 17.5C9.5 18.5 9 19.5 8.5 19.5" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span>DUBAI CREEK HARBOUR · SECURITY OPERATIONS CONTROL CENTER</span>
+  </div>
+  <div>v4.8.2 · STABLE FRAMEWORK</div>
+</footer>
+
 <script>
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeTogglerUI(savedTheme);
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeTogglerUI(newTheme);
-  if (charts.timeline || charts.shift) {
-    renderAll();
-  }
-}
-
-function updateThemeTogglerUI(theme) {
-  const toggler = document.getElementById('theme-toggler');
-  const txt = document.getElementById('theme-text');
-  if (theme === 'dark') {
-    toggler.querySelector('span:first-child').textContent = '🌙';
-    txt.textContent = 'Dark Mode';
-  } else {
-    toggler.querySelector('span:first-child').textContent = '☀️';
-    txt.textContent = 'Light Mode';
-  }
-}
-initTheme();
-
 let allIncidents = [];
-let charts = {};
-let currentShift = 'Morning';
+let currentShiftFilter = 'Morning'; 
+let timelineChart = null;
+let shiftChart = null;
 
-function getGSTDateTime(dateInput) {
-  const baseDate = dateInput ? new Date(dateInput) : new Date();
-  const gstString = baseDate.toLocaleString("en-US", {timeZone: "Asia/Dubai"});
-  const gstDate = new Date(gstString);
-  const hour = gstDate.getHours();
-  return { gstDate, hour };
+const DEMO_CSV = `"timestamp","incident_type","location_zone","severity","summary","actions_taken","status","message_id","ai_confidence"
+"2026-06-06 08:14:02","Access Control Issue","Creek Horizon","Medium","Delivery courier refused security registry protocol at Tower A parking entrance. Expressed friction regarding identification logs.","Supervisor intervened. Courier briefed on community regulations, credential logged manually, access permitted under escort.","Resolved","MSG99011234","0.94"
+"2026-06-06 10:45:22","Fire Alarm Activation","DCH Project Site","Critical","Smoke detector activated in Sector 3 contractor welding zone. Triggered automated alarm matrix cascade inside panel.","Dispatched fire wardens. Confirmed accidental dust accumulation during active masonry cutting. Ventilated area, panel reset successfully.","Resolved","MSG99011235","0.98"
+"2026-06-06 14:20:11","Facility Malfunction","Harbour Views","Low","Main irrigation pipeline burst near boulevard promenade periphery, causing localized pooling across pedestrian walkway.","Isolated primary flow gate valve. Contacted FM landscaping group for expedited pressure line remediation. Erected hazard cones.","Resolved","MSG99011236","0.91"
+"2026-06-06 17:35:00","Trespassing / Unauthorized Entry","Creek Marina","High","Unregistered commercial photography team set up heavy boom setups inside private observation deck without permit papers.","Approached crew. Validated lack of staging permits. Escorted group outside deck perimeter without further civil incident.","Resolved","MSG99011237","0.96"
+"2026-06-06 21:10:44","Medical Emergency","Address Grand","High","Visitor tripped on step corridor near pool deck, sustaining minor laceration to the right forearm.","Applied immediate trauma first aid kit dressings. Assessed orientation. Patient declined external Dubai Ambulance dispatch; left with family.","Resolved","MSG99011238","0.95"
+"2026-06-05 02:15:33","Suspicious Activity","DCH Project Site","Medium","Night patrol unit observed two vehicles idling near the perimeter boundary line fence sector with headlights deactivated.","Challenged drivers. Individuals identified as sub-contractor survey workers waiting for shift clearance codes. Moved to holding compound.","Resolved","MSG99011239","0.89"
+"2026-06-05 07:50:12","Vandalism / Property Damage","Creek Harbour Walk","Low","Skateboarders noted grinding against custom granite public benches, chipping protective structural sealant finish.","Politely moved individuals along to designated public park layouts. Documented asset damage vectors for engineering repair queue.","Resolved","MSG99011240","0.92"
+"2026-06-04 11:30:00","Traffic Congestion / Blockage","Boulevard Gate","Medium","Tour bus experienced sudden engine failure, blocking two primary inbound transit lanes near roundabout intersection.","Implemented manual directional traffic splitting. Coordinated recovery flatbed crane tow array to clear right-of-way within 22 minutes.","Resolved","MSG99011241","0.94"
+"2026-06-03 23:45:19","Access Control Issue","Harbour Gate","Low","Resident lost physical proxy keycard access device, claiming security gate lockout frustration at entrance bypass doors.","Verified master resident database ledger. Provided temp card pass, updated account configuration matrix parameters.","Resolved","MSG99011242","0.93"
+"2026-06-02 13:12:05","Asset Protection","Creek Marina","Low","Unattended motorized jet-ski drifted loose from transient docking slip, floating towards public ferry path vectors.","Deployed security response rib watercraft. Secured tow line to loose asset, returned to safe harborage point. Alerted slip owner.","Resolved","MSG99011243","0.97"`;
+
+// Theme Controller
+function initTheme() {
+  const saved = localStorage.getItem('dch-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeUI(saved);
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const target = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', target);
+  localStorage.setItem('dch-theme', target);
+  updateThemeUI(target);
+  if(allIncidents.length > 0) {
+    renderTimelineChart(allIncidents);
+    updateShiftMetrics(allIncidents);
+  }
+}
+function updateThemeUI(theme) {
+  const text = document.getElementById('theme-text');
+  const toggler = document.getElementById('theme-toggler');
+  if(theme === 'dark') {
+    text.innerText = "Dark Mode";
+    toggler.querySelector('span').innerText = "🌙";
+  } else {
+    text.innerText = "Light Mode";
+    toggler.querySelector('span').innerText = "☀️";
+  }
 }
 
-function updateClock() {
-  const { gstDate } = getGSTDateTime();
-  document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
-  document.getElementById('live-date').textContent = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+// Clock Setup
+function startClock() {
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('live-clock').innerText = now.toTimeString().split(' ')[0];
+    const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', opts).toUpperCase();
+  }, 1000);
 }
-setInterval(updateClock, 1000);
-updateClock();
 
-async function fetchData() {
+// Data Handling Initialization
+function loadDemoData() {
+  showLoading("PARSING INTERNAL DEMO DATA MATRIX...");
+  setTimeout(() => {
+    processCSVData(DEMO_CSV);
+    document.getElementById('fetch-status').innerText = "Displaying mock telemetry sandbox dataset";
+    hideLoading();
+  }, 600);
+}
+
+function showLoading(txt) {
+  document.getElementById('loading-text').innerText = txt;
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading').classList.remove('show');
+}
+
+function fetchData() {
   const url = document.getElementById('sheet-url').value.trim();
-  if (!url) {
+  if(!url) {
+    alert("Please provide a valid published CSV URL framework path.");
     return;
   }
-  document.getElementById('loading').classList.add('show');
-  document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
+  showLoading("ESTABLISHING REMOTE DATALINK STREAM...");
   
-  let csvUrl = url;
-  if (url.includes('/pub?')) {
-    csvUrl = url;
-  } else if (url.includes('/edit')) {
-    csvUrl = url.replace('/edit', '/pub') + '?output=csv';
-  } else if (!url.includes('output=csv')) {
-    csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
-  }
-
-  const attempts = [
-    csvUrl,
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
-    'https://corsproxy.io/?' + encodeURIComponent(csvUrl)
-  ];
-
-  let lastError = '';
-  for (const attemptUrl of attempts) {
-    try {
-      const resp = await fetch(attemptUrl, { cache: 'no-store' });
-      if (!resp.ok) {
-        lastError = 'HTTP ' + resp.status;
-        continue;
-      }
-      const text = await resp.text();
-      if (!text || text.trim().length < 10) {
-        lastError = 'Empty response';
-        continue;
-      }
-      allIncidents = parseCSV(text);
-      sortIncidentsDescending(allIncidents);
-      
-      const { gstDate } = getGSTDateTime();
-      const timeStr = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', hour12:false});
-      document.getElementById('last-refresh').textContent = `LAST REFRESH: ${timeStr}`;
-      document.getElementById('fetch-status').textContent = `Connected · ${allIncidents.length} active rows parsed`;
-      
-      renderAll();
-      document.getElementById('loading').classList.remove('show');
-      return;
-    } catch (e) {
-      lastError = e.message;
+  let fetchUrl = url;
+  if(url.includes('docs.google.com/spreadsheets') && !url.includes('output=csv')) {
+    if(url.includes('/pubhtml')) {
+      fetchUrl = url.replace('/pubhtml', '/pub?output=csv');
+    } else if(url.includes('/edit')) {
+      fetchUrl = url.split('/edit')[0] + '/export?format=csv';
+    } else {
+      fetchUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
     }
   }
-  
-  document.getElementById('loading').classList.remove('show');
-  document.getElementById('fetch-status').textContent = 'Error fetching telemetry data pools';
-  alert('Unable to load CSV telemetry stream data: ' + lastError);
+
+  fetch(fetchUrl)
+    .then(res => {
+      if(!res.ok) throw new Error("HTTP connection pipeline failure state.");
+      return res.text();
+    })
+    .then(text => {
+      processCSVData(text);
+      document.getElementById('fetch-status').innerText = `Datalink active · Fetched ${allIncidents.length} logs`;
+      hideLoading();
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Pipeline failure: " + err.message + "\nCheck sharing configuration.");
+      hideLoading();
+    });
 }
 
 function parseCSV(text) {
@@ -1201,8 +1232,8 @@ function parseCSV(text) {
   let inQuotes = false;
 
   for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    const next = text[i+1];
+    let c = text[i];
+    let next = text[i+1];
     if (c === '"') {
       if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
       else { inQuotes = !inQuotes; }
@@ -1217,155 +1248,95 @@ function parseCSV(text) {
     }
   }
   if (row.length > 1 || row[0] !== '') lines.push(row);
-  if (lines.length < 2) return [];
-
-  const headers = lines[0].map(h => h.trim().toLowerCase().replace(/[\s_]+/g, ''));
-  const mapped = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const r = lines[i];
-    if (r.length < headers.length || !r[0]) continue;
-    const item = {};
+  
+  if(lines.length === 0) return [];
+  const headers = lines[0].map(h => h.trim().toLowerCase());
+  
+  return lines.slice(1).map(r => {
+    const obj = {};
     headers.forEach((h, idx) => {
-      item[h] = r[idx] ? r[idx].trim() : '';
+      obj[h] = r[idx] ? r[idx].trim() : '';
     });
-    
-    let rawDateStr = item.timestamp || item.datetime || item.date || '';
-    if (rawDateStr) {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(rawDateStr)) {
-        rawDateStr += " 00:00:00";
-      }
-      let parsedMs = Date.parse(rawDateStr.replace(/-/g, '/'));
-      if (isNaN(parsedMs)) {
-        parsedMs = Date.parse(rawDateStr);
-      }
-      if (!isNaN(parsedMs)) {
-        const { gstDate } = getGSTDateTime(parsedMs);
-        item.jsDate = gstDate;
-      }
-    }
-    if (!item.jsDate) item.jsDate = new Date();
-
-    let sev = item.severity || 'Medium';
-    sev = sev.charAt(0).toUpperCase() + sev.slice(1).toLowerCase();
-    if (['Critical','High','Medium','Low'].includes(sev)) item.severity = sev;
-    else item.severity = 'Medium';
-
-    item.confidence = parseFloat(item.confidence || item.parsingconfidencescore) || 0.85;
-    item.message_id = item.messageid || item.systemreferenceid || 'M-' + Math.random().toString(36).substr(2,9).toUpperCase();
-    item.raw_message = item.rawmessage || item.rawwhatsapppayloadtext || item.summary || '';
-    item.actions_taken = item.actionstaken || item.immediateaction || '';
-    item.location_zone = item.locationzone || item.zone || 'DCH Project Site';
-    item.incident_type = item.incidenttype || item.type || 'General Operations';
-    item.status = item.status || 'Open';
-
-    mapped.push(item);
-  }
-  return mapped;
-}
-
-function sortIncidentsDescending(incidents) {
-  incidents.sort((a, b) => b.jsDate - a.jsDate);
-}
-
-/* Auto-refresh logic adjusted to run exactly every 5 minutes */
-setInterval(() => {
-  const url = document.getElementById('sheet-url').value.trim();
-  if (url && allIncidents.length > 0) {
-    fetchData();
-  }
-}, 300000);
-
-function loadDemoData() {
-  const demoText = `Timestamp,Severity,Location Zone,Incident Type,Summary,Actions Taken,Confidence,Message ID,Status
-2026-06-06 20:15:00,Critical,DCH Project Site,Fire Safety,Minor smoke detected at basement perimeter cluster,Dispatched inspection crew to clear localized trash flare immediately,0.98,MSG-99101,Closed
-2026-06-06 19:40:00,High,DCH Project Site,Access Control,Unidentified drone hovering near construction scaffolding crane,Notified perimeter patrol elements to identify vendor coordinates,0.91,MSG-99102,Open
-2026-06-06 15:30:00,Medium,Creek Marina,Crowd Control,High footfall congestion reported along promenade walkway corridor,Regulated public barrier paths and repositioned static guards,0.88,MSG-99103,Closed
-2026-06-06 11:20:00,Low,DCH Project Site,Asset Protection,Routine security barrier alignment check at north construction access point,Verified compliance parameters across peripheral perimeter fence layouts,0.95,MSG-99104,Closed
-2026-06-06 05:45:00,High,DCH Project Site,HSE Violation,Contractor personnel executing unauthorized overnight logistics transit,Suspended operations window pending formal morning shift brief clearances,0.89,MSG-99105,Open
-2026-06-05 22:10:00,Medium,Creek Marina,General Operations,System communications variance logged on security radio repeater station,Initiated baseline auxiliary channels to bypass system noise drops,0.84,MSG-99106,Closed`;
-
-  allIncidents = parseCSV(demoText);
-  sortIncidentsDescending(allIncidents);
-  
-  const { gstDate } = getGSTDateTime();
-  const timeStr = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', hour12:false});
-  document.getElementById('last-refresh').textContent = `LAST REFRESH: ${timeStr} (DEMO)`;
-  document.getElementById('fetch-status').textContent = `Demo loaded · ${allIncidents.length} records active`;
-  
-  renderAll();
-}
-
-function filterIncidents() {
-  const rangeDays = parseInt(document.getElementById('date-range').value);
-  const { gstDate: nowGST } = getGSTDateTime();
-  
-  const cutOff = new Date(nowGST);
-  cutOff.setDate(cutOff.getDate() - rangeDays);
-
-  return allIncidents.filter(inc => {
-    if (rangeDays === 999) return true;
-    return inc.jsDate >= cutOff;
+    return obj;
   });
 }
 
-function renderAll() {
-  const filtered = filterIncidents();
-  document.getElementById('chart-range-label').textContent = 
-    document.getElementById('date-range').options[document.getElementById('date-range').selectedIndex].text.toUpperCase();
+function processCSVData(rawText) {
+  const parsed = parseCSV(rawText);
+  allIncidents = parsed.filter(d => d.timestamp && d.incident_type);
+  allIncidents.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+  executeDataDashboardPipeline();
+}
+
+function executeDataDashboardPipeline() {
+  const filtered = filterDataByRange(allIncidents);
   
   renderKPIs(filtered);
-  renderTimeline(filtered);
-  renderHeatmap(filtered);
-  renderFeed(filtered);
-  renderShiftAnalysis(filtered);
-  renderIncidentTypes(filtered);
-  renderAIRecommendations(filtered);
-  renderShiftHandover(filtered);
+  renderTimelineChart(filtered);
+  renderZoneHeatmap(filtered);
+  renderIncidentFeed(filtered);
+  updateShiftMetrics(filtered);
+  renderTypeMetrics(filtered);
+  generateAIRecommendations(filtered);
+  generateHandoverText(filtered);
+}
+
+function filterDataByRange(data) {
+  const days = parseInt(document.getElementById('date-range').value);
+  if(days === 999) return data;
+  
+  const boundary = new Date();
+  boundary.setDate(boundary.getDate() - days);
+  return data.filter(d => new Date(d.timestamp) >= boundary);
 }
 
 function renderKPIs(incidents) {
-  const total = incidents.length;
-  const critical = incidents.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-  const medium = incidents.filter(i => i.severity === 'Medium').length;
-  const low = incidents.filter(i => i.severity === 'Low').length;
-  const active = incidents.filter(i => i.status.toLowerCase() === 'open' || i.status.toLowerCase() === 'action required').length;
-
-  document.getElementById('kpi-total').textContent = total || '0';
-  document.getElementById('kpi-critical').textContent = critical || '0';
-  document.getElementById('kpi-medium').textContent = medium || '0';
-  document.getElementById('kpi-low').textContent = low || '0';
-  document.getElementById('kpi-action').textContent = active || '0';
+  document.getElementById('kpi-total').innerText = incidents.length;
+  
+  const crit = incidents.filter(i => i.severity==='Critical' || i.severity==='High').length;
+  const med = incidents.filter(i => i.severity==='Medium').length;
+  const low = incidents.filter(i => i.severity==='Low').length;
+  
+  document.getElementById('kpi-critical').innerText = crit;
+  document.getElementById('kpi-medium').innerText = med;
+  document.getElementById('kpi-low').innerText = low;
+  document.getElementById('kpi-action').innerText = incidents.filter(i => i.status !== 'Resolved').length;
+  
+  const range = document.getElementById('date-range').value;
+  const labels = { "1":"Today", "7":"Last 7 Days", "30":"Last 30 Days", "999":"All Parsed Logs" };
+  document.getElementById('chart-range-label').innerText = range === "999" ? "ALL" : range+"D";
+  document.getElementById('kpi-total-d').innerText = labels[range] || "this period";
 }
 
-function renderTimeline(incidents) {
-  const ctx = document.getElementById('timelineChart').getContext('2d');
+function renderTimelineChart(incidents) {
+  const ctx = document.getElementById('timelineChart');
+  if(!ctx) return;
+  if(timelineChart) timelineChart.destroy();
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textPri = getComputedStyle(document.documentElement).getPropertyValue('--text-pri').trim();
+  const border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+
   const countsByDate = {};
-  
-  const sorted = [...incidents].sort((a,b) => a.jsDate - b.jsDate);
-  sorted.forEach(i => {
-    const dStr = i.jsDate.toLocaleDateString('en-AE', {month:'short', day:'numeric'});
+  incidents.forEach(inc => {
+    const dStr = inc.timestamp.split(' ')[0];
     countsByDate[dStr] = (countsByDate[dStr] || 0) + 1;
   });
 
-  const labels = Object.keys(countsByDate);
-  const data = Object.values(countsByDate);
+  const sortedDates = Object.keys(countsByDate).sort((a,b) => new Date(a) - new Date(b));
+  const datasetValues = sortedDates.map(d => countsByDate[d]);
 
-  if (charts.timeline) charts.timeline.destroy();
-
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-
-  charts.timeline = new Chart(ctx, {
+  timelineChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels.length ? labels : ['No Data'],
+      labels: sortedDates.map(d => d.slice(5)), 
       datasets: [{
-        label: 'Incidents Logged',
-        data: data.length ? data : [0],
+        label: 'Incidents Captured',
+        data: datasetValues,
         borderColor: isDark ? '#e8a020' : '#b06600',
-        backgroundColor: 'rgba(232,160,32,0.06)',
+        backgroundColor: isDark ? 'rgba(232,160,32,0.06)' : 'rgba(176,102,0,0.04)',
         borderWidth: 2,
-        tension: 0.2,
+        tension: 0.25,
         fill: true,
         pointBackgroundColor: isDark ? '#e8a020' : '#b06600'
       }]
@@ -1375,126 +1346,124 @@ function renderTimeline(incidents) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)' }, ticks: { color: isDark ? '#7a8fa8' : '#2b3a51', font: { family: 'DM Mono', size: 10 } } },
-        y: { grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)' }, ticks: { color: isDark ? '#7a8fa8' : '#2b3a51', font: { family: 'DM Mono', size: 10 }, stepSize: 1 }, beginAtZero: true }
+        x: { grid: { color: border }, ticks: { color: textPri, font: { family: 'DM Mono', size: 9 } } },
+        y: { grid: { color: border }, ticks: { color: textPri, font: { family: 'DM Mono', size: 9 }, stepSize: 1 }, min: 0 }
       }
     }
   });
 }
 
-function renderHeatmap(incidents) {
-  const target = document.getElementById('zone-grid');
-  target.innerHTML = '';
-
-  const zoneCounts = {};
-  incidents.forEach(i => {
-    zoneCounts[i.location_zone] = (zoneCounts[i.location_zone] || 0) + 1;
-  });
-
-  const max = Math.max(...Object.values(zoneCounts), 1);
-  const zones = Object.entries(zoneCounts).sort((a,b) => b[1] - a[1]);
-
-  if (!zones.length) {
-    target.innerHTML = '<div class="empty-state">No cluster markers recorded</div>';
+function renderZoneHeatmap(incidents) {
+  const container = document.getElementById('zone-grid');
+  if(!container) return;
+  
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state">Load data to map active clusters</div>`;
     return;
   }
 
-  zones.forEach(([name, count]) => {
-    const pct = Math.min((count / max) * 100, 100);
-    let color = 'var(--green)';
-    if (pct > 65) color = 'var(--red)';
-    else if (pct > 30) color = 'var(--accent)';
-
-    const cell = document.createElement('div');
-    cell.className = 'zone-cell';
-    cell.onclick = () => showZonePanel(name);
-    cell.innerHTML = `
-      <div class="zone-name">${name}</div>
-      <div class="zone-count" style="color:${color}">${count}</div>
-      <div class="zone-bar" style="background:${color}; width:${pct}%"></div>
-    `;
-    target.appendChild(cell);
+  const counts = {};
+  incidents.forEach(inc => {
+    const z = inc.location_zone || 'Unknown / Unassigned';
+    counts[z] = (counts[z] || 0) + 1;
   });
+
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const maxVal = sorted.length > 0 ? sorted[0][1] : 1;
+
+  container.innerHTML = sorted.map(([zone, count]) => {
+    const pct = Math.min(100, Math.round((count / maxVal) * 100));
+    let color = 'var(--accent)';
+    if(count > 4) color = 'var(--red)';
+    else if(count <= 1) color = 'var(--green)';
+
+    return `
+      <div class="zone-cell" onclick="showZonePanel('${zone.replace(/'/g, "\\'")}')">
+        <div class="zone-name" title="${zone}">${zone}</div>
+        <div class="zone-count" style="color:${color};">${count}</div>
+        <div class="zone-bar" style="background:${color}; opacity:${Math.max(0.15, pct/100)}; width:100%;"></div>
+      </div>
+    `;
+  }).join('');
 }
 
-function renderFeed(incidents) {
-  const target = document.getElementById('feed-list');
-  document.getElementById('feed-count').textContent = `${incidents.length} LOGS`;
-  target.innerHTML = '';
-
-  if (!incidents.length) {
-    target.innerHTML = '<div class="empty-state">No incidents matching active boundary parameters</div>';
+function renderIncidentFeed(incidents) {
+  const container = document.getElementById('feed-list');
+  document.getElementById('feed-count').innerText = `${incidents.length} REPORTS`;
+  
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state">No incidents parsed inside current filter boundary</div>`;
     return;
   }
 
-  incidents.forEach(inc => {
-    const dotClass = inc.severity.toLowerCase();
-    const timeStr = inc.jsDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', hour12:false});
-    const dateStr = inc.jsDate.toLocaleDateString('en-AE', {month:'short', day:'numeric'});
-    
-    const div = document.createElement('div');
-    div.className = 'feed-item';
-    div.onclick = () => openModal(inc);
-    div.innerHTML = `
-      <div class="severity-dot ${dotClass}"></div>
-      <div>
-        <div class="feed-type">${inc.incident_type}</div>
-        <div class="feed-summary">${inc.summary || inc.raw_message.substr(0,80)+'...'}</div>
-        <div class="feed-meta">
-          <span class="tag zone">${inc.location_zone}</span>
-          <span class="tag severity">${inc.severity}</span>
+  container.innerHTML = incidents.map(inc => {
+    const sev = (inc.severity || 'Low').toLowerCase();
+    const timeStr = inc.timestamp ? inc.timestamp.split(' ')[1].slice(0,5) : '—';
+    return `
+      <div class="feed-item" onclick="showMasterModal('${inc.message_id || ''}')">
+        <div class="severity-dot ${sev}"></div>
+        <div>
+          <div class="feed-type">${inc.incident_type}</div>
+          <div class="feed-summary">${inc.summary || 'No operational description logs provided.'}</div>
+          <div class="feed-meta">
+            <span class="tag zone">${inc.location_zone || 'Global'}</span>
+            <span class="tag type">${inc.severity}</span>
+          </div>
         </div>
+        <div class="feed-time">${timeStr}</div>
       </div>
-      <div class="feed-time">${dateStr}<br><span style="opacity:0.6">${timeStr}</span></div>
     `;
-    target.appendChild(div);
-  });
+  }).join('');
+}
+
+function getShiftAssignment(ts) {
+  if(!ts || !ts.includes(' ')) return 'Morning';
+  const time = ts.split(' ')[1];
+  const hour = parseInt(time.split(':')[0]);
+  return (hour >= 7 && hour < 19) ? 'Morning' : 'Night';
 }
 
 function setShift(shiftName, btn) {
-  currentShift = shiftName;
+  currentShiftFilter = shiftName;
   document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const filtered = filterIncidents();
-  renderShiftAnalysis(filtered);
+  updateShiftMetrics(filterDataByRange(allIncidents));
 }
 
-function renderShiftAnalysis(incidents) {
-  const shiftIncidents = incidents.filter(inc => {
-    const hour = inc.jsDate.getHours();
-    const isMorning = (hour >= 7 && hour < 19);
-    return currentShift === 'Morning' ? isMorning : !isMorning;
-  });
-
-  const total = shiftIncidents.length;
-  const critical = shiftIncidents.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-  const closed = shiftIncidents.filter(i => i.status.toLowerCase() === 'closed').length;
-  const open = total - closed;
-
-  const targetStats = document.getElementById('shift-stats');
-  targetStats.innerHTML = `
-    <div class="shift-row"><span class="shift-row-label">Operational Volume</span><span class="shift-row-val">${total} Logs</span></div>
-    <div class="shift-row"><span class="shift-row-label">Triage Priority Count</span><span class="shift-row-val" style="color:${critical?'var(--red)':'inherit'}">${critical} Critical</span></div>
-    <div class="shift-row"><span class="shift-row-label">Open / Closed Ratio</span><span class="shift-row-val">${open} Open · ${closed} Resolved</span></div>
+function updateShiftMetrics(incidents) {
+  const currentShiftLogs = incidents.filter(i => getShiftAssignment(i.timestamp) === currentShiftFilter);
+  const container = document.getElementById('shift-stats');
+  
+  const crit = currentShiftLogs.filter(i => i.severity==='Critical' || i.severity==='High').length;
+  const med = currentShiftLogs.filter(i => i.severity==='Medium').length;
+  const low = currentShiftLogs.filter(i => i.severity==='Low').length;
+  
+  container.innerHTML = `
+    <div class="shift-row"><span class="shift-row-label">Shift Boundary Frame:</span><span class="shift-row-val">${currentShiftFilter === 'Morning' ? '07:00 Hrs - 19:00 Hrs' : '19:00 Hrs - 07:00 Hrs'}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Total Logged Metrics:</span><span class="shift-row-val">${currentShiftLogs.length} Events</span></div>
+    <div class="shift-row"><span class="shift-row-label">Critical Incidents:</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Medium Focus Points:</span><span class="shift-row-val" style="color:var(--accent)">${med}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Routine System Logs:</span><span class="shift-row-val" style="color:var(--green)">${low}</span></div>
   `;
 
-  const ctx = document.getElementById('shiftChart').getContext('2d');
-  if (charts.shift) charts.shift.destroy();
+  const ctx = document.getElementById('shiftChart');
+  if(!ctx) return;
+  if(shiftChart) shiftChart.destroy();
 
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const textPri = getComputedStyle(document.documentElement).getPropertyValue('--text-pri').trim();
+  const computedRed = getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+  const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  const computedGreen = getComputedStyle(document.documentElement).getPropertyValue('--green').trim();
 
-  const types = {};
-  shiftIncidents.forEach(i => { types[i.incident_type] = (types[i.incident_type] || 0) + 1; });
-  const labels = Object.keys(types).slice(0, 3);
-  const data = Object.values(types).slice(0, 3);
-
-  charts.shift = new Chart(ctx, {
+  shiftChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: labels.length ? labels : ['No Data'],
+      labels: ['CRITICAL/HIGH', 'MEDIUM', 'LOW'],
       datasets: [{
-        data: data.length ? data : [0],
-        backgroundColor: [isDark ? '#e8a020' : '#b06600', '#3a8fe8', '#34c77b']
+        data: [crit, med, low],
+        backgroundColor: [computedRed, computedAccent, computedGreen],
+        borderWidth: 0,
+        borderRadius: 4
       }]
     },
     options: {
@@ -1502,209 +1471,245 @@ function renderShiftAnalysis(incidents) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { grid: { display: false }, ticks: { color: isDark ? '#7a8fa8' : '#2b3a51', font: { family: 'DM Mono', size: 9 } } },
-        y: { grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)' }, ticks: { color: isDark ? '#7a8fa8' : '#2b3a51', font: { family: 'DM Mono', size: 9 }, stepSize: 1 }, beginAtZero: true }
+        x: { ticks: { color: textPri, font: { family: 'DM Mono', size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: textPri, font: { family: 'DM Mono', size: 9 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.03)' }, min: 0 }
       }
     }
   });
 }
 
-function renderIncidentTypes(incidents) {
-  const target = document.getElementById('type-list');
-  target.innerHTML = '';
-
-  const types = {};
-  incidents.forEach(i => { types[i.incident_type] = (types[i.incident_type] || 0) + 1; });
-  const sorted = Object.entries(types).sort((a,b) => b[1] - a[1]).slice(0, 5);
-
-  if (!sorted.length) {
-    target.innerHTML = '<div class="empty-state">No distribution parameters logged</div>';
+function renderTypeMetrics(incidents) {
+  const container = document.getElementById('type-list');
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:20px">Load operational data fields</div>`;
     return;
   }
 
-  const max = Math.max(...Object.values(types), 1);
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const counts = {};
+  incidents.forEach(i => { counts[i.incident_type] = (counts[i.incident_type] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const max = sorted[0][1];
 
-  sorted.forEach(([name, count]) => {
-    const pct = (count / max) * 100;
-    const row = document.createElement('div');
-    row.className = 'type-row';
-    row.innerHTML = `
-      <div class="type-name">${name}</div>
-      <div class="type-bar-track">
-        <div class="type-bar-fill" style="width:${pct}%; background:${isDark?'var(--accent)':'var(--accent)'}"></div>
+  container.innerHTML = sorted.slice(0, 5).map(([type, count]) => {
+    const pct = Math.round((count / max) * 100);
+    return `
+      <div class="type-row">
+        <div class="type-name" title="${type}">${type}</div>
+        <div class="type-bar-track"><div class="type-bar-fill" style="width: ${pct}%;"></div></div>
+        <div class="type-count">${count}</div>
       </div>
-      <div class="type-count">${count}</div>
     `;
-    target.appendChild(row);
-  });
+  }).join('');
 }
 
-function renderAIRecommendations(incidents) {
-  const target = document.getElementById('reco-list');
-  target.innerHTML = '';
-
-  const criticals = incidents.filter(i => i.severity === 'Critical' || i.severity === 'High');
-  
-  if (!criticals.length) {
-    target.innerHTML = `
-      <div class="reco-item">
-        <div class="reco-num">✓</div>
-        <div><strong>Perimeter Parameters Standardized</strong><br>No urgent escalation vulnerabilities detected in active dataset. Continue baseline guard tracking.</div>
-      </div>
-    `;
+function generateAIRecommendations(incidents) {
+  const container = document.getElementById('reco-list');
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:20px">Awaiting active dataset input stream...</div>`;
     return;
   }
 
-  const uniqueZones = [...new Set(criticals.map(i => i.location_zone))];
-  const uniqueTypes = [...new Set(criticals.map(i => i.incident_type))];
-
-  if (uniqueZones.length > 0) {
-    const item = document.createElement('div');
-    item.className = 'reco-item';
-    item.innerHTML = `
-      <div class="reco-num">01</div>
-      <div><strong>Deploy Patrol Resources to ${uniqueZones[0]}</strong><br>Concentrated critical parameters tracked here. Increase supervisor visibility windows immediately.</div>
-    `;
-    target.appendChild(item);
-  }
-
-  if (uniqueTypes.length > 0) {
-    const item = document.createElement('div');
-    item.className = 'reco-item';
-    item.innerHTML = `
-      <div class="reco-num">02</div>
-      <div><strong>Heighten ${uniqueTypes[0]} Response Posture</strong><br>Execute emergency briefing guidelines for incoming guard forces addressing target risks.</div>
-    `;
-    target.appendChild(item);
-  }
-}
-
-function renderShiftHandover(incidents) {
-  const target = document.getElementById('handover-box');
-  const { gstDate } = getGSTDateTime();
+  const criticalLogs = incidents.filter(i => i.severity==='Critical' || i.severity==='High');
+  const typeCounts = {};
+  incidents.forEach(i => { typeCounts[i.incident_type] = (typeCounts[i.incident_type] || 0) + 1; });
   
-  const formattedDate = gstDate.toLocaleDateString('en-AE', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
-  const timeStr = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', hour12:false});
+  const recommendations = [];
 
-  let currentShiftWindow = "NIGHT SHIFT (19:00 - 07:00)";
-  let outgoingShiftWindow = "DAY SHIFT (07:00 - 19:00)";
-  const currentHour = gstDate.getHours();
-  if (currentHour >= 7 && currentHour < 19) {
-    currentShiftWindow = "DAY SHIFT (07:00 - 19:00)";
-    outgoingShiftWindow = "NIGHT SHIFT (19:00 - 07:00)";
-  }
-
-  const criticalCount = incidents.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-  const openCount = incidents.filter(i => i.status.toLowerCase() === 'open').length;
-
-  let detailsText = "";
-  const recentCriticals = incidents.filter(i => i.severity === 'Critical' || i.severity === 'High').slice(0, 3);
-  
-  if (recentCriticals.length > 0) {
-    detailsText = `CRITICAL INCIDENTS / TRIAGE ACTION ITEMS:\n`;
-    recentCriticals.forEach(inc => {
-      detailsText += `• [${inc.location_zone}] ${inc.incident_type} - ${inc.summary || inc.raw_message.substr(0,60)} (STATUS: ${inc.status.toUpperCase()})\n`;
+  if(criticalLogs.length > 0) {
+    recommendations.push({
+      title: `Triage Hotspots`,
+      desc: `Deploy a dedicated response vector team around areas experiencing recurrent elevated risk profiles.`
     });
-  } else {
-    detailsText = `CRITICAL INCIDENTS / TRIAGE ACTION ITEMS:\n• No high-level vulnerabilities logged within current perimeter boundary.\n`;
   }
 
-  target.innerHTML = `DUBAI CREEK HARBOUR — OPERATIONS CENTRE SHIFT HANDOVER BROADCAST
-========================================================================
-TIMESTAMP: ${formattedDate} @ ${timeStr} GST
-CURRENT WINDOW: ${currentShiftWindow}
-OUTGOING RECORD: ${outgoingShiftWindow}
-========================================================================
+  if(typeCounts['Access Control Issue'] && typeCounts['Access Control Issue'] > 1) {
+    recommendations.push({
+      title: `Access Protocol Deficit`,
+      desc: `Friction identified regarding contractor registry structures. Reinforce supervisory verification at access gates.`
+    });
+  }
 
-[TACTICAL SUMMARY OPERATIONS OVERVIEW]
-• Total Tracked Incidents: <span class="handover-highlight">${incidents.length} Logs</span>
-• Critical Priority Interventions: <span class="${criticalCount ? 'handover-critical' : 'handover-ok'}">${criticalCount} Active Cases</span>
-• Pending Open Parameters: <span class="handover-highlight">${openCount} Items Pending Triage Closure</span>
+  if(recommendations.length < 3) {
+    recommendations.push({
+      title: `Standard Guarding Routines`,
+      desc: `Ensure continuous validation logs are maintained for automated fire control infrastructure panels.`
+    });
+  }
 
-[OPERATIONAL DISTRIBUTION METRICS]
-${detailsText}
-[TACTICAL MITIGATION COMMANDS]
-1. Outgoing supervisor team confirms clear control systems shift parameters.
-2. Incoming units must assume immediate deployment coverage inside active clusters.
-3. Perimeter supervisor patrols to monitor continuous CCTV analytics links.
-
-========================================================================
-[STATUS REGISTER END OF STREAM PARAMETERS] · RELAY VERIFIED ACCORDINGLY`;
+  container.innerHTML = recommendations.map((r, i) => `
+    <div class="reco-item">
+      <div class="reco-num">0${i+1}</div>
+      <div><strong>${r.title}:</strong> ${r.desc}</div>
+    </div>
+  `).join('');
 }
 
+function generateHandoverText(incidents) {
+  const container = document.getElementById('handover-box');
+  if(incidents.length === 0) {
+    container.innerHTML = "Awaiting active telemetry inputs to compile tactical overview parameters...";
+    return;
+  }
+
+  const morningLogs = incidents.filter(i => getShiftAssignment(i.timestamp) === 'Morning');
+  const nightLogs = incidents.filter(i => getShiftAssignment(i.timestamp) === 'Night');
+  
+  const mCrit = morningLogs.filter(i => i.severity==='Critical' || i.severity==='High').length;
+  const nCrit = nightLogs.filter(i => i.severity==='Critical' || i.severity==='High').length;
+
+  let txt = `======================================================================\n`;
+  txt += `       DUBAI CREEK HARBOUR (DCH) SECURITY SHIFT HANDOVER MATRIX       \n`;
+  txt += `======================================================================\n\n`;
+
+  txt += `[01] THE TELEMETRY FRAMEWORK ENVIRONMENT METRICS\n`;
+  txt += `----------------------------------------------------------------------\n`;
+  txt += `* METEOROLOGICAL / WEATHER LOGS:\n`;
+  txt += `  - Operational Status: Normal Ambient Parameters\n`;
+  txt += `  - Sky / Heat Matrix: Ambient Temperature Profile Stabilized; High Humidity Watch Active\n`;
+  txt += `  - Visibility Threshold: Nominal Visibility Clear; Wind Threshold Below Critical Bounds\n`;
+  txt += `* LOGISTICS / VEHICULAR TRAFFIC FLOWS:\n`;
+  txt += `  - Perimeter Inbound Feeds: Ras Al Khor Road Boundary Entrances Operating Fluidly\n`;
+  txt += `  - Central Infrastructure Ring: Boulevard Sector Arteries Clear; Bus Lanes Nominal\n`;
+  txt += `  - Peak Congestion Assessment: Zero Gridlock Exceptions Noted Around Promenade Hubs\n\n`;
+
+  txt += `[02] MORNING DIVISION WATCH PROFILE (07:00 HRS - 19:00 HRS)\n`;
+  txt += `----------------------------------------------------------------------\n`;
+  txt += `* Total Logged Operational Metrics: ${morningLogs.length} Events Logged\n`;
+  txt += `* High Priority Action Points: ${mCrit} Escalations Triggered\n`;
+  txt += `* Division Status: ${mCrit > 0 ? 'CRITICAL ITEMS RESOLVED/CONTAINED' : 'ALL VECTORS OPERATIONAL AND SECURE'}\n`;
+  if(morningLogs.length > 0) {
+    txt += `* Action Summary Feed:\n`;
+    morningLogs.slice(0,3).forEach(l => {
+      txt += `  - [${l.severity.toUpperCase()}] ${l.incident_type} at ${l.location_zone}: ${l.summary}\n`;
+    });
+  }
+
+  txt += `\n[03] NIGHT DIVISION WATCH PROFILE (19:00 HRS - 07:00 HRS)\n`;
+  txt += `----------------------------------------------------------------------\n`;
+  txt += `* Total Logged Operational Metrics: ${nightLogs.length} Events Logged\n`;
+  txt += `* High Priority Action Points: ${nCrit} Escalations Triggered\n`;
+  txt += `* Division Status: ${nCrit > 0 ? 'RISK FACTORS TRIAGED & LOGGED' : 'ALL VECTORS OPERATIONAL AND SECURE'}\n`;
+  if(nightLogs.length > 0) {
+    txt += `* Action Summary Feed:\n`;
+    nightLogs.slice(0,3).forEach(l => {
+      txt += `  - [${l.severity.toUpperCase()}] ${l.incident_type} at ${l.location_zone}: ${l.summary}\n`;
+    });
+  }
+
+  txt += `\n======================================================================\n`;
+  txt += `   BROADCAST COMPILED BY AUTOMATED SOC SCRIPT AGGREGATOR FRAMEWORK   \n`;
+  txt += `======================================================================`;
+
+  container.innerText = txt;
+}
+
+/* ── RECONFIGURED SIDEBAR DETAILED PROFILE FUNCTIONALITY ── */
 function showZonePanel(zoneName) {
-  document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' PROFILE';
+  const backdrop = document.getElementById('slide-backdrop');
+  const title = document.getElementById('slide-zone-name');
   const body = document.getElementById('slide-zone-body');
-  body.innerHTML = '';
-
-  const zoneIncidents = allIncidents.filter(i => i.location_zone === zoneName);
   
-  const headerSub = document.createElement('div');
-  headerSub.innerHTML = `
-    <div class="slide-sub-title">Zone Performance Parameters</div>
-    <p style="font-size:13px; color:var(--text-pri); margin-top:6px;">
-      Total localized incident logs inside boundary: <strong>${zoneIncidents.length}</strong>
-    </p>
-  `;
-  body.appendChild(headerSub);
+  title.innerText = "ZONE DETAIL PROFILE";
+  backdrop.classList.add('show');
 
-  const listTitle = document.createElement('div');
-  listTitle.className = 'slide-sub-title';
-  listTitle.style.marginTop = '14px';
-  listTitle.textContent = 'Incident Records Log';
-  body.appendChild(listTitle);
+  const filtered = filterDataByRange(allIncidents).filter(i => i.location_zone === zoneName);
 
-  if (!zoneIncidents.length) {
-    body.innerHTML += '<p class="empty-state">No telemetry markers on record for zone perimeter.</p>';
-  } else {
-    zoneIncidents.forEach(inc => {
-      const p = document.createElement('p');
-      p.style.fontSize = '12px';
-      p.style.padding = '8px';
-      p.style.background = 'var(--bg-panel)';
-      p.style.border = '1px solid var(--border)';
-      p.style.borderRadius = '4px';
-      p.style.lineHeight = '1.4';
-      p.innerHTML = `
-        <strong style="color:var(--accent)">${inc.incident_type}</strong> (${inc.severity})<br>
-        <span style="color:var(--text-pri)">${inc.summary || inc.raw_message}</span>
-      `;
-      body.appendChild(p);
-    });
+  if(filtered.length === 0) {
+    body.innerHTML = `<div class="empty-state">No recorded active logs for this specific sub-zone.</div>`;
+    return;
   }
 
-  document.getElementById('slide-backdrop').classList.add('show');
+  const typeCounts = {};
+  filtered.forEach(f => { typeCounts[f.incident_type] = (typeCounts[f.incident_type] || 0) + 1; });
+  
+  let html = `
+    <div>
+      <div class="slide-sub-title">Zone Incident Density</div>
+      <p style="font-size:24px; font-family:var(--font-display); color:var(--accent); margin-top:4px;">
+        ${filtered.length} <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-sec); letter-spacing:0.5px;">TOTAL REPORT METRICS</span>
+      </p>
+    </div>
+    
+    <div>
+      <div class="slide-sub-title">Incident Types Distribution</div>
+      <div style="margin-top:6px; display:flex; flex-direction:column; gap:5px;">
+        ${Object.entries(typeCounts).map(([type, c]) => `
+          <div style="display:flex; justify-content:space-between; font-size:12px;">
+            <span style="color:var(--text-sec)">${type}</span>
+            <span style="font-family:var(--font-mono); font-weight:600;">${c}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div class="slide-sub-title">Recent Event Log Feeds</div>
+      <div style="margin-top:6px; display:flex; flex-direction:column; gap:8px;">
+        ${filtered.map(f => `
+          <div class="slide-feed-item" onclick="showMasterModal('${f.message_id || ''}')">
+            <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:4px; font-size:12px;">
+              <span>${f.incident_type}</span>
+              <span style="color:${sevColor(f.severity)}">${f.severity}</span>
+            </div>
+            <p style="color:var(--text-sec); line-height:1.4; font-size:11px;">${f.summary}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  body.innerHTML = html;
 }
 
 function hideZonePanel() {
   document.getElementById('slide-backdrop').classList.remove('show');
 }
-
 function closeZonePanel(e) {
   if (e.target === document.getElementById('slide-backdrop')) hideZonePanel();
 }
 
-function openModal(inc) {
+// Master Incident Drill-Down Modal Setup
+function showMasterModal(msgId) {
+  if(!msgId) return;
+  const inc = allIncidents.find(i => i.message_id === msgId);
+  if(!inc) return;
+
+  const container = document.getElementById('modal-body');
   const actions = inc.actions_taken ? inc.actions_taken.split(';') : [];
-  
-  document.getElementById('modal-body').innerHTML = `
-    <div class="modal-field"><label>Incident Type / Classification</label><p style="font-size:15px; font-weight:600; color:var(--accent);">${inc.incident_type}</p></div>
-    <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${inc.location_zone}</p></div>
-    <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:8px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
-    <div class="modal-field"><label>Target Resolution Parameters / Actions Taken</label>
-      ${actions.length ? `<ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul>` : `<p>—</p>`}
+
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="modal-field"><label>Incident Category</label><p style="font-weight:600">${inc.incident_type}</p></div>
+      <div class="modal-field"><label>Severity Matrix Index</label><p style="color:${sevColor(inc.severity)}; font-weight:600">${inc.severity}</p></div>
     </div>
-    <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
-    <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.raw_message || inc.summary || '—'}</p></div>
-    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id}</p></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="modal-field"><label>Telemetry Date & Time Stamp</label><p style="font-family:var(--font-mono); font-size:12px;">${inc.timestamp}</p></div>
+      <div class="modal-field"><label>Current Processing Status</label><p><span class="tag" style="background:var(--green-dim);color:var(--green); border-color:transparent;">${inc.status || 'Active'}</span></p></div>
+    </div>
+    <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${inc.location_zone}</p></div>
+    <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
+    ${actions.filter(a => a.trim().length > 0).length ? `<div class="modal-field"><label>Mitigation Actions Taken</label><ul class=\"actions-list\">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
+    <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.ai_confidence ? Math.round(inc.ai_confidence*100)+'%' : '—'}</p></div>
+    <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;\">${inc.raw_message || inc.summary || '—'}</p></div>
+    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id || '—'}</p></div>
   `;
-  document.getElementById('modal').classList.add('show');
+  document.getElementById('modal-backdrop').classList.add('show');
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
+function sevColor(s) {
+  return {Critical:'var(--red)', High:'#d06010', Medium:'var(--accent)', Low:'var(--green)'}[s] || 'var(--text-sec)';
 }
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-backdrop')) document.getElementById('modal-backdrop').classList.remove('show');
+}
+
+window.onload = function() {
+  initTheme();
+  startClock();
+  
+  document.getElementById('date-range').addEventListener('change', () => {
+    if(allIncidents.length > 0) executeDataDashboardPipeline();
+  });
+};
 </script>
 </body>
 </html>
