@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Holiday Home Apartment Tracker — DCH SOC</title>
+<title>Dubai Creek Harbour — Security Operations Centre</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root[data-theme="dark"] {
     --bg-deep:    #090d12;
@@ -26,12 +27,6 @@
     --text-dim:   #3d5068;
     --scanline:   rgba(0,0,0,0.06);
     --horse-color: #e8a020;
-    
-    /* Gemini AI Glow Palette */
-    --gemini-1: #1a73e8;
-    --gemini-2: #8ab4f8;
-    --gemini-3: #c58af9;
-    --gemini-glow: rgba(138, 180, 248, 0.5);
   }
 
   :root[data-theme="light"] {
@@ -54,12 +49,6 @@
     --text-dim:   #546681;         
     --scanline:   rgba(255,255,255,0.15);
     --horse-color: #b06600;
-
-    /* Gemini AI Glow Palette (Light Adjusted) */
-    --gemini-1: #1a73e8;
-    --gemini-2: #a500f0;
-    --gemini-3: #e61975;
-    --gemini-glow: rgba(26, 115, 232, 0.3);
   }
 
   :root {
@@ -67,153 +56,870 @@
     --font-mono:    'DM Mono', monospace;
     --font-body:    'DM Sans', sans-serif;
     --r:          6px;
+    
+    --gemini-gradient: linear-gradient(135deg, #4285f4, #9b51e0, #e91e63, #f2994a);
+    --gemini-glow: rgba(155, 81, 224, 0.25);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     font-family: var(--font-body);
     background: var(--bg-deep);
     color: var(--text-pri);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
     overflow-x: hidden;
     transition: background 0.2s ease, color 0.2s ease;
   }
+
   body::before {
-    content: ''; position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scanline) 2px, var(--scanline) 4px);
-    pointer-events: none; z-index: 9999;
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scanline) 2px,
+      var(--scanline) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
   }
 
+  /* ── HEADER ── */
   header {
-    display: grid; grid-template-columns: auto 1fr auto; align-items: center;
-    padding: 16px 32px; border-bottom: 2px solid var(--border); background: var(--bg-panel);
-    position: sticky; top: 0; z-index: 100; gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 16px 32px;
+    border-bottom: 2px solid var(--border);
+    background: var(--bg-panel);
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-  .header-left { display: flex; align-items: center; gap: 14px; }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
   .logo-badge {
-    width: 36px; height: 36px; background: var(--accent); border-radius: 4px;
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-display); font-size: 18px; color: #000; letter-spacing: 0.5px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: #000;
+    letter-spacing: 0.5px;
+    transition: background 0.3s ease;
   }
-  .header-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 2px; color: var(--text-pri); line-height: 1; }
-  .header-sub { font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; font-family: var(--font-mono); }
-  
-  .header-center { text-align: center; }
-  .live-indicator { display: inline-flex; align-items: center; gap: 7px; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 20px; padding: 4px 12px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 1px; }
-  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-orange 2s infinite; }
-  @keyframes pulse-orange { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
 
-  .header-right-nav { display: flex; align-items: center; gap: 24px; justify-content: flex-end; }
-  .clock-block { text-align: right; min-width: 140px; }
-  #live-clock { font-family: var(--font-display); font-size: 30px; letter-spacing: 2px; color: var(--accent); line-height: 1; }
-  .clock-date { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1px; margin-top: 2px; }
+  .header-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--text-pri);
+    line-height: 1;
+  }
 
-  .nav-links-group { display: flex; align-items: center; gap: 14px; border-left: 1px solid var(--border-bright); padding-left: 20px; }
-  
-  /* --- NAVIGATION BUTTONS WITH GEMINI AI HOVER EFFECT --- */
-  .nav-link-item { 
-    text-decoration: none; 
-    color: var(--text-sec); 
-    font-family: var(--font-mono); 
-    font-size: 11px; 
-    font-weight: 600; 
-    letter-spacing: 1px; 
-    text-transform: uppercase; 
-    padding: 6px 14px; 
-    border: 1px solid transparent; 
-    border-radius: var(--r); 
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 6px;
+  .header-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-sec);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 3px;
+    font-family: var(--font-mono);
+  }
+
+  .header-center {
+    text-align: center;
+  }
+
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-green 2s infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  #live-clock {
+    font-family: var(--font-display);
+    font-size: 30px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .clock-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-sec);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* ── VECTOR HORSE GRAPHIC ANIMATION ── */
+  @keyframes horseRun {
+    0% { stroke-dashoffset: 24; }
+    50% { opacity: 0.85; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  @keyframes horseGallop {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-1.5px) rotate(1deg); }
+    50% { transform: translateY(0.5px) rotate(-1deg); }
+    75% { transform: translateY(-1px) rotate(0.5deg); }
+  }
+
+  .animated-vector-horse {
+    animation: horseGallop 0.55s infinite ease-in-out;
+  }
+
+  .animated-vector-horse path {
+    stroke-dasharray: 12;
+    animation: horseRun 0.8s linear infinite;
+  }
+
+  /* ── CONFIG PANEL ── */
+  .config-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 32px;
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--border);
+    font-size: 12px;
+  }
+
+  .config-bar label {
+    color: var(--text-pri);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  .config-bar input, .config-bar select {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--r);
+    color: var(--text-pri);
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    outline: none;
+  }
+
+  .config-bar input:focus, .config-bar select:focus {
+    border-color: var(--accent);
+  }
+
+  .config-bar input[type="text"] { width: 320px; max-width: 100%; }
+
+  .btn-fetch, .btn-demo, .btn-theme-toggle, .btn-holiday {
     position: relative;
-    background: transparent;
+    border-radius: var(--r);
+    padding: 7px 18px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--border-bright);
+    background: var(--bg-card);
+    color: var(--text-pri);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+    overflow: hidden;
   }
-  .nav-link-item:hover { 
-    color: var(--text-pri); 
-    background: var(--bg-hover);
-    /* Subtle border blend using a gradient fallback color */
-    border-color: var(--gemini-2);
-    /* Multi-layered box shadow to replicate the AI aura from the screenshot */
-    box-shadow: 
-      0 0 8px var(--gemini-glow),
-      0 0 15px rgba(197, 138, 249, 0.2),
-      inset 0 0 4px rgba(255, 255, 255, 0.05);
-    transform: translateY(-1px);
-  }
-  /* Custom border effect matching Gemini gradient flow */
-  .nav-link-item:hover::before {
+
+  .btn-fetch::before, .btn-demo::before, .btn-theme-toggle::before, .btn-holiday::before {
     content: '';
     position: absolute;
-    inset: -1px;
+    inset: 0;
+    background: var(--gemini-gradient);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+  }
+
+  .btn-fetch:hover, .btn-demo:hover, .btn-theme-toggle:hover, .btn-holiday:hover {
+    color: #ffffff !important;
+    border-color: transparent;
+    transform: translateY(-1.5px);
+    box-shadow: 0 0 16px var(--gemini-glow);
+    letter-spacing: 1px;
+  }
+
+  .btn-fetch:hover::before, .btn-demo:hover::before, .btn-theme-toggle:hover::before, .btn-holiday:hover::before {
+    opacity: 1;
+  }
+
+  .btn-fetch {
+    background: var(--text-pri);
+    color: var(--bg-card);
+    border: none;
+  }
+
+  .btn-theme-toggle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-holiday {
+    background: var(--blue-dim);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .fetch-status {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-sec);
+    letter-spacing: 0.5px;
+    margin-left: auto;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── KPI ROW ── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
     border-radius: var(--r);
-    padding: 1px;
-    background: linear-gradient(135deg, var(--gemini-1), var(--gemini-2), var(--gemini-3));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    pointer-events: none;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   }
-  .nav-link-item.active { 
-    color: var(--accent); 
-    background: var(--accent-dim); 
-    border-color: var(--accent); 
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
   }
-  .nav-link-item.active:hover::before {
-    display: none; /* Keep active state clean unless desired */
-  }
-  .nav-link-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
 
-  .btn-theme-toggle { background: var(--bg-card); color: var(--text-pri); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 7px 14px; font-family: var(--font-mono); font-weight: 600; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-  .btn-theme-toggle:hover { background: var(--bg-hover); }
-
-  main { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
-
-  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 16px; position: relative; overflow: hidden; }
-  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .kpi-card.critical::before { background: var(--red); }
-  .kpi-card.pending::before { background: var(--accent); }
-  .kpi-card.nominal::before { background: var(--blue); }
-  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 8px; }
-  .kpi-value { font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: 1px; }
+  .kpi-card.medium::before { background: var(--accent); }
+  .kpi-card.low::before { background: var(--green); }
+  .kpi-card.total::before { background: var(--blue); }
+  .kpi-card.active::before { background: #7326cc; }
+
+  .kpi-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-sec);
+    margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: 46px;
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
   .kpi-card.critical .kpi-value { color: var(--red); }
-  .kpi-card.pending .kpi-value { color: var(--accent); }
-  .kpi-card.nominal .kpi-value { color: var(--blue); }
-  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
+  .kpi-card.medium .kpi-value { color: var(--accent); }
+  .kpi-card.low .kpi-value { color: var(--green); }
+  .kpi-card.total .kpi-value { color: var(--blue); }
+  .kpi-card.active .kpi-value { color: #7326cc; }
 
-  .tracker-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-  .tracker-panel { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; }
-  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
-  .panel-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
-  .panel-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
+  .kpi-delta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── MAIN LAYOUT GRID SYSTEM ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 360px;
+    gap: 16px;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--r);
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    color: var(--text-pri);
+  }
+
+  .panel-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--bg-deep);
+    color: var(--text-sec);
+    border: 1px solid var(--border);
+  }
+
+  /* ── TIMELINE GRAPH ── */
+  .chart-wrap {
+    padding: 16px;
+    height: 220px;
+    position: relative;
+  }
+
+  /* ── SCROLLABLE ZONE HEATMAP ── */
+  .zone-grid {
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-dim) var(--bg-panel);
+  }
+
+  .zone-grid::-webkit-scrollbar {
+    width: 6px;
+  }
+  .zone-grid::-webkit-scrollbar-track {
+    background: var(--bg-panel);
+    border-radius: var(--r);
+  }
+  .zone-grid::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+    border-radius: var(--r);
+  }
+  .zone-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--text-sec);
+  }
+
+  .zone-cell {
+    border-radius: var(--r);
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+    transition: transform 0.12s;
+  }
+
+  .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
+
+  .zone-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-pri);
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .zone-count {
+    font-family: var(--font-display);
+    font-size: 28px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .zone-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  /* ── INCIDENT FEED LOGS ── */
+  .feed-list {
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .feed-item {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    cursor: pointer;
+  }
+
+  .feed-item:hover { background: var(--bg-panel); }
+
+  .severity-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
+  .severity-dot.high { background: #d06010; }
+  .severity-dot.medium { background: var(--accent); }
+  .severity-dot.low { background: var(--green); }
+
+  @keyframes pulse-red {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.8); opacity: 0.6; }
+  }
+
+  .feed-type {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-pri);
+  }
+
+  .feed-summary {
+    font-size: 12px;
+    color: var(--text-sec);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .feed-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--bg-deep);
+    color: var(--text-sec);
+    border: 1px solid var(--border);
+  }
+
+  .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
+  .tag.type { color: var(--accent); background: var(--accent-dim); border-color: rgba(176,102,0,0.2); }
+
+  .feed-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* ── OPERATIONS SUB-GRID ── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 360px;
+    gap: 16px;
+  }
+
+  /* ── MODIFIED SIDE-BY-SIDE SHIFT ANALYSIS SECTION ── */
+  .shift-split-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    padding: 12px 16px;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .shift-selector {
+    display: flex;
+    margin-bottom: 12px;
+  }
+
+  .shift-btn {
+    flex: 1;
+    padding: 6px 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .shift-btn:first-child { border-radius: var(--r) 0 0 var(--r); }
+  .shift-btn:last-child { border-radius: 0 var(--r) var(--r) 0; }
+
+  .shift-btn.active {
+    background: var(--text-pri);
+    border-color: var(--text-pri);
+    color: var(--bg-card);
+  }
+
+  .shift-stats-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .shift-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 4px;
+  }
+
+  .shift-row:last-child { border-bottom: none; }
+  .shift-row-label { color: var(--text-sec); font-weight: 500; }
+  .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
+
+  .shift-chart-wrap {
+    height: 155px;
+    position: relative;
+    width: 100%;
+  }
+
+  /* ── THREAT MITIGATION ENGINE ── */
+  .reco-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .reco-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border-radius: var(--r);
+    border-left: 3px solid var(--accent);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-sec);
+  }
+
+  .reco-item strong { color: var(--text-pri); }
+
+  .reco-num {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  /* ── TYPE METRIC TRACKS ── */
+  .type-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .type-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .type-name {
+    width: 140px;
+    flex-shrink: 0;
+    color: var(--text-sec);
+    font-weight: 500;
+  }
+
+  .type-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-panel);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .type-bar-fill {
+    height: 100%;
+    background: var(--text-pri);
+  }
+
+  .type-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-pri);
+    width: 24px;
+    text-align: right;
+  }
+
+  /* ── HANDOVER BROADCAST CONTAINER ── */
+  .handover-box {
+    padding: 16px 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-pri);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    max-height: 280px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    background: var(--bg-panel);
+  }
+
+  .handover-box::-webkit-scrollbar {
+    width: 6px;
+  }
+  .handover-box::-webkit-scrollbar-track {
+    background: var(--bg-deep);
+  }
+  .handover-box::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+    border-radius: var(--r);
+  }
+
+  .handover-highlight { color: var(--blue); font-weight: 600; }
+  .handover-critical { color: var(--red); font-weight: bold; background: rgba(184,20,20,0.05); padding: 0 4px; }
+  .handover-ok { color: var(--green); font-weight: 600; }
+
+  /* ── OVERLAY PROFILES (SLIDE PANEL REConfigured) ── */
+  .slide-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s;
+  }
+  .slide-backdrop.show { opacity: 1; visibility: visible; }
   
-  .table-container { width: 100%; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-  th { background: var(--bg-panel); font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-sec); padding: 12px 18px; border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
-  td { padding: 14px 18px; border-bottom: 1px solid var(--border); color: var(--text-pri); font-weight: 400; }
-  tr:hover td { background: var(--bg-panel); }
+  .slide-panel {
+    position: fixed;
+    top: 0; right: -420px;
+    width: 420px; height: 100vh;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border);
+    z-index: 1001;
+    box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    transition: right 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .slide-backdrop.show .slide-panel { right: 0; }
   
-  .status-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
-  .status-badge.overdue { background: var(--red-dim); color: var(--red); border: 1px solid rgba(232,64,64,0.2); }
-  .status-badge.unverified { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(232,160,32,0.2); }
-  .status-badge.verified { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,199,123,0.2); }
+  .slide-header {
+    padding: 14px 18px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .slide-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    color: var(--text-pri);
+  }
+  .slide-close {
+    background: none; border: none;
+    color: var(--text-sec); font-size: 18px; cursor: pointer;
+    line-height: 1;
+  }
+  .slide-body {
+    padding: 16px; overflow-y: auto; flex: 1;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .slide-sub-title {
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    color: var(--text-sec); border-bottom: 1px solid var(--border);
+    padding-bottom: 4px; letter-spacing: 1.5px;
+  }
 
-  .summary-box { padding: 16px 20px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-pri); line-height: 1.6; white-space: pre-wrap; background: var(--bg-panel); border-radius: var(--r); border: 1px solid var(--border); height: 100%; }
-  .summary-highlight { color: var(--blue); font-weight: 600; }
-  .summary-alert { color: var(--red); font-weight: bold; }
+  /* ── INTERACTIVE SIDEBAR FEED CARDS ── */
+  .slide-feed-item {
+    background: var(--bg-panel); 
+    padding: 10px 12px; 
+    border-radius: var(--r); 
+    border: 1px solid var(--border); 
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .slide-feed-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-dim);
+  }
 
-  footer { padding: 12px 32px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); background: var(--bg-panel); }
-  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
+  /* ── FOOTER ── */
+  footer {
+    padding: 12px 32px;
+    border-top: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-sec);
+    background: var(--bg-panel);
+  }
 
-  @keyframes horseRun { 0% { stroke-dashoffset: 24; } 50% { opacity: 0.85; } 100% { stroke-dashoffset: 0; } }
-  @keyframes horseGallop { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-1.5px) rotate(1deg); } 50% { transform: translateY(0.5px) rotate(-1deg); } 75% { transform: translateY(-1px) rotate(0.5deg); } }
-  .animated-vector-horse { animation: horseGallop 0.55s infinite ease-in-out; }
-  .animated-vector-horse path { stroke-dasharray: 12; animation: horseRun 0.8s linear infinite; }
+  .footer-left-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
 
-  @media (max-width: 1024px) { .tracker-grid { grid-template-columns: 1fr; } }
+  /* ── LOADING ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(9,13,18,0.95);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9000; display: none;
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
+
+  /* ── MASTER INCIDENT MODAL ── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 8000; display: none;
+    align-items: center; justify-content: center;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--bg-card);
+    border: 2px solid var(--text-pri);
+    border-radius: 6px;
+    width: 540px; max-width: 90vw; max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 16px 22px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; color: var(--text-pri); }
+  .modal-close { background: none; border: none; color: var(--text-sec); font-size: 22px; cursor: pointer; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  
+  .modal-field label {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+    text-transform: uppercase; color: var(--text-sec); display: block; margin-bottom: 2px;
+  }
+  .modal-field p { font-size: 13px; color: var(--text-pri); line-height: 1.5; font-weight: 400; }
+
+  .actions-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .actions-list li {
+    font-size: 12px; color: var(--text-pri); padding: 6px 10px;
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px;
+  }
+
+  .empty-state { padding: 40px; text-align: center; color: var(--text-dim); font-family: var(--font-mono); font-size: 12px; }
+
+  @media (max-width: 1200px) {
+    .main-grid, .bottom-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 900px) {
+    header { grid-template-columns: 1fr; gap: 12px; text-align: center; }
+    .header-left, .header-right { justify-content: center; text-align: center; }
+    .main-grid, .bottom-grid { grid-template-columns: 1fr; }
+    .config-bar { justify-content: center; }
+    .fetch-status { margin-left: 0; text-align: center; width: 100%; }
+    .shift-split-layout { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -222,173 +928,788 @@
   <div class="header-left">
     <div class="logo-badge">DCH</div>
     <div>
-      <div class="header-title">HOLIDAY HOME MOVEMENT TRACKER</div>
-      <div class="header-sub">Zone D · Community Access Controls · DTCM Permit Audits</div>
+      <div class="header-title">ZONE D — SECURITY OPERATIONS CENTRE</div>
+      <div class="header-sub">Dubai Creek Harbour Zone D · 14 Communities · 204 Officers · 8008 Cameras</div>
     </div>
   </div>
-  
   <div class="header-center">
     <div class="live-indicator">
       <div class="live-dot"></div>
-      TRACKING MONITOR
+      LIVE FEED
     </div>
   </div>
-  
-  <div class="header-right-nav">
-    <div class="clock-block">
-      <div id="live-clock">00:00:00</div>
-      <div class="clock-date" id="live-date">—</div>
-    </div>
-    
-    <div class="nav-links-group">
-      <a href="index.html" class="nav-link-item">Dashboard</a>
-      <a href="holiday-home.html" class="nav-link-item active">
-        <span class="nav-link-dot"></span>Holiday Homes
-      </a>
-      <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
-        <span>🌙</span><span id="theme-text">Dark Mode</span>
-      </button>
-    </div>
+  <div class="header-right">
+    <div id="live-clock">00:00:00</div>
+    <div class="clock-date" id="live-date">—</div>
   </div>
 </header>
 
+<div class="config-bar">
+  <input type="text" id="sheet-url" placeholder="Paste your Google Sheets published CSV URL here" />
+  
+  <label>RANGE</label>
+  <select id="date-range">
+    <option value="1">Today</option>
+    <option value="7" selected>Last 7 days</option>
+    <option value="30">Last 30 days</option>
+    <option value="999">All time</option>
+  </select>
+
+  <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
+  <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
+  <a href="holiday-home.html" class="btn-holiday">HOLIDAY HOMES</a>
+  
+  <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
+    <span>🌙</span><span id="theme-text">Dark Mode</span>
+  </button>
+
+  <span class="fetch-status" id="fetch-status">No data loaded · Click LOAD DEMO to preview</span>
+</div>
+
 <main>
   <div class="kpi-row">
+    <div class="kpi-card total">
+      <div class="kpi-label">Total Incidents</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-delta" id="kpi-total-d">this period</div>
+    </div>
     <div class="kpi-card critical">
-      <div class="kpi-label">Overdue Check-outs</div>
-      <div class="kpi-value">02</div>
-      <div class="kpi-delta">Access cards pending collection</div>
+      <div class="kpi-label">Critical / High</div>
+      <div class="kpi-value" id="kpi-critical">—</div>
+      <div class="kpi-delta">immediate triage</div>
     </div>
-    <div class="kpi-card pending">
-      <div class="kpi-label">Unverified Check-ins</div>
-      <div class="kpi-value">03</div>
-      <div class="kpi-delta">Awaiting security passport links</div>
+    <div class="kpi-card medium">
+      <div class="kpi-label">Medium</div>
+      <div class="kpi-value" id="kpi-medium">—</div>
+      <div class="kpi-delta">escalated items</div>
     </div>
-    <div class="kpi-card nominal">
-      <div class="kpi-label">Active Permits Logged</div>
-      <div class="kpi-value">48</div>
-      <div class="kpi-delta">Verified via DTCM Registry</div>
+    <div class="kpi-card low">
+      <div class="kpi-label">Low</div>
+      <div class="kpi-value" id="kpi-low">—</div>
+      <div class="kpi-delta">logged routine</div>
+    </div>
+    <div class="kpi-card active">
+      <div class="kpi-label">Action Required</div>
+      <div class="kpi-value" id="kpi-action">—</div>
+      <div class="kpi-delta">open parameters</div>
     </div>
   </div>
 
-  <div class="tracker-grid">
-    <div class="tracker-panel">
+  <div class="main-grid">
+    <div class="panel">
       <div class="panel-header">
-        <div class="panel-title">REAL-TIME CHECK-IN / CHECK-OUT TELEMETRY</div>
-        <span class="panel-badge">Zone D Communities</span>
+        <div class="panel-title">INCIDENT TIMELINE</div>
+        <span class="panel-badge" id="chart-range-label">7D</span>
       </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Tower / Location</th>
-              <th>Unit</th>
-              <th>Action Type</th>
-              <th>Permit ID</th>
-              <th>Timestamp</th>
-              <th>Status Field</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>The Cove — Tower A</td>
-              <td>Unit 1402</td>
-              <td>Check-Out</td>
-              <td>DTCM-COV-88219</td>
-              <td>Today 11:30 GST</td>
-              <td><span class="status-badge overdue">Overdue 30m</span></td>
-            </tr>
-            <tr>
-              <td>Creek Horizon — South</td>
-              <td>Unit 2201</td>
-              <td>Check-In</td>
-              <td>PENDING-REG-39</td>
-              <td>Today 10:15 GST</td>
-              <td><span class="status-badge unverified">Missing Passport Link</span></td>
-            </tr>
-            <tr>
-              <td>Harbour Views — Tower 1</td>
-              <td>Unit 0905</td>
-              <td>Check-In</td>
-              <td>DTCM-HVW-10492</td>
-              <td>Today 08:45 GST</td>
-              <td><span class="status-badge verified">Verified Access</span></td>
-            </tr>
-            <tr>
-              <td>17 Icon Bay</td>
-              <td>Unit 0408</td>
-              <td>Check-Out</td>
-              <td>DTCM-ICN-77218</td>
-              <td>Today 07:12 GST</td>
-              <td><span class="status-badge verified">Completed</span></td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="chart-wrap">
+        <canvas id="timelineChart"></canvas>
       </div>
     </div>
 
-    <div class="tracker-panel">
+    <div class="panel">
       <div class="panel-header">
-        <div class="panel-title">OPERATIONAL ADVISORY</div>
+        <div class="panel-title">ZONE HEATMAP</div>
+        <span class="panel-badge">ALL COMMUNITIES</span>
       </div>
-      <div class="summary-box">
-<span class="summary-highlight">━━━ COMPLIANCE STANDING ORDER ━━━</span>
-Ensure all short-term rental check-ins match guest identities submitted via the pre-registration layout.
-
-<span class="summary-alert">ALERT PARAMS:</span>
-• <span class="summary-alert">The Cove 1402</span> failed to yield guest profile layout indicators by checkout window limit.
-• Flag community supervisors to recall common area pool badges if unreturned by next inspection run.
-
-<span class="summary-highlight">SYSTEMS:</span> DTCM validation framework fully online. Synchronized across 14 security community hubs.
+      <div class="zone-grid" id="zone-grid">
+        <div class="empty-state">Load data to map active clusters</div>
       </div>
     </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">INCIDENT FEED</div>
+        <span class="panel-badge" id="feed-count">0 REPORTS</span>
+      </div>
+      <div class="feed-list" id="feed-list">
+        <div class="empty-state">No incidents parsed inside current filter boundary</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">SHIFT ANALYSIS</div>
+        <div class="shift-selector">
+          <button class="shift-btn active" onclick="setShift('Morning', this)">MORNING</button>
+          <button class="shift-btn" onclick="setShift('Night', this)">NIGHT</button>
+        </div>
+      </div>
+      <div class="shift-split-layout">
+        <div class="shift-stats-entries" id="shift-stats">
+          <div class="empty-state" style="padding:20px">Load operations metrics</div>
+        </div>
+        <div class="shift-chart-wrap">
+          <canvas id="shiftChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">INCIDENT TYPES</div>
+        <span class="panel-badge">RANKED DISTRIBUTION</span>
+      </div>
+      <div class="type-list" id="type-list">
+        <div class="empty-state" style="padding:20px">Load operational data fields</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">AI RECOMMENDATIONS</div>
+        <span class="panel-badge" id="reco-shift-label">LIVE THREAT MITIGATION</span>
+      </div>
+      <div class="reco-list" id="reco-list">
+        <div class="empty-state" style="padding:20px">Awaiting active dataset input stream...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">SHIFT HANDOVER SUMMARY</div>
+      <span class="panel-badge" id="handover-shift-label">AUTOMATED 12H BROADCAST SUMMARY</span>
+    </div>
+    <div class="handover-box" id="handover-box">Awaiting active telemetry inputs to compile tactical overview parameters...</div>
   </div>
 </main>
 
+<div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
+  <div class="slide-panel" onclick="event.stopPropagation()">
+    <div class="slide-header">
+      <div class="slide-title" id="slide-zone-name">ZONE HEATMAP</div>
+      <button class="slide-close" onclick="hideZonePanel()">✕</button>
+    </div>
+    <div class="slide-body" id="slide-zone-body"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title">SEC — OPERATIONAL EMERGENCY ENTRY PROFILE</div>
+      <button class="modal-close" onclick="document.getElementById('modal-backdrop').classList.remove('show')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-text">INTERROGATING DATASTORES...</div>
+</div>
+
 <footer>
-  <span class="footer-left-content">
-    DCH ZONE D SECURITY · HOLIDAY HOME COMPLIANCE · POWERED BY 
-    <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block !important; flex-shrink: 0 !important; margin: 0 3px 0 5px; vertical-align: middle;">
-      <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <div class="footer-left-content">
+    <svg class="animated-vector-horse" width="22" height="18" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 16C5 15 6.5 13.5 7.5 12.5C8.5 11.5 9 10 9.5 8.5C10 7 11 4.5 13 3.5C15 2.5 17 2 18.5 3C20 4 20.5 6 20.5 7.5C20.5 9 19.5 11.5 18 13.5C16.5 15.5 14 17 12 17.5C10 18 7.5 17.5 5.5 18.5C4.5 19 4 19.5 4 19.5" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M13 3.5C13.5 4.5 14 6 13.5 7C13 8 11.5 9 10.5 9.5" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M9.5 8.5C8.5 8.5 7 9 6.5 10C6 11 6.5 12.5 7.5 12.5" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M15 15.5C15.5 17 16 18.5 16.5 19.5" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M10 17.5C9.5 18.5 9 19.5 8.5 19.5" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round"/>
     </svg>
-  </span>
-  <span>SHIFT WATCH ENGINE: 24/7 INTERLINKED LAYER</span>
+    <span>DUBAI CREEK HARBOUR · SECURITY OPERATIONS CONTROL CENTER</span>
+  </div>
+  <div>v4.8.2 · STABLE FRAMEWORK</div>
 </footer>
 
 <script>
+let allIncidents = [];
+let currentShiftFilter = 'Morning'; 
+let timelineChart = null;
+let shiftChart = null;
+
+const DEMO_CSV = `"timestamp","incident_type","location_zone","severity","summary","actions_taken","status","message_id","ai_confidence"
+"2026-06-06 08:14:02","Access Control Issue","Creek Horizon","Medium","Delivery courier refused security registry protocol at Tower A parking entrance. Expressed friction regarding identification logs.","Supervisor intervened. Courier briefed on community regulations, credential logged manually, access permitted under escort.","Resolved","MSG99011234","0.94"
+"2026-06-06 10:45:22","Fire Alarm Activation","DCH Project Site","Critical","Smoke detector activated in Sector 3 contractor welding zone. Triggered automated alarm matrix cascade inside panel.","Dispatched fire wardens. Confirmed accidental dust accumulation during active masonry cutting. Ventilated area, panel reset successfully.","Resolved","MSG99011235","0.98"
+"2026-06-06 14:20:11","Facility Malfunction","Harbour Views","Low","Main irrigation pipeline burst near boulevard promenade periphery, causing localized pooling across pedestrian walkway.","Isolated primary flow gate valve. Contacted FM landscaping group for expedited pressure line remediation. Erected hazard cones.","Resolved","MSG99011236","0.91"
+"2026-06-06 17:35:00","Trespassing / Unauthorized Entry","Creek Marina","High","Unregistered commercial photography team set up heavy boom setups inside private observation deck without permit papers.","Approached crew. Validated lack of staging permits. Escorted group outside deck perimeter without further civil incident.","Resolved","MSG99011237","0.96"
+"2026-06-06 21:10:44","Medical Emergency","Address Grand","High","Visitor tripped on step corridor near pool deck, sustaining minor laceration to the right forearm.","Applied immediate trauma first aid kit dressings. Assessed orientation. Patient declined external Dubai Ambulance dispatch; left with family.","Resolved","MSG99011238","0.95"
+"2026-06-05 02:15:33","Suspicious Activity","DCH Project Site","Medium","Night patrol unit observed two vehicles idling near the perimeter boundary line fence sector with headlights deactivated.","Challenged drivers. Individuals identified as sub-contractor survey workers waiting for shift clearance codes. Moved to holding compound.","Resolved","MSG99011239","0.89"
+"2026-06-05 07:50:12","Vandalism / Property Damage","Creek Harbour Walk","Low","Skateboarders noted grinding against custom granite public benches, chipping protective structural sealant finish.","Politely moved individuals along to designated public park layouts. Documented asset damage vectors for engineering repair queue.","Resolved","MSG99011240","0.92"
+"2026-06-04 11:30:00","Traffic Congestion / Blockage","Boulevard Gate","Medium","Tour bus experienced sudden engine failure, blocking two primary inbound transit lanes near roundabout intersection.","Implemented manual directional traffic splitting. Coordinated recovery flatbed crane tow array to clear right-of-way within 22 minutes.","Resolved","MSG99011241","0.94"
+"2026-06-03 23:45:19","Access Control Issue","Harbour Gate","Low","Resident lost physical proxy keycard access device, claiming security gate lockout frustration at entrance bypass doors.","Verified master resident database ledger. Provided temp card pass, updated account configuration matrix parameters.","Resolved","MSG99011242","0.93"
+"2026-06-02 13:12:05","Asset Protection","Creek Marina","Low","Unattended motorized jet-ski drifted loose from transient docking slip, floating towards public ferry path vectors.","Deployed security response rib watercraft. Secured tow line to loose asset, returned to safe harborage point. Alerted slip owner.","Resolved","MSG99011243","0.97"`;
+
+// Theme Controller
 function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeTogglerUI(savedTheme);
+  const saved = localStorage.getItem('dch-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeUI(saved);
 }
-
 function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateThemeTogglerUI(newTheme);
-}
-
-function updateThemeTogglerUI(theme) {
-  const toggler = document.getElementById('theme-toggler');
-  const txt = document.getElementById('theme-text');
-  if (theme === 'dark') {
-    toggler.querySelector('span:first-child').textContent = '🌙';
-    txt.textContent = 'Dark Mode';
-  } else {
-    toggler.querySelector('span:first-child').textContent = '☀️';
-    txt.textContent = 'Light Mode';
+  const current = document.documentElement.getAttribute('data-theme');
+  const target = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', target);
+  localStorage.setItem('dch-theme', target);
+  updateThemeUI(target);
+  if(allIncidents.length > 0) {
+    renderTimelineChart(allIncidents);
+    updateShiftMetrics(allIncidents);
   }
 }
-initTheme();
+function updateThemeUI(theme) {
+  const text = document.getElementById('theme-text');
+  const toggler = document.getElementById('theme-toggler');
+  if(theme === 'dark') {
+    text.innerText = "Dark Mode";
+    toggler.querySelector('span').innerText = "🌙";
+  } else {
+    text.innerText = "Light Mode";
+    toggler.querySelector('span').innerText = "☀️";
+  }
+}
 
-setInterval(() => {
-  const gstString = new Date().toLocaleString("en-US", {timeZone: "Asia/Dubai"});
-  const gstDate = new Date(gstString);
-  document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
-  document.getElementById('live-date').textContent = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
-}, 1000);
+// Clock Setup
+function startClock() {
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('live-clock').innerText = now.toTimeString().split(' ')[0];
+    const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', opts).toUpperCase();
+  }, 1000);
+}
+
+// Data Handling Initialization
+function loadDemoData() {
+  showLoading("PARSING INTERNAL DEMO DATA MATRIX...");
+  setTimeout(() => {
+    processCSVData(DEMO_CSV);
+    document.getElementById('fetch-status').innerText = "Displaying mock telemetry sandbox dataset";
+    hideLoading();
+  }, 600);
+}
+
+function showLoading(txt) {
+  document.getElementById('loading-text').innerText = txt;
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading').classList.remove('show');
+}
+
+function fetchData() {
+  const url = document.getElementById('sheet-url').value.trim();
+  if(!url) {
+    alert("Please provide a valid published CSV URL framework path.");
+    return;
+  }
+  showLoading("ESTABLISHING REMOTE DATALINK STREAM...");
+  
+  let fetchUrl = url;
+  if(url.includes('docs.google.com/spreadsheets') && !url.includes('output=csv')) {
+    if(url.includes('/pubhtml')) {
+      fetchUrl = url.replace('/pubhtml', '/pub?output=csv');
+    } else if(url.includes('/edit')) {
+      fetchUrl = url.split('/edit')[0] + '/export?format=csv';
+    } else {
+      fetchUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
+    }
+  }
+
+  fetch(fetchUrl)
+    .then(res => {
+      if(!res.ok) throw new Error("HTTP connection pipeline failure state.");
+      return res.text();
+    })
+    .then(text => {
+      processCSVData(text);
+      document.getElementById('fetch-status').innerText = `Datalink active · Fetched ${allIncidents.length} logs`;
+      hideLoading();
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Pipeline failure: " + err.message + "\nCheck sharing configuration.");
+      hideLoading();
+    });
+}
+
+function parseCSV(text) {
+  const lines = [];
+  let row = [""];
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    let c = text[i];
+    let next = text[i+1];
+    if (c === '"') {
+      if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
+      else { inQuotes = !inQuotes; }
+    } else if (c === ',' && !inQuotes) {
+      row.push('');
+    } else if ((c === '\r' || c === '\n') && !inQuotes) {
+      if (c === '\r' && next === '\n') { i++; }
+      lines.push(row);
+      row = [''];
+    } else {
+      row[row.length - 1] += c;
+    }
+  }
+  if (row.length > 1 || row[0] !== '') lines.push(row);
+  
+  if(lines.length === 0) return [];
+  const headers = lines[0].map(h => h.trim().toLowerCase());
+  
+  return lines.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h] = r[idx] ? r[idx].trim() : '';
+    });
+    return obj;
+  });
+}
+
+function processCSVData(rawText) {
+  const parsed = parseCSV(rawText);
+  allIncidents = parsed.filter(d => d.timestamp && d.incident_type);
+  allIncidents.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+  executeDataDashboardPipeline();
+}
+
+function executeDataDashboardPipeline() {
+  const filtered = filterDataByRange(allIncidents);
+  
+  renderKPIs(filtered);
+  renderTimelineChart(filtered);
+  renderZoneHeatmap(filtered);
+  renderIncidentFeed(filtered);
+  updateShiftMetrics(filtered);
+  renderTypeMetrics(filtered);
+  generateAIRecommendations(filtered);
+  generateHandoverText(filtered);
+}
+
+function filterDataByRange(data) {
+  const days = parseInt(document.getElementById('date-range').value);
+  if(days === 999) return data;
+  
+  const boundary = new Date();
+  boundary.setDate(boundary.getDate() - days);
+  return data.filter(d => new Date(d.timestamp) >= boundary);
+}
+
+function renderKPIs(incidents) {
+  document.getElementById('kpi-total').innerText = incidents.length;
+  
+  const crit = incidents.filter(i => i.severity==='Critical' || i.severity==='High').length;
+  const med = incidents.filter(i => i.severity==='Medium').length;
+  const low = incidents.filter(i => i.severity==='Low').length;
+  
+  document.getElementById('kpi-critical').innerText = crit;
+  document.getElementById('kpi-medium').innerText = med;
+  document.getElementById('kpi-low').innerText = low;
+  document.getElementById('kpi-action').innerText = incidents.filter(i => i.status !== 'Resolved').length;
+  
+  const range = document.getElementById('date-range').value;
+  const labels = { "1":"Today", "7":"Last 7 Days", "30":"Last 30 Days", "999":"All Parsed Logs" };
+  document.getElementById('chart-range-label').innerText = range === "999" ? "ALL" : range+"D";
+  document.getElementById('kpi-total-d').innerText = labels[range] || "this period";
+}
+
+function renderTimelineChart(incidents) {
+  const ctx = document.getElementById('timelineChart');
+  if(!ctx) return;
+  if(timelineChart) timelineChart.destroy();
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textPri = getComputedStyle(document.documentElement).getPropertyValue('--text-pri').trim();
+  const border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+
+  const countsByDate = {};
+  incidents.forEach(inc => {
+    const dStr = inc.timestamp.split(' ')[0];
+    countsByDate[dStr] = (countsByDate[dStr] || 0) + 1;
+  });
+
+  const sortedDates = Object.keys(countsByDate).sort((a,b) => new Date(a) - new Date(b));
+  const datasetValues = sortedDates.map(d => countsByDate[d]);
+
+  timelineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sortedDates.map(d => d.slice(5)), 
+      datasets: [{
+        label: 'Incidents Captured',
+        data: datasetValues,
+        borderColor: isDark ? '#e8a020' : '#b06600',
+        backgroundColor: isDark ? 'rgba(232,160,32,0.06)' : 'rgba(176,102,0,0.04)',
+        borderWidth: 2,
+        tension: 0.25,
+        fill: true,
+        pointBackgroundColor: isDark ? '#e8a020' : '#b06600'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: border }, ticks: { color: textPri, font: { family: 'DM Mono', size: 9 } } },
+        y: { grid: { color: border }, ticks: { color: textPri, font: { family: 'DM Mono', size: 9 }, stepSize: 1 }, min: 0 }
+      }
+    }
+  });
+}
+
+function renderZoneHeatmap(incidents) {
+  const container = document.getElementById('zone-grid');
+  if(!container) return;
+  
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state">Load data to map active clusters</div>`;
+    return;
+  }
+
+  const counts = {};
+  incidents.forEach(inc => {
+    const z = inc.location_zone || 'Unknown / Unassigned';
+    counts[z] = (counts[z] || 0) + 1;
+  });
+
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const maxVal = sorted.length > 0 ? sorted[0][1] : 1;
+
+  container.innerHTML = sorted.map(([zone, count]) => {
+    const pct = Math.min(100, Math.round((count / maxVal) * 100));
+    let color = 'var(--accent)';
+    if(count > 4) color = 'var(--red)';
+    else if(count <= 1) color = 'var(--green)';
+
+    return `
+      <div class="zone-cell" onclick="showZonePanel('${zone.replace(/'/g, "\\'")}')">
+        <div class="zone-name" title="${zone}">${zone}</div>
+        <div class="zone-count" style="color:${color};">${count}</div>
+        <div class="zone-bar" style="background:${color}; opacity:${Math.max(0.15, pct/100)}; width:100%;"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderIncidentFeed(incidents) {
+  const container = document.getElementById('feed-list');
+  document.getElementById('feed-count').innerText = `${incidents.length} REPORTS`;
+  
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state">No incidents parsed inside current filter boundary</div>`;
+    return;
+  }
+
+  container.innerHTML = incidents.map(inc => {
+    const sev = (inc.severity || 'Low').toLowerCase();
+    const timeStr = inc.timestamp ? inc.timestamp.split(' ')[1].slice(0,5) : '—';
+    return `
+      <div class="feed-item" onclick="showMasterModal('${inc.message_id || ''}')">
+        <div class="severity-dot ${sev}"></div>
+        <div>
+          <div class="feed-type">${inc.incident_type}</div>
+          <div class="feed-summary">${inc.summary || 'No operational description logs provided.'}</div>
+          <div class="feed-meta">
+            <span class="tag zone">${inc.location_zone || 'Global'}</span>
+            <span class="tag type">${inc.severity}</span>
+          </div>
+        </div>
+        <div class="feed-time">${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getShiftAssignment(ts) {
+  if(!ts || !ts.includes(' ')) return 'Morning';
+  const time = ts.split(' ')[1];
+  const hour = parseInt(time.split(':')[0]);
+  return (hour >= 7 && hour < 19) ? 'Morning' : 'Night';
+}
+
+function setShift(shiftName, btn) {
+  currentShiftFilter = shiftName;
+  document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateShiftMetrics(filterDataByRange(allIncidents));
+}
+
+function updateShiftMetrics(incidents) {
+  const currentShiftLogs = incidents.filter(i => getShiftAssignment(i.timestamp) === currentShiftFilter);
+  const container = document.getElementById('shift-stats');
+  
+  const crit = currentShiftLogs.filter(i => i.severity==='Critical' || i.severity==='High').length;
+  const med = currentShiftLogs.filter(i => i.severity==='Medium').length;
+  const low = currentShiftLogs.filter(i => i.severity==='Low').length;
+  
+  container.innerHTML = `
+    <div class="shift-row"><span class="shift-row-label">Shift Boundary Frame:</span><span class="shift-row-val">${currentShiftFilter === 'Morning' ? '07:00 Hrs - 19:00 Hrs' : '19:00 Hrs - 07:00 Hrs'}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Total Logged Metrics:</span><span class="shift-row-val">${currentShiftLogs.length} Events</span></div>
+    <div class="shift-row"><span class="shift-row-label">Critical Incidents:</span><span class="shift-row-val" style="color:var(--red)">${crit}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Medium Focus Points:</span><span class="shift-row-val" style="color:var(--accent)">${med}</span></div>
+    <div class="shift-row"><span class="shift-row-label">Routine System Logs:</span><span class="shift-row-val" style="color:var(--green)">${low}</span></div>
+  `;
+
+  const ctx = document.getElementById('shiftChart');
+  if(!ctx) return;
+  if(shiftChart) shiftChart.destroy();
+
+  const textPri = getComputedStyle(document.documentElement).getPropertyValue('--text-pri').trim();
+  const computedRed = getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+  const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  const computedGreen = getComputedStyle(document.documentElement).getPropertyValue('--green').trim();
+
+  shiftChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['CRITICAL/HIGH', 'MEDIUM', 'LOW'],
+      datasets: [{
+        data: [crit, med, low],
+        backgroundColor: [computedRed, computedAccent, computedGreen],
+        borderWidth: 0,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: textPri, font: { family: 'DM Mono', size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: textPri, font: { family: 'DM Mono', size: 9 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.03)' }, min: 0 }
+      }
+    }
+  });
+}
+
+function renderTypeMetrics(incidents) {
+  const container = document.getElementById('type-list');
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:20px">Load operational data fields</div>`;
+    return;
+  }
+
+  const counts = {};
+  incidents.forEach(i => { counts[i.incident_type] = (counts[i.incident_type] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+  const max = sorted[0][1];
+
+  container.innerHTML = sorted.slice(0, 5).map(([type, count]) => {
+    const pct = Math.round((count / max) * 100);
+    return `
+      <div class="type-row">
+        <div class="type-name" title="${type}">${type}</div>
+        <div class="type-bar-track"><div class="type-bar-fill" style="width: ${pct}%;"></div></div>
+        <div class="type-count">${count}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function generateAIRecommendations(incidents) {
+  const container = document.getElementById('reco-list');
+  if(incidents.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:20px">Awaiting active dataset input stream...</div>`;
+    return;
+  }
+
+  const criticalLogs = incidents.filter(i => i.severity==='Critical' || i.severity==='High');
+  const typeCounts = {};
+  incidents.forEach(i => { typeCounts[i.incident_type] = (typeCounts[i.incident_type] || 0) + 1; });
+  
+  const recommendations = [];
+
+  if(criticalLogs.length > 0) {
+    recommendations.push({
+      title: `Triage Hotspots`,
+      desc: `Deploy a dedicated response vector team around areas experiencing recurrent elevated risk profiles.`
+    });
+  }
+
+  if(typeCounts['Access Control Issue'] && typeCounts['Access Control Issue'] > 1) {
+    recommendations.push({
+      title: `Access Protocol Deficit`,
+      desc: `Friction identified regarding contractor registry structures. Reinforce supervisory verification at access gates.`
+    });
+  }
+
+  if(recommendations.length < 3) {
+    recommendations.push({
+      title: `Standard Guarding Routines`,
+      desc: `Ensure continuous validation logs are maintained for automated fire control infrastructure panels.`
+    });
+  }
+
+  container.innerHTML = recommendations.map((r, i) => `
+    <div class="reco-item">
+      <div class="reco-num">0${i+1}</div>
+      <div><strong>${r.title}:</strong> ${r.desc}</div>
+    </div>
+  `).join('');
+}
+
+function generateHandoverText(incidents) {
+  const container = document.getElementById('handover-box');
+  if(incidents.length === 0) {
+    container.innerHTML = "Awaiting active telemetry inputs to compile tactical overview parameters...";
+    return;
+  }
+
+  const morningLogs = incidents.filter(i => getShiftAssignment(i.timestamp) === 'Morning');
+  const nightLogs = incidents.filter(i => getShiftAssignment(i.timestamp) === 'Night');
+  
+  const mCrit = morningLogs.filter(i => i.severity==='Critical' || i.severity==='High').length;
+  const nCrit = nightLogs.filter(i => i.severity==='Critical' || i.severity==='High').length;
+
+  let txt = `======================================================================\n`;
+  txt += `       DUBAI CREEK HARBOUR (DCH) SECURITY SHIFT HANDOVER MATRIX       \n`;
+  txt += `======================================================================\n\n`;
+
+  txt += `[01] THE TELEMETRY FRAMEWORK ENVIRONMENT METRICS\n`;
+  txt += `----------------------------------------------------------------------\n`;
+  txt += `* METEOROLOGICAL / WEATHER LOGS:\n`;
+  txt += `  - Operational Status: Normal Ambient Parameters\n`;
+  txt += `  - Sky / Heat Matrix: Ambient Temperature Profile Stabilized; High Humidity Watch Active\n`;
+  txt += `  - Visibility Threshold: Nominal Visibility Clear; Wind Threshold Below Critical Bounds\n`;
+  txt += `* LOGISTICS / VEHICULAR TRAFFIC FLOWS:\n`;
+  txt += `  - Perimeter Inbound Feeds: Ras Al Khor Road Boundary Entrances Operating Fluidly\n`;
+  txt += `  - Central Infrastructure Ring: Boulevard Sector Arteries Clear; Bus Lanes Nominal\n`;
+  txt += `  - Peak Congestion Assessment: Zero Gridlock Exceptions Noted Around Promenade Hubs\n\n`;
+
+  txt += `[02] MORNING DIVISION WATCH PROFILE (07:00 HRS - 19:00 HRS)\n`;
+  txt += `----------------------------------------------------------------------\n`;
+  txt += `* Total Logged Operational Metrics: ${morningLogs.length} Events Logged\n`;
+  txt += `* High Priority Action Points: ${mCrit} Escalations Triggered\n`;
+  txt += `* Division Status: ${mCrit > 0 ? 'CRITICAL ITEMS RESOLVED/CONTAINED' : 'ALL VECTORS OPERATIONAL AND SECURE'}\n`;
+  if(morningLogs.length > 0) {
+    txt += `* Action Summary Feed:\n`;
+    morningLogs.slice(0,3).forEach(l => {
+      txt += `  - [${l.severity.toUpperCase()}] ${l.incident_type} at ${l.location_zone}: ${l.summary}\n`;
+    });
+  }
+
+  txt += `\n[03] NIGHT DIVISION WATCH PROFILE (19:00 HRS - 07:00 HRS)\n`;
+  txt += `----------------------------------------------------------------------\n`;
+  txt += `* Total Logged Operational Metrics: ${nightLogs.length} Events Logged\n`;
+  txt += `* High Priority Action Points: ${nCrit} Escalations Triggered\n`;
+  txt += `* Division Status: ${nCrit > 0 ? 'RISK FACTORS TRIAGED & LOGGED' : 'ALL VECTORS OPERATIONAL AND SECURE'}\n`;
+  if(nightLogs.length > 0) {
+    txt += `* Action Summary Feed:\n`;
+    nightLogs.slice(0,3).forEach(l => {
+      txt += `  - [${l.severity.toUpperCase()}] ${l.incident_type} at ${l.location_zone}: ${l.summary}\n`;
+    });
+  }
+
+  txt += `\n======================================================================\n`;
+  txt += `   BROADCAST COMPILED BY AUTOMATED SOC SCRIPT AGGREGATOR FRAMEWORK   \n`;
+  txt += `======================================================================`;
+
+  container.innerText = txt;
+}
+
+/* ── RECONFIGURED SIDEBAR DETAILED PROFILE FUNCTIONALITY ── */
+function showZonePanel(zoneName) {
+  const backdrop = document.getElementById('slide-backdrop');
+  const title = document.getElementById('slide-zone-name');
+  const body = document.getElementById('slide-zone-body');
+  
+  title.innerText = "ZONE DETAIL PROFILE";
+  backdrop.classList.add('show');
+
+  const filtered = filterDataByRange(allIncidents).filter(i => i.location_zone === zoneName);
+
+  if(filtered.length === 0) {
+    body.innerHTML = `<div class="empty-state">No recorded active logs for this specific sub-zone.</div>`;
+    return;
+  }
+
+  const typeCounts = {};
+  filtered.forEach(f => { typeCounts[f.incident_type] = (typeCounts[f.incident_type] || 0) + 1; });
+  
+  let html = `
+    <div>
+      <div class="slide-sub-title">Zone Incident Density</div>
+      <p style="font-size:24px; font-family:var(--font-display); color:var(--accent); margin-top:4px;">
+        ${filtered.length} <span style="font-size:11px; font-family:var(--font-mono); color:var(--text-sec); letter-spacing:0.5px;">TOTAL REPORT METRICS</span>
+      </p>
+    </div>
+    
+    <div>
+      <div class="slide-sub-title">Incident Types Distribution</div>
+      <div style="margin-top:6px; display:flex; flex-direction:column; gap:5px;">
+        ${Object.entries(typeCounts).map(([type, c]) => `
+          <div style="display:flex; justify-content:space-between; font-size:12px;">
+            <span style="color:var(--text-sec)">${type}</span>
+            <span style="font-family:var(--font-mono); font-weight:600;">${c}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div class="slide-sub-title">Recent Event Log Feeds</div>
+      <div style="margin-top:6px; display:flex; flex-direction:column; gap:8px;">
+        ${filtered.map(f => `
+          <div class="slide-feed-item" onclick="showMasterModal('${f.message_id || ''}')">
+            <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:4px; font-size:12px;">
+              <span>${f.incident_type}</span>
+              <span style="color:${sevColor(f.severity)}">${f.severity}</span>
+            </div>
+            <p style="color:var(--text-sec); line-height:1.4; font-size:11px;">${f.summary}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  body.innerHTML = html;
+}
+
+function hideZonePanel() {
+  document.getElementById('slide-backdrop').classList.remove('show');
+}
+function closeZonePanel(e) {
+  if (e.target === document.getElementById('slide-backdrop')) hideZonePanel();
+}
+
+// Master Incident Drill-Down Modal Setup
+function showMasterModal(msgId) {
+  if(!msgId) return;
+  const inc = allIncidents.find(i => i.message_id === msgId);
+  if(!inc) return;
+
+  const container = document.getElementById('modal-body');
+  const actions = inc.actions_taken ? inc.actions_taken.split(';') : [];
+
+  container.innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="modal-field"><label>Incident Category</label><p style="font-weight:600">${inc.incident_type}</p></div>
+      <div class="modal-field"><label>Severity Matrix Index</label><p style="color:${sevColor(inc.severity)}; font-weight:600">${inc.severity}</p></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="modal-field"><label>Telemetry Date & Time Stamp</label><p style="font-family:var(--font-mono); font-size:12px;">${inc.timestamp}</p></div>
+      <div class="modal-field"><label>Current Processing Status</label><p><span class="tag" style="background:var(--green-dim);color:var(--green); border-color:transparent;">${inc.status || 'Active'}</span></p></div>
+    </div>
+    <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${inc.location_zone}</p></div>
+    <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
+    ${actions.filter(a => a.trim().length > 0).length ? `<div class="modal-field"><label>Mitigation Actions Taken</label><ul class=\"actions-list\">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
+    <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.ai_confidence ? Math.round(inc.ai_confidence*100)+'%' : '—'}</p></div>
+    <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;\">${inc.raw_message || inc.summary || '—'}</p></div>
+    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id || '—'}</p></div>
+  `;
+  document.getElementById('modal-backdrop').classList.add('show');
+}
+
+function sevColor(s) {
+  return {Critical:'var(--red)', High:'#d06010', Medium:'var(--accent)', Low:'var(--green)'}[s] || 'var(--text-sec)';
+}
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-backdrop')) document.getElementById('modal-backdrop').classList.remove('show');
+}
+
+window.onload = function() {
+  initTheme();
+  startClock();
+  
+  document.getElementById('date-range').addEventListener('change', () => {
+    if(allIncidents.length > 0) executeDataDashboardPipeline();
+  });
+};
 </script>
 </body>
 </html>
