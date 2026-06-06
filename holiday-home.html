@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holiday Home Apartment Tracker — DCH SOC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="dark"] {
+    --bg-deep:    #090d12;
+    --bg-panel:   #0e1520;
+    --bg-card:    #131d2b;
+    --bg-hover:   #1a2638;
+    --border:     rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.14);
+    --accent:     #e8a020;
+    --accent-dim: rgba(232,160,32,0.15);
+    --red:        #e84040;
+    --red-dim:    rgba(232,64,64,0.15);
+    --green:      #34c77b;
+    --green-dim:  rgba(52,199,123,0.12);
+    --blue:       #3a8fe8;
+    --blue-dim:   rgba(58,143,232,0.12);
+    --text-pri:   #e8edf5;
+    --text-sec:   #7a8fa8;
+    --text-dim:   #3d5068;
+    --scanline:   rgba(0,0,0,0.06);
+    --horse-color: #e8a020;
+  }
+
+  :root[data-theme="light"] {
+    --bg-deep:    #f3eedf;         
+    --bg-panel:   #eae3d2;         
+    --bg-card:    #ffffff;         
+    --bg-hover:   #e2d9c3;         
+    --border:     rgba(9,16,29,0.15); 
+    --border-bright: rgba(9,16,29,0.25);
+    --accent:     #b06600;         
+    --accent-dim: rgba(176,102,0,0.1);
+    --red:        #b81414;         
+    --red-dim:    rgba(184,20,20,0.1);
+    --green:      #066b2e;         
+    --green-dim:  rgba(6,107,46,0.1);
+    --blue:       #0f40b3;         
+    --blue-dim:   rgba(15,64,179,0.1);
+    --text-pri:   #09101d;         
+    --text-sec:   #2b3a51;         
+    --text-dim:   #546681;         
+    --scanline:   rgba(255,255,255,0.15);
+    --horse-color: #b06600;
+  }
+
+  :root {
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono:    'DM Mono', monospace;
+    --font-body:    'DM Sans', sans-serif;
+    --r:          6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-deep);
+    color: var(--text-pri);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scanline) 2px, var(--scanline) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+
+  header {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+    padding: 16px 32px; border-bottom: 2px solid var(--border); background: var(--bg-panel);
+    position: sticky; top: 0; z-index: 100; gap: 20px;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-badge {
+    width: 36px; height: 36px; background: var(--accent); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 18px; color: #000; letter-spacing: 0.5px;
+  }
+  .header-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 2px; color: var(--text-pri); line-height: 1; }
+  .header-sub { font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; font-family: var(--font-mono); }
+  
+  .header-center { text-align: center; }
+  .live-indicator { display: inline-flex; align-items: center; gap: 7px; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 20px; padding: 4px 12px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 1px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-orange 2s infinite; }
+  @keyframes pulse-orange { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+
+  .header-right-nav { display: flex; align-items: center; gap: 24px; justify-content: flex-end; }
+  .clock-block { text-align: right; min-width: 140px; }
+  #live-clock { font-family: var(--font-display); font-size: 30px; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+  .clock-date { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1px; margin-top: 2px; }
+
+  .nav-links-group { display: flex; align-items: center; gap: 14px; border-left: 1px solid var(--border-bright); padding-left: 20px; }
+  .nav-link-item { text-decoration: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 6px 12px; border: 1px solid transparent; border-radius: var(--r); transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
+  .nav-link-item:hover { color: var(--text-pri); background: var(--bg-hover); border-color: var(--border-bright); }
+  .nav-link-item.active { color: var(--accent); background: var(--accent-dim); border-color: var(--accent); }
+  .nav-link-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+  .btn-theme-toggle { background: var(--bg-card); color: var(--text-pri); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 7px 14px; font-family: var(--font-mono); font-weight: 600; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-theme-toggle:hover { background: var(--bg-hover); }
+
+  main { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 16px; position: relative; overflow: hidden; }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .kpi-card.critical::before { background: var(--red); }
+  .kpi-card.pending::before { background: var(--accent); }
+  .kpi-card.nominal::before { background: var(--blue); }
+  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 8px; }
+  .kpi-value { font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: 1px; }
+  .kpi-card.critical .kpi-value { color: var(--red); }
+  .kpi-card.pending .kpi-value { color: var(--accent); }
+  .kpi-card.nominal .kpi-value { color: var(--blue); }
+  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
+
+  .tracker-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .tracker-panel { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
+  .panel-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
+  .panel-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
+  
+  .table-container { width: 100%; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+  th { background: var(--bg-panel); font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-sec); padding: 12px 18px; border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+  td { padding: 14px 18px; border-bottom: 1px solid var(--border); color: var(--text-pri); font-weight: 400; }
+  tr:hover td { background: var(--bg-panel); }
+  
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+  .status-badge.overdue { background: var(--red-dim); color: var(--red); border: 1px solid rgba(232,64,64,0.2); }
+  .status-badge.unverified { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(232,160,32,0.2); }
+  .status-badge.verified { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,199,123,0.2); }
+
+  .summary-box { padding: 16px 20px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-pri); line-height: 1.6; white-space: pre-wrap; background: var(--bg-panel); border-radius: var(--r); border: 1px solid var(--border); height: 100%; }
+  .summary-highlight { color: var(--blue); font-weight: 600; }
+  .summary-alert { color: var(--red); font-weight: bold; }
+
+  footer { padding: 12px 32px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); background: var(--bg-panel); }
+  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
+
+  @keyframes horseRun { 0% { stroke-dashoffset: 24; } 50% { opacity: 0.85; } 100% { stroke-dashoffset: 0; } }
+  @keyframes horseGallop { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-1.5px) rotate(1deg); } 50% { transform: translateY(0.5px) rotate(-1deg); } 75% { transform: translateY(-1px) rotate(0.5deg); } }
+  .animated-vector-horse { animation: horseGallop 0.55s infinite ease-in-out; }
+  .animated-vector-horse path { stroke-dasharray: 12; animation: horseRun 0.8s linear infinite; }
+
+  @media (max-width: 1024px) { .tracker-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-badge">DCH</div>
+    <div>
+      <div class="header-title">HOLIDAY HOME MOVEMENT TRACKER</div>
+      <div class="header-sub">Zone D · Community Access Controls · DTCM Permit Audits</div>
+    </div>
+  </div>
+  
+  <div class="header-center">
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      TRACKING MONITOR
+    </div>
+  </div>
+  
+  <div class="header-right-nav">
+    <div class="clock-block">
+      <div id="live-clock">00:00:00</div>
+      <div class="clock-date" id="live-date">—</div>
+    </div>
+    
+    <div class="nav-links-group">
+      <a href="index.html" class="nav-link-item">Dashboard</a>
+      <a href="holiday-home.html" class="nav-link-item active">
+        <span class="nav-link-dot"></span>HH Tracker
+      </a>
+      <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
+        <span>🌙</span><span id="theme-text">Dark Mode</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="kpi-row">
+    <div class="kpi-card critical">
+      <div class="kpi-label">Overdue Check-outs</div>
+      <div class="kpi-value">02</div>
+      <div class="kpi-delta">Access cards pending collection</div>
+    </div>
+    <div class="kpi-card pending">
+      <div class="kpi-label">Unverified Check-ins</div>
+      <div class="kpi-value">03</div>
+      <div class="kpi-delta">Awaiting security passport links</div>
+    </div>
+    <div class="kpi-card nominal">
+      <div class="kpi-label">Active Permits Logged</div>
+      <div class="kpi-value">48</div>
+      <div class="kpi-delta">Verified via DTCM Registry</div>
+    </div>
+  </div>
+
+  <div class="tracker-grid">
+    <div class="tracker-panel">
+      <div class="panel-header">
+        <div class="panel-title">REAL-TIME CHECK-IN / CHECK-OUT TELEMETRY</div>
+        <span class="panel-badge">Zone D Communities</span>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Tower / Location</th>
+              <th>Unit</th>
+              <th>Action Type</th>
+              <th>Permit ID</th>
+              <th>Timestamp</th>
+              <th>Status Field</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>The Cove — Tower A</td>
+              <td>Unit 1402</td>
+              <td>Check-Out</td>
+              <td>DTCM-COV-88219</td>
+              <td>Today 11:30 GST</td>
+              <td><span class="status-badge overdue">Overdue 30m</span></td>
+            </tr>
+            <tr>
+              <td>Creek Horizon — South</td>
+              <td>Unit 2201</td>
+              <td>Check-In</td>
+              <td>PENDING-REG-39</td>
+              <td>Today 10:15 GST</td>
+              <td><span class="status-badge unverified">Missing Passport Link</span></td>
+            </tr>
+            <tr>
+              <td>Harbour Views — Tower 1</td>
+              <td>Unit 0905</td>
+              <td>Check-In</td>
+              <td>DTCM-HVW-10492</td>
+              <td>Today 08:45 GST</td>
+              <td><span class="status-badge verified">Verified Access</span></td>
+            </tr>
+            <tr>
+              <td>17 Icon Bay</td>
+              <td>Unit 0408</td>
+              <td>Check-Out</td>
+              <td>DTCM-ICN-77218</td>
+              <td>Today 07:12 GST</td>
+              <td><span class="status-badge verified">Completed</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tracker-panel">
+      <div class="panel-header">
+        <div class="panel-title">OPERATIONAL ADVISORY</div>
+      </div>
+      <div class="summary-box">
+<span class="summary-highlight">━━━ COMPLIANCE STANDING ORDER ━━━</span>
+Ensure all short-term rental check-ins match guest identities submitted via the pre-registration layout.
+
+<span class="summary-alert">ALERT PARAMS:</span>
+• <span class="summary-alert">The Cove 1402</span> failed to yield guest profile layout indicators by checkout window limit.
+• Flag community supervisors to recall common area pool badges if unreturned by next inspection run.
+
+<span class="summary-highlight">SYSTEMS:</span> DTCM validation framework fully online. Synchronized across 14 security community hubs.
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span class="footer-left-content">
+    DCH ZONE D SECURITY · HOLIDAY HOME COMPLIANCE · POWERED BY 
+    <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block !important; flex-shrink: 0 !important; margin: 0 3px 0 5px; vertical-align: middle;">
+      <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+  <span>SHIFT WATCH ENGINE: 24/7 INTERLINKED LAYER</span>
+</footer>
+
+<script>
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeTogglerUI(savedTheme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeTogglerUI(newTheme);
+}
+
+function updateThemeTogglerUI(theme) {
+  const toggler = document.getElementById('theme-toggler');
+  const txt = document.getElementById('theme-text');
+  if (theme === 'dark') {
+    toggler.querySelector('span:first-child').textContent = '🌙';
+    txt.textContent = 'Dark Mode';
+  } else {
+    toggler.querySelector('span:first-child').textContent = '☀️';
+    txt.textContent = 'Light Mode';
+  }
+}
+initTheme();
+
+setInterval(() => {
+  const gstString = new Date().toLocaleString("en-US", {timeZone: "Asia/Dubai"});
+  const gstDate = new Date(gstString);
+  document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+  document.getElementById('live-date').textContent = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+}, 1000);
+</script>
+</body>
+</html>
