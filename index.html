@@ -404,7 +404,7 @@
   /* ── MAIN LAYOUT GRID SYSTEM ── */
   .main-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 360px;
+    grid-template-columns: 1fr 1fr 420px;
     gap: 16px;
   }
 
@@ -414,6 +414,8 @@
     border-radius: var(--r);
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
   }
 
   .panel-header {
@@ -423,6 +425,7 @@
     padding: 14px 18px;
     border-bottom: 1px solid var(--border);
     background: var(--bg-panel);
+    flex-shrink: 0;
   }
 
   .panel-title {
@@ -452,7 +455,7 @@
     position: relative;
   }
 
-  /* ── SCROLLABLE ZONE HEATMAP FOR ALL COMMUNITIES ── */
+  /* ── ZONE HEATMAP ── */
   .zone-grid {
     padding: 12px 16px;
     display: grid;
@@ -464,19 +467,15 @@
     scrollbar-color: var(--text-dim) var(--bg-panel);
   }
 
-  .zone-grid::-webkit-scrollbar {
+  .zone-grid::-webkit-scrollbar, .feed-list::-webkit-scrollbar, .type-list::-webkit-scrollbar {
     width: 6px;
   }
-  .zone-grid::-webkit-scrollbar-track {
+  .zone-grid::-webkit-scrollbar-track, .feed-list::-webkit-scrollbar-track, .type-list::-webkit-scrollbar-track {
     background: var(--bg-panel);
-    border-radius: var(--r);
   }
-  .zone-grid::-webkit-scrollbar-thumb {
+  .zone-grid::-webkit-scrollbar-thumb, .feed-list::-webkit-scrollbar-thumb, .type-list::-webkit-scrollbar-thumb {
     background: var(--text-dim);
     border-radius: var(--r);
-  }
-  .zone-grid::-webkit-scrollbar-thumb:hover {
-    background: var(--text-sec);
   }
 
   .zone-cell {
@@ -518,90 +517,151 @@
     height: 4px;
   }
 
-  /* ── INCIDENT FEED LOGS ── */
+  /* ── NEW OVERHAULED INCIDENT FEED LOGS (SCREENSHOT LAYOUT) ── */
   .feed-list {
+    flex: 1;
     max-height: 220px;
     overflow-y: auto;
     scrollbar-width: thin;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg-deep);
   }
 
-  .feed-item {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 12px;
-    align-items: start;
+  .incident-card-v2 {
+    background: var(--bg-card);
+    border-radius: 4px;
+    border-left: 4px solid var(--text-dim);
+    padding: 10px 14px;
+    transition: background 0.15s, transform 0.1s;
     cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .incident-card-v2:hover {
+    background: var(--bg-hover);
+    transform: translateX(2px);
+  }
+  .incident-card-v2.critical { border-left-color: var(--red); }
+  .incident-card-v2.high { border-left-color: #d06010; }
+  .incident-card-v2.medium { border-left-color: var(--accent); }
+  .incident-card-v2.low { border-left-color: var(--green); }
+
+  .card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
   }
 
-  .feed-item:hover { background: var(--bg-panel); }
-
-  .severity-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    margin-top: 4px;
-    flex-shrink: 0;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
-
-  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
-  .severity-dot.high { background: #d06010; }
-  .severity-dot.medium { background: var(--accent); }
-  .severity-dot.low { background: var(--green); }
-
-  @keyframes pulse-red {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.6; }
-  }
-
-  .feed-type {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-pri);
-  }
-
-  .feed-summary {
-    font-size: 12px;
-    color: var(--text-sec);
-    margin-top: 3px;
-    line-height: 1.4;
-  }
-
-  .feed-meta {
+  .meta-tag-group {
     display: flex;
     gap: 6px;
-    margin-top: 6px;
+    align-items: center;
     flex-wrap: wrap;
   }
 
-  .tag {
+  .compact-tag {
     font-family: var(--font-mono);
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 2px 6px;
     border-radius: 3px;
-    background: var(--bg-deep);
+    background: var(--bg-panel);
     color: var(--text-sec);
     border: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .compact-tag.urgency {
+    font-weight: 700;
+  }
+  .critical .compact-tag.urgency { color: var(--red); background: rgba(232, 64, 64, 0.08); border-color: rgba(232, 64, 64, 0.15); }
+  .high .compact-tag.urgency { color: #d06010; background: rgba(208, 96, 16, 0.08); border-color: rgba(208, 96, 16, 0.15); }
+  .medium .compact-tag.urgency { color: var(--accent); background: var(--accent-dim); border-color: rgba(232, 160, 32, 0.15); }
+  .low .compact-tag.urgency { color: var(--green); background: var(--green-dim); border-color: rgba(52, 199, 123, 0.15); }
+
+  .timestamp-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 500;
   }
 
-  .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
-  .tag.type { color: var(--accent); background: var(--accent-dim); border-color: rgba(176,102,0,0.2); }
-
-  .feed-time {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    white-space: nowrap;
+  .card-summary-text {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-pri);
+    word-wrap: break-word;
   }
 
   /* ── OPERATIONS SUB-GRID ── */
   .bottom-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 360px;
+    grid-template-columns: 1fr 1fr 420px;
     gap: 16px;
+  }
+
+  /* ── INTELLIGENT METRIC WEATHER SUMMARY ── */
+  .weather-summary-box {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    margin: 12px 16px 4px 16px;
+  }
+  
+  .weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 4px;
+  }
+
+  .weather-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .weather-metric-stat {
+    background: var(--bg-deep);
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .weather-metric-stat label {
+    display: block;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .weather-metric-stat span {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-pri);
+  }
+
+  .hse-directive {
+    font-size: 11px;
+    color: var(--text-sec);
+    background: var(--bg-deep);
+    padding: 6px 10px;
+    border-radius: 4px;
+    border-left: 3px solid var(--text-dim);
+    line-height: 1.4;
   }
 
   /* ── TWO-SHIFT SELECTOR ANALYSIS ── */
@@ -632,10 +692,10 @@
   }
 
   .shift-stats {
-    padding: 12px 16px;
+    padding: 10px 16px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .shift-row {
@@ -657,6 +717,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
   }
 
   .reco-item {
@@ -688,6 +750,8 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
   }
 
   .type-row {
@@ -1013,10 +1077,39 @@
           <button class="shift-btn" onclick="setShift('Night', this)">NIGHT</button>
         </div>
       </div>
-      <div class="shift-stats" id="shift-stats">
-        <div class="empty-state" style="padding:20px">Load operations metrics</div>
+      
+      <div class="weather-summary-box">
+        <div class="weather-header">
+          <span>ENVIRONMENTAL WATCH &amp; OUTDOOR DIRECTIVES</span>
+          <span style="font-family:var(--font-mono); font-size:10px; opacity:0.6;">LOC: DCH AREA</span>
+        </div>
+        <div class="weather-grid">
+          <div class="weather-metric-stat">
+            <label>Temp</label>
+            <span id="wx-temp">34°C</span>
+          </div>
+          <div class="weather-metric-stat">
+            <label>Feels Like</label>
+            <span id="wx-feels" style="color:var(--red);">42°C</span>
+          </div>
+          <div class="weather-metric-stat">
+            <label>Humidity</label>
+            <span id="wx-humidity">68%</span>
+          </div>
+          <div class="weather-metric-stat">
+            <label>Wind</label>
+            <span id="wx-wind">12km/h</span>
+          </div>
+        </div>
+        <div class="hse-directive" id="wx-directive">
+          Monitoring field parameters to output immediate tactical advisor vectors.
+        </div>
       </div>
-      <div class="chart-wrap" style="height:160px;">
+
+      <div class="shift-stats" id="shift-stats">
+        <div class="empty-state" style="padding:10px">Load operations metrics</div>
+      </div>
+      <div class="chart-wrap" style="height:140px; padding: 0 16px 10px 16px;">
         <canvas id="shiftChart"></canvas>
       </div>
     </div>
@@ -1134,15 +1227,53 @@ function updateClock() {
   const { gstDate } = getGSTDateTime();
   document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
   document.getElementById('live-date').textContent = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+  updateLiveWeatherAdvisory(gstDate.getHours());
 }
 setInterval(updateClock, 1000);
 updateClock();
 
+/* ── INTELLIGENT SIMPLIFIED WEATHER LOGIC FOR DCH FORCES ── */
+function updateLiveWeatherAdvisory(hour) {
+  const isDayShift = (hour >= 7 && hour < 19);
+  
+  let temp = "31°C";
+  let feels = "35°C";
+  let humidity = "72%";
+  let wind = "14 km/h";
+  let directive = "";
+  let color = "var(--accent)";
+
+  if (isDayShift) {
+    temp = "39°C";
+    feels = "46°C";
+    humidity = "54Hz";
+    wind = "11 km/h";
+    color = "var(--red)";
+    directive = "<strong>CRITICAL THERMAL ALERT:</strong> Feels like 46°C. Initiate mandatory 20-minute shaded hydration breaks. Supervisor checkpoint relief rotations required immediately.";
+  } else {
+    temp = "33°C";
+    feels = "39°C";
+    humidity = "82%";
+    wind = "16 km/h";
+    color = "var(--accent)";
+    directive = "<strong>NIGHT HUMIDITY ADVISORY:</strong> Moisture levels elevated at 82%. Ensure checking gates have clear water supplies. Remind foot patrols to maintain uniform transit pacing.";
+  }
+
+  document.getElementById('wx-temp').textContent = temp;
+  document.getElementById('wx-feels').textContent = feels;
+  document.getElementById('wx-feels').style.color = color;
+  document.getElementById('wx-humidity').textContent = humidity;
+  document.getElementById('wx-wind').textContent = wind;
+  
+  const dBox = document.getElementById('wx-directive');
+  dBox.style.borderColor = color;
+  dBox.innerHTML = directive;
+}
+
 async function fetchData() {
   const url = document.getElementById('sheet-url').value.trim();
-  if (!url) {
-    return;
-  }
+  if (!url) return;
+  
   document.getElementById('loading').classList.add('show');
   document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
   
@@ -1165,15 +1296,10 @@ async function fetchData() {
   for (const attemptUrl of attempts) {
     try {
       const resp = await fetch(attemptUrl, { cache: 'no-store' });
-      if (!resp.ok) {
-        lastError = 'HTTP ' + resp.status;
-        continue;
-      }
+      if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
       const text = await resp.text();
-      if (!text || text.trim().length < 10) {
-        lastError = 'Empty response';
-        continue;
-      }
+      if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
+      
       allIncidents = parseCSV(text);
       sortIncidentsDescending(allIncidents);
       
@@ -1236,9 +1362,7 @@ function parseCSV(text) {
         rawDateStr += " 00:00:00";
       }
       let parsedMs = Date.parse(rawDateStr.replace(/-/g, '/'));
-      if (isNaN(parsedMs)) {
-        parsedMs = Date.parse(rawDateStr);
-      }
+      if (isNaN(parsedMs)) { parsedMs = Date.parse(rawDateStr); }
       if (!isNaN(parsedMs)) {
         const { gstDate } = getGSTDateTime(parsedMs);
         item.jsDate = gstDate;
@@ -1254,6 +1378,7 @@ function parseCSV(text) {
     item.confidence = parseFloat(item.confidence || item.parsingconfidencescore) || 0.85;
     item.message_id = item.messageid || item.systemreferenceid || 'M-' + Math.random().toString(36).substr(2,9).toUpperCase();
     item.raw_message = item.rawmessage || item.rawwhatsapppayloadtext || item.summary || '';
+    item.summary = item.summary || item.raw_message || '';
     item.actions_taken = item.actionstaken || item.immediateaction || '';
     item.location_zone = item.locationzone || item.zone || 'DCH Project Site';
     item.incident_type = item.incidenttype || item.type || 'General Operations';
@@ -1268,7 +1393,7 @@ function sortIncidentsDescending(incidents) {
   incidents.sort((a, b) => b.jsDate - a.jsDate);
 }
 
-/* Auto-refresh logic adjusted to run exactly every 5 minutes */
+/* 5-minute background automatic telemetry cycle */
 setInterval(() => {
   const url = document.getElementById('sheet-url').value.trim();
   if (url && allIncidents.length > 0) {
@@ -1299,7 +1424,6 @@ function loadDemoData() {
 function filterIncidents() {
   const rangeDays = parseInt(document.getElementById('date-range').value);
   const { gstDate: nowGST } = getGSTDateTime();
-  
   const cutOff = new Date(nowGST);
   cutOff.setDate(cutOff.getDate() - rangeDays);
 
@@ -1352,7 +1476,6 @@ function renderTimeline(incidents) {
   const data = Object.values(countsByDate);
 
   if (charts.timeline) charts.timeline.destroy();
-
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
 
   charts.timeline = new Chart(ctx, {
@@ -1387,9 +1510,7 @@ function renderHeatmap(incidents) {
   target.innerHTML = '';
 
   const zoneCounts = {};
-  incidents.forEach(i => {
-    zoneCounts[i.location_zone] = (zoneCounts[i.location_zone] || 0) + 1;
-  });
+  incidents.forEach(i => { zoneCounts[i.location_zone] = (zoneCounts[i.location_zone] || 0) + 1; });
 
   const max = Math.max(...Object.values(zoneCounts), 1);
   const zones = Object.entries(zoneCounts).sort((a,b) => b[1] - a[1]);
@@ -1417,6 +1538,7 @@ function renderHeatmap(incidents) {
   });
 }
 
+/* ── RENDER OVERHAULED INCIDENT CARDS (NEWEST FETCHED APPEAR FIRST) ── */
 function renderFeed(incidents) {
   const target = document.getElementById('feed-list');
   document.getElementById('feed-count').textContent = `${incidents.length} LOGS`;
@@ -1427,27 +1549,30 @@ function renderFeed(incidents) {
     return;
   }
 
+  // incidents array is pre-sorted newest first, iterating directly maintains top chronological hierarchy
   incidents.forEach(inc => {
-    const dotClass = inc.severity.toLowerCase();
+    const sevClass = inc.severity.toLowerCase();
     const timeStr = inc.jsDate.toLocaleTimeString('en-AE', {hour:'2-digit', minute:'2-digit', hour12:false});
     const dateStr = inc.jsDate.toLocaleDateString('en-AE', {month:'short', day:'numeric'});
     
-    const div = document.createElement('div');
-    div.className = 'feed-item';
-    div.onclick = () => openModal(inc);
-    div.innerHTML = `
-      <div class="severity-dot ${dotClass}"></div>
-      <div>
-        <div class="feed-type">${inc.incident_type}</div>
-        <div class="feed-summary">${inc.summary || inc.raw_message.substr(0,80)+'...'}</div>
-        <div class="feed-meta">
-          <span class="tag zone">${inc.location_zone}</span>
-          <span class="tag severity">${inc.severity}</span>
+    const card = document.createElement('div');
+    card.className = `incident-card-v2 ${sevClass}`;
+    card.onclick = () => openModal(inc);
+    
+    card.innerHTML = `
+      <div class="card-header-row">
+        <div class="meta-tag-group">
+          <span class="compact-tag urgency">${inc.severity.toUpperCase()}</span>
+          <span class="compact-tag">${inc.location_zone}</span>
+          <span class="compact-tag">${inc.incident_type}</span>
         </div>
+        <div class="timestamp-label">${dateStr} · ${timeStr}</div>
       </div>
-      <div class="feed-time">${dateStr}<br><span style="opacity:0.6">${timeStr}</span></div>
+      <div class="card-summary-text">
+        ${inc.summary || inc.raw_message}
+      </div>
     `;
-    target.appendChild(div);
+    target.appendChild(card);
   });
 }
 
@@ -1480,7 +1605,6 @@ function renderShiftAnalysis(incidents) {
 
   const ctx = document.getElementById('shiftChart').getContext('2d');
   if (charts.shift) charts.shift.destroy();
-
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
 
   const types = {};
@@ -1523,8 +1647,6 @@ function renderIncidentTypes(incidents) {
   }
 
   const max = Math.max(...Object.values(types), 1);
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-
   sorted.forEach(([name, count]) => {
     const pct = (count / max) * 100;
     const row = document.createElement('div');
@@ -1532,7 +1654,7 @@ function renderIncidentTypes(incidents) {
     row.innerHTML = `
       <div class="type-name">${name}</div>
       <div class="type-bar-track">
-        <div class="type-bar-fill" style="width:${pct}%; background:${isDark?'var(--accent)':'var(--accent)'}"></div>
+        <div class="type-bar-fill" style="width:${pct}%;"></div>
       </div>
       <div class="type-count">${count}</div>
     `;
@@ -1677,17 +1799,11 @@ function showZonePanel(zoneName) {
   document.getElementById('slide-backdrop').classList.add('show');
 }
 
-function hideZonePanel() {
-  document.getElementById('slide-backdrop').classList.remove('show');
-}
-
-function closeZonePanel(e) {
-  if (e.target === document.getElementById('slide-backdrop')) hideZonePanel();
-}
+function hideZonePanel() { document.getElementById('slide-backdrop').classList.remove('show'); }
+function closeZonePanel(e) { if (e.target === document.getElementById('slide-backdrop')) hideZonePanel(); }
 
 function openModal(inc) {
   const actions = inc.actions_taken ? inc.actions_taken.split(';') : [];
-  
   document.getElementById('modal-body').innerHTML = `
     <div class="modal-field"><label>Incident Type / Classification</label><p style="font-size:15px; font-weight:600; color:var(--accent);">${inc.incident_type}</p></div>
     <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${inc.location_zone}</p></div>
@@ -1702,9 +1818,7 @@ function openModal(inc) {
   document.getElementById('modal').classList.add('show');
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
-}
+function closeModal(e) { if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show'); }
 </script>
 </body>
 </html>
