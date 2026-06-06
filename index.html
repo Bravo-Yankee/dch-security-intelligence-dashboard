@@ -1340,7 +1340,7 @@ function renderIncidentFeed(data) {
     return;
   }
   container.innerHTML = data.map((inc, index) => `
-    <div class="feed-item" onclick="openModal(${allIncidents.indexOf(inc)})">
+    <div class="feed-item" onclick="openModal(${index})">
       <div class="severity-dot ${inc.severity.toLowerCase()}"></div>
       <div>
         <div class="feed-type">${inc.incident_type || 'Unspecified Incident'}</div>
@@ -1575,7 +1575,10 @@ function closeZonePanel(e) {
 }
 
 function openModal(index) {
-  const inc = allIncidents[index];
+  const days = document.getElementById('date-range').value;
+  const currentViewData = filterByDays(allIncidents, days);
+  const inc = currentViewData[index];
+  
   if (!inc) return;
   const actions = inc.actions_taken ? inc.actions_taken.split('.') : [];
   
@@ -1588,9 +1591,9 @@ function openModal(index) {
     </div>
     <div class="modal-field"><label>Incident Summary Narrative</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
     ${actions.filter(a=>a.trim().length>0).length ? `<div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
-    <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
+    <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.ai_confidence ? Math.round(inc.ai_confidence*100)+'%' : '—'}</p></div>
     <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.raw_message || inc.summary || '—'}</p></div>
-    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id}</p></div>
+    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id || '—'}</p></div>
   `;
   document.getElementById('modal').classList.add('show');
 }
