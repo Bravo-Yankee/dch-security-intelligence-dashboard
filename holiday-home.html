@@ -26,6 +26,12 @@
     --text-dim:   #3d5068;
     --scanline:   rgba(0,0,0,0.06);
     --horse-color: #e8a020;
+    
+    /* Gemini AI Glow Palette */
+    --gemini-1: #1a73e8;
+    --gemini-2: #8ab4f8;
+    --gemini-3: #c58af9;
+    --gemini-glow: rgba(138, 180, 248, 0.5);
   }
 
   :root[data-theme="light"] {
@@ -48,6 +54,12 @@
     --text-dim:   #546681;         
     --scanline:   rgba(255,255,255,0.15);
     --horse-color: #b06600;
+
+    /* Gemini AI Glow Palette (Light Adjusted) */
+    --gemini-1: #1a73e8;
+    --gemini-2: #a500f0;
+    --gemini-3: #e61975;
+    --gemini-glow: rgba(26, 115, 232, 0.3);
   }
 
   :root {
@@ -99,9 +111,59 @@
   .clock-date { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 1px; margin-top: 2px; }
 
   .nav-links-group { display: flex; align-items: center; gap: 14px; border-left: 1px solid var(--border-bright); padding-left: 20px; }
-  .nav-link-item { text-decoration: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 6px 12px; border: 1px solid transparent; border-radius: var(--r); transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
-  .nav-link-item:hover { color: var(--text-pri); background: var(--bg-hover); border-color: var(--border-bright); }
-  .nav-link-item.active { color: var(--accent); background: var(--accent-dim); border-color: var(--accent); }
+  
+  /* --- NAVIGATION BUTTONS WITH GEMINI AI HOVER EFFECT --- */
+  .nav-link-item { 
+    text-decoration: none; 
+    color: var(--text-sec); 
+    font-family: var(--font-mono); 
+    font-size: 11px; 
+    font-weight: 600; 
+    letter-spacing: 1px; 
+    text-transform: uppercase; 
+    padding: 6px 14px; 
+    border: 1px solid transparent; 
+    border-radius: var(--r); 
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 6px;
+    position: relative;
+    background: transparent;
+  }
+  .nav-link-item:hover { 
+    color: var(--text-pri); 
+    background: var(--bg-hover);
+    /* Subtle border blend using a gradient fallback color */
+    border-color: var(--gemini-2);
+    /* Multi-layered box shadow to replicate the AI aura from the screenshot */
+    box-shadow: 
+      0 0 8px var(--gemini-glow),
+      0 0 15px rgba(197, 138, 249, 0.2),
+      inset 0 0 4px rgba(255, 255, 255, 0.05);
+    transform: translateY(-1px);
+  }
+  /* Custom border effect matching Gemini gradient flow */
+  .nav-link-item:hover::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--r);
+    padding: 1px;
+    background: linear-gradient(135deg, var(--gemini-1), var(--gemini-2), var(--gemini-3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+  }
+  .nav-link-item.active { 
+    color: var(--accent); 
+    background: var(--accent-dim); 
+    border-color: var(--accent); 
+  }
+  .nav-link-item.active:hover::before {
+    display: none; /* Keep active state clean unless desired */
+  }
   .nav-link-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
 
   .btn-theme-toggle { background: var(--bg-card); color: var(--text-pri); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 7px 14px; font-family: var(--font-mono); font-weight: 600; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
@@ -181,7 +243,7 @@
     <div class="nav-links-group">
       <a href="index.html" class="nav-link-item">Dashboard</a>
       <a href="holiday-home.html" class="nav-link-item active">
-        <span class="nav-link-dot"></span>HH Tracker
+        <span class="nav-link-dot"></span>Holiday Homes
       </a>
       <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
         <span>🌙</span><span id="theme-text">Dark Mode</span>
