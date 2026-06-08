@@ -1231,26 +1231,6 @@
     let selectedHourRange = 24;
     let rawCopyableText = "";
 
-    const communityNameMap = {
-      'DCR': 'Dubai Creek Residences',
-      'CH': 'Creek Horizon',
-      'TC': 'The Cove',
-      'HG': 'Harbour Gate',
-      'CSP': 'Creek Side Park',
-      'MPW': 'Marina Promenade Walkways',
-      'RDC': 'Retail District Central',
-      'SPG': 'South Perimeter Gatehouse',
-      'Creekgate': 'Creek Gate Towers',
-      'Creek Horizon': 'Creek Horizon Towers',
-      'Dubai Creek Residence': 'Dubai Creek Residences',
-      'The Cove': 'The Cove Waterfront Residences',
-      'Harbour Gate': 'Harbour Gate Community',
-      'Creek Side Park': 'Creek Side Park Precinct',
-      'Marina Promenade Walkways': 'Marina Promenade Linear Walkways',
-      'Retail District Central': 'Retail District Central Plaza',
-      'South Perimeter Gatehouse': 'South Perimeter Protection Gatehouse'
-    };
-
     (function() {
       const savedTheme = localStorage.getItem('dch-dashboard-theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1404,7 +1384,7 @@
 
     function loadDemoData() {
       allIncidents = [];
-      const zones = ['DCR', 'CH', 'TC', 'HG', 'CSP', 'MPW', 'RDC', 'SPG'];
+      const zones = ['Supervisor John Al-Mansoori (DCR / Creek Horizon)', 'Supervisor Robert Sterling (The Cove / Harbour Gate)', 'Supervisor Ahmed Khan (Marina Walkways / Retail)', 'Supervisor Maria Torres (South Gatehouse / Precinct)'];
       const types = ['Access Control Breach', 'Physical Infrastructure Distress', 'CCTV Disruption Event', 'Asset Key Management Handover', 'Unidentified Floating Object In Creek', 'HVAC Plant Room Thermal Spike', 'Contractor Ingress Non-Compliance', 'VIP Escort Transit Operational Route'];
       const severities = ['Critical', 'High', 'Medium', 'Low'];
       const officers = ['Supv. J. Al-Mansoori', 'Officer R. Sterling', 'Supv. Ahmed K.', 'Officer Maria T.'];
@@ -1504,7 +1484,6 @@
       generateHandoverReport(data);
     }
 
-    /* ── UPDATED: OPERATIONAL RADAR TIMELINE GRAPH APPEARANCE STYLE ── */
     function renderTimelineChart(data) {
       const ctx = document.getElementById('timelineChart').getContext('2d');
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -1539,7 +1518,6 @@
 
       if (timelineChartInstance) timelineChartInstance.destroy();
 
-      // Formulate a dynamic glowing gradient fill style matching the visual indicators
       const chartGradient = ctx.createLinearGradient(0, 0, 0, 200);
       if (theme === 'dark') {
         chartGradient.addColorStop(0, 'rgba(232, 160, 32, 0.25)');
@@ -1589,7 +1567,7 @@
       });
     }
 
-    /* ── UPDATED: COMMUNITY RISK DEPLOYMENT MATRIX WITH DYNAMIC FILL-LINE COLORS ── */
+    /* ── UPDATED: DISPLAY DYNAMIC FULL UNTRIMMED NAMES RECEIVED FROM REMOTE ROW DATABASES ── */
     function renderHeatmap(data) {
       const parent = document.getElementById('zone-heatmap');
       parent.innerHTML = '';
@@ -1605,25 +1583,25 @@
 
       const maxCount = Math.max(...sortedZones.map(z => z[1]));
 
-      sortedZones.forEach(([shortOrRawName, count]) => {
-        const fullCommunityName = communityNameMap[shortOrRawName] || shortOrRawName;
+      sortedZones.forEach(([rawName, count]) => {
+        // Display absolute name mapping raw index straight from sheets header variables without cutting elements
+        const displayLabelName = rawName;
         const ratio = maxCount ? (count / maxCount) : 0;
         const pct = ratio * 100;
         
-        // Dynamically compute linear fill color based on absolute range ratios
-        let lineFillColor = 'var(--green)'; // Stable low index
+        let lineFillColor = 'var(--green)'; 
         if (ratio > 0.7) {
-          lineFillColor = 'var(--red)';   // High / critical volume density reached
+          lineFillColor = 'var(--red)';   
         } else if (ratio > 0.35) {
-          lineFillColor = 'var(--accent)'; // Elevated intermediate alerts threshold
+          lineFillColor = 'var(--accent)'; 
         }
 
         const cell = document.createElement('div');
         cell.className = 'zone-cell';
-        cell.onclick = () => openZoneDrawer(shortOrRawName);
+        cell.onclick = () => openZoneDrawer(rawName);
 
         cell.innerHTML = `
-          <div class="zone-name">${fullCommunityName}</div>
+          <div class="zone-name">${displayLabelName}</div>
           <div class="zone-count">${count}</div>
           <div class="zone-bar" style="background: ${lineFillColor}; width: ${pct}%"></div>
         `;
@@ -1647,7 +1625,7 @@
         
         let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
         const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-        const resolvedName = communityNameMap[inc.location_zone] || inc.location_zone;
+        const resolvedName = inc.location_zone;
 
         item.innerHTML = `
           <div class="severity-dot ${sevClass}"></div>
@@ -1655,7 +1633,7 @@
             <div class="feed-type">${inc.incident_type}</div>
             <div class="feed-summary">${inc.summary || 'No narrative description log attached.'}</div>
             <div class="feed-meta">
-              <span class="tag zone">${resolvedName}</span>
+              <span class="tag zone" style="white-space: normal; word-break: break-word;">${resolvedName}</span>
               <span class="tag">${inc.sender}</span>
             </div>
           </div>
@@ -1762,8 +1740,7 @@
       const locs = {};
       data.forEach(v => locs[v.location_zone] = (locs[v.location_zone] || 0) + 1);
       Object.entries(locs).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
-        const nameResolved = communityNameMap[k] || k;
-        rawText += `▪ ${nameResolved}: ${val} telemetry incident records.\n`;
+        rawText += `▪ ${k}: ${val} telemetry incident records.\n`;
       });
       
       rawText += `\n*🚨 URGENT ACTION RECORDS REAL-TIME SYNC*\n`;
@@ -1771,8 +1748,7 @@
       if (crits.length > 0) {
         crits.forEach(c => {
           const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
-          const zoneText = communityNameMap[c.location_zone] || c.location_zone;
-          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (${zoneText})\n`;
+          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (${c.location_zone})\n`;
           rawText += `  Log: ${c.summary}\n`;
         });
       } else {
@@ -1803,18 +1779,16 @@
       `;
 
       Object.entries(locs).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
-        const transName = communityNameMap[k] || k;
-        htmlOutput += `<div class="ho-item"><strong>${transName}</strong>: ${val} active operational reports captured.</div>`;
+        htmlOutput += `<div class="ho-item"><strong>${k}</strong>: ${val} active operational reports captured.</div>`;
       });
 
       htmlOutput += `<div class="ho-section-header">🚨 FLIGHT CRITICAL EVENT TARGETS RUNTIME SYNC</div>`;
       if (crits.length > 0) {
         crits.forEach(c => {
           const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
-          const transZone = communityNameMap[c.location_zone] || c.location_zone;
           htmlOutput += `
             <div class="ho-item" style="margin-bottom:8px;">
-              <span class="ho-crit-badge">[CRITICAL - ${t}]</span> <strong>${c.incident_type}</strong> at ${transZone}<br>
+              <span class="ho-crit-badge">[CRITICAL - ${t}]</span> <strong>${c.incident_type}</strong> at ${c.location_zone}<br>
               <span style="color:var(--text-sec); font-size:11px;">Narrative: "${c.summary}"</span>
             </div>`;
         });
@@ -1844,8 +1818,7 @@
     }
 
     function openZoneDrawer(zoneName) {
-      const resolvedTitleName = communityNameMap[zoneName] || zoneName;
-      document.getElementById('drawer-title').textContent = `CLUSTER SNAPSHOT: ${resolvedTitleName.toUpperCase()}`;
+      document.getElementById('drawer-title').textContent = `CLUSTER SNAPSHOT: ${zoneName.toUpperCase()}`;
       const body = document.getElementById('drawer-body');
       body.innerHTML = '';
 
@@ -1906,13 +1879,12 @@
     function showIncidentDetails(inc) {
       const target = document.getElementById('modal-content');
       const actions = inc.immediate_actions ? inc.immediate_actions.split(';') : [];
-      const detailedZoneName = communityNameMap[inc.location_zone] || inc.location_zone;
       
       target.innerHTML = `
         <div class="modal-field"><label>System Event Registry Timestamp</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date(inc.timestamp).toString()}</p></div>
         <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p>${inc.sender} · ${inc.shift}</p></div>
         <div class="modal-field"><label>Incident Structural Variant Typology</label><p style="font-size:15px; font-weight:600; color:var(--accent);">${inc.incident_type}</p></div>
-        <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${detailedZoneName}</p></div>
+        <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${inc.location_zone}</p></div>
         <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
         ${actions.filter(a => a.trim().length > 0).length ? `<div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
         <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
