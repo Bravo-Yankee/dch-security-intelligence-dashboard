@@ -187,28 +187,20 @@
     margin-top: 2px;
   }
 
-  /* ── VECTOR HORSE GRAPHIC ── */
+  /* ── VECTOR HORSE ── */
   @keyframes horseRun {
     0% { stroke-dashoffset: 24; }
     50% { opacity: 0.85; }
     100% { stroke-dashoffset: 0; }
   }
-
   @keyframes horseGallop {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     25% { transform: translateY(-1.5px) rotate(1deg); }
     50% { transform: translateY(0.5px) rotate(-1deg); }
     75% { transform: translateY(-1px) rotate(0.5deg); }
   }
-
-  .animated-vector-horse {
-    animation: horseGallop 0.55s infinite ease-in-out;
-  }
-
-  .animated-vector-horse path {
-    stroke-dasharray: 12;
-    animation: horseRun 0.8s linear infinite;
-  }
+  .animated-vector-horse { animation: horseGallop 0.55s infinite ease-in-out; }
+  .animated-vector-horse path { stroke-dasharray: 12; animation: horseRun 0.8s linear infinite; }
 
   /* ── CONFIG PANEL BUTTONS ── */
   .config-bar {
@@ -242,11 +234,7 @@
     font-weight: 500;
     outline: none;
   }
-
-  .config-bar input:focus {
-    border-color: var(--accent);
-  }
-
+  .config-bar input:focus { border-color: var(--accent); }
   .config-bar input[type="text"] { width: 320px; max-width: 100%; }
 
   .btn-fetch, .btn-demo {
@@ -266,25 +254,10 @@
     text-decoration: none;
     transition: all 0.15s ease;
   }
+  .btn-fetch { background: var(--text-pri); color: var(--bg-card); border-color: var(--text-pri); }
+  .btn-fetch:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-demo:hover { background: var(--bg-hover); border-color: var(--text-pri); transform: translateY(-1px); }
 
-  .btn-fetch {
-    background: var(--text-pri);
-    color: var(--bg-card);
-    border-color: var(--text-pri);
-  }
-
-  .btn-fetch:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  .btn-demo:hover {
-    background: var(--bg-hover);
-    border-color: var(--text-pri);
-    transform: translateY(-1px);
-  }
-
-  /* ── GEMINI AI HOVER STYLE BUTTONS ── */
   .btn-holiday-home, .btn-theme-toggle {
     background: var(--bg-card);
     color: var(--text-pri);
@@ -305,7 +278,6 @@
     overflow: hidden;
     transition: color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
   }
-
   .btn-holiday-home::before, .btn-theme-toggle::before {
     content: '';
     position: absolute;
@@ -316,730 +288,170 @@
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-
   @keyframes geminiGlow {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
-
   .btn-holiday-home:hover, .btn-theme-toggle:hover {
     color: #ffffff;
     border-color: transparent;
     transform: translateY(-1px);
     box-shadow: 0 0 12px rgba(122, 34, 255, 0.4);
   }
-
   .btn-holiday-home:hover::before, .btn-theme-toggle:hover::before {
     opacity: 1;
     animation: geminiGlow 4s linear infinite;
   }
 
-  .config-right-group {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .fetch-status {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    letter-spacing: 0.5px;
-  }
+  .config-right-group { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .fetch-status { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 0.5px; }
 
   /* ── MAIN LAYOUT ── */
-  main {
-    padding: 24px 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  main { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
 
   /* ── KPI ROW ── */
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-  }
-
-  .kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-  }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 16px; position: relative; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .kpi-card.critical::before { background: var(--red); }
   .kpi-card.medium::before { background: var(--accent); }
   .kpi-card.low::before { background: var(--green); }
   .kpi-card.total::before { background: var(--blue); }
 
-  .kpi-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-sec);
-    margin-bottom: 8px;
-  }
-
-  .kpi-value {
-    font-family: var(--font-display);
-    font-size: 46px;
-    line-height: 1;
-    letter-spacing: 1px;
-  }
-
+  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 8px; }
+  .kpi-value { font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: 1px; }
   .kpi-card.critical .kpi-value { color: var(--red); }
   .kpi-card.medium .kpi-value { color: var(--accent); }
   .kpi-card.low .kpi-value { color: var(--green); }
   .kpi-card.total .kpi-value { color: var(--blue); }
-
-  .kpi-delta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    margin-top: 4px;
-  }
+  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
 
   /* ── MAIN LAYOUT GRID SYSTEM ── */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 360px;
-    gap: 16px;
-  }
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr 360px; gap: 16px; }
+  .panel { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
+  .panel-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
+  .panel-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
 
-  .panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-  }
+  /* ── TIMELINE GRAPH ── */
+  .chart-wrap { padding: 16px; height: 220px; position: relative; }
+  .range-selector { display: inline-flex; background: var(--bg-deep); padding: 2px; border-radius: 4px; border: 1px solid var(--border); }
+  .range-btn { padding: 3px 10px; background: transparent; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 10px; font-weight: 600; cursor: pointer; border-radius: 3px; transition: all 0.15s ease; }
+  .range-btn:hover { color: var(--text-pri); }
+  .range-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-panel);
-  }
-
-  .panel-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    letter-spacing: 1.5px;
-    color: var(--text-pri);
-  }
-
-  .panel-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 3px;
-    background: var(--bg-deep);
-    color: var(--text-sec);
-    border: 1px solid var(--border);
-  }
-
-  /* ── TIMELINE GRAPH & RANGE CONTROLS ── */
-  .chart-wrap {
-    padding: 16px;
-    height: 220px;
-    position: relative;
-  }
-
-  .range-selector {
-    display: inline-flex;
-    background: var(--bg-deep);
-    padding: 2px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-  }
-
-  .range-btn {
-    padding: 3px 10px;
-    background: transparent;
-    border: none;
-    color: var(--text-sec);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.15s ease;
-  }
-
-  .range-btn:hover {
-    color: var(--text-pri);
-  }
-
-  .range-btn.active {
-    background: var(--bg-card);
-    color: var(--accent);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  }
-
-  /* ── ZONE HEATMAP DEPLOYMENT MATRIX ── */
-  .zone-grid {
-    padding: 12px 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    max-height: 220px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-
+  /* ── COMMUNITY SENDER DEPLOYMENT MATRIX ── */
+  .zone-grid { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
   .zone-grid::-webkit-scrollbar { width: 6px; }
   .zone-grid::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
 
-  .zone-cell {
-    background: var(--bg-panel);
-    border-radius: var(--r);
-    padding: 12px;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    transition: transform 0.12s, border-color 0.15s ease;
-  }
-
+  .zone-cell { background: var(--bg-panel); border-radius: var(--r); padding: 12px; position: relative; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.12s, border-color 0.15s ease; }
   .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
-
-  .zone-name {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-pri);
-    margin-bottom: 4px;
-    position: relative;
-    z-index: 1;
-    line-height: 1.3;
-    white-space: normal;
-    word-break: break-word;
-  }
-
-  .zone-count {
-    font-family: var(--font-display);
-    font-size: 28px;
-    line-height: 1;
-    position: relative;
-    z-index: 1;
-  }
-
-  .zone-bar {
-    position: absolute;
-    bottom: 0; left: 0;
-    height: 4px;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
-  }
+  .zone-name { font-size: 11px; font-weight: 600; color: var(--text-pri); margin-bottom: 4px; position: relative; z-index: 1; line-height: 1.3; white-space: normal; word-break: break-word; }
+  .zone-count { font-family: var(--font-display); font-size: 28px; line-height: 1; position: relative; z-index: 1; }
+  .zone-bar { position: absolute; bottom: 0; left: 0; height: 4px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease; }
 
   /* ── INCIDENT FEED LOGS ── */
-  .feed-list {
-    max-height: 220px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-
-  .feed-item {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 12px;
-    align-items: start;
-    cursor: pointer;
-  }
-
+  .feed-list { max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
+  .feed-item { padding: 12px 18px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; cursor: pointer; }
   .feed-item:hover { background: var(--bg-panel); }
 
-  .severity-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    margin-top: 4px;
-    flex-shrink: 0;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
-
+  .severity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
   .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
   .severity-dot.high { background: var(--accent); }
   .severity-dot.low { background: var(--green); }
 
-  @keyframes pulse-red {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.6; }
-  }
+  @keyframes pulse-red { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.8); opacity: 0.6; } }
 
-  .feed-type {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-pri);
-  }
-
-  .feed-summary {
-    font-size: 12px;
-    color: var(--text-sec);
-    margin-top: 3px;
-    line-height: 1.4;
-  }
-
-  .feed-meta {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: var(--bg-deep);
-    color: var(--text-sec);
-    border: 1px solid var(--border);
-  }
-
+  .feed-type { font-size: 13px; font-weight: 600; color: var(--text-pri); }
+  .feed-summary { font-size: 12px; color: var(--text-sec); margin-top: 3px; line-height: 1.4; }
+  .feed-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .tag { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
   .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
+  .feed-time { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
 
-  .feed-time {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    white-space: nowrap;
-  }
+  /* ── LOWER ROW GRID ── */
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 360px; gap: 16px; }
 
-  /* ── OPERATIONS LOWER ROW GRID ── */
-  .bottom-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 360px;
-    gap: 16px;
-  }
+  .shift-selector { display: inline-flex; background: var(--bg-deep); padding: 3px; border-radius: var(--r); border: 1px solid var(--border-bright); }
+  .shift-btn { padding: 5px 14px; background: transparent; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.15s ease; }
+  .shift-btn:hover { color: var(--text-pri); }
+  .shift-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-  /* ── MODERN ROTATION FILTER SWITCHES ── */
-  .shift-selector {
-    display: inline-flex;
-    background: var(--bg-deep);
-    padding: 3px;
-    border-radius: var(--r);
-    border: 1px solid var(--border-bright);
-  }
-
-  .shift-btn {
-    padding: 5px 14px;
-    background: transparent;
-    border: none;
-    color: var(--text-sec);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.15s ease;
-  }
-
-  .shift-btn:hover {
-    color: var(--text-pri);
-  }
-
-  .shift-btn.active {
-    background: var(--bg-card);
-    color: var(--accent);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
-  .shift-stats {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .shift-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    border-bottom: 1px dashed var(--border);
-    padding-bottom: 4px;
-  }
-
+  .shift-stats { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .shift-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-bottom: 1px dashed var(--border); padding-bottom: 4px; }
   .shift-row-label { color: var(--text-sec); }
   .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
 
-  /* ── THREAT MITIGATION ENGINE ── */
-  .reco-list {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .reco-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    background: var(--bg-panel);
-    border-radius: var(--r);
-    border-left: 3px solid var(--accent);
-    font-size: 12px;
-    color: var(--text-sec);
-  }
-
+  /* ── THREAT MITIGATION ── */
+  .reco-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .reco-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--bg-panel); border-radius: var(--r); border-left: 3px solid var(--accent); font-size: 12px; color: var(--text-sec); }
   .reco-item strong { color: var(--text-pri); }
+  .reco-num { font-family: var(--font-display); font-size: 20px; color: var(--accent); line-height: 1; flex-shrink: 0; }
 
-  .reco-num {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--accent);
-    line-height: 1;
-    flex-shrink: 0;
-  }
+  /* ── TYPOLOGY METRICS ── */
+  .type-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .type-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .type-name { width: 140px; flex-shrink: 0; color: var(--text-sec); }
+  .type-bar-track { flex: 1; height: 6px; background: var(--bg-panel); border-radius: 3px; overflow: hidden; }
+  .type-bar-fill { height: 100%; background: var(--text-pri); }
+  .type-count { font-family: var(--font-mono); font-size: 12px; font-weight: 600; width: 24px; text-align: right; }
 
-  /* ── TYPE METRIC TRACKS ── */
-  .type-list {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .type-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-  }
-
-  .type-name {
-    width: 140px;
-    flex-shrink: 0;
-    color: var(--text-sec);
-  }
-
-  .type-bar-track {
-    flex: 1;
-    height: 6px;
-    background: var(--bg-panel);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .type-bar-fill {
-    height: 100%;
-    background: var(--text-pri);
-  }
-
-  .type-count {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    width: 24px;
-    text-align: right;
-  }
-
-  /* ── POLISHED BROADCAST BOX & CONTENT ── */
-  .handover-box {
-    padding: 20px;
-    background: var(--bg-panel);
-    border-radius: 0 0 var(--r) var(--r);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    line-height: 1.6;
-    max-height: 440px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-
+  /* ── BROADCAST BOX ── */
+  .handover-box { padding: 20px; background: var(--bg-panel); border-radius: 0 0 var(--r) var(--r); font-family: var(--font-mono); font-size: 12px; line-height: 1.6; max-height: 440px; overflow-y: auto; scrollbar-width: thin; }
   .handover-box::-webkit-scrollbar { width: 6px; }
   .handover-box::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
 
-  .ho-title {
-    color: var(--accent);
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--border-bright);
-    padding-bottom: 6px;
-    margin-bottom: 14px;
-    font-size: 13px;
-  }
+  .ho-title { color: var(--accent); font-weight: 700; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-bright); padding-bottom: 6px; margin-bottom: 14px; font-size: 13px; }
+  .ho-section-header { color: var(--blue); font-weight: 700; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+  .ho-item { padding-left: 12px; position: relative; margin-bottom: 4px; color: var(--text-pri); }
+  .ho-item::before { content: "▪"; position: absolute; left: 0; color: var(--text-dim); }
+  .ho-crit-badge { color: var(--red); font-weight: 700; }
+  .ho-footer { margin-top: 18px; padding-top: 8px; border-top: 1px dashed var(--border); color: var(--text-dim); font-size: 11px; }
 
-  .ho-section-header {
-    color: var(--blue);
-    font-weight: 700;
-    margin-top: 14px;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .ho-item {
-    padding-left: 12px;
-    position: relative;
-    margin-bottom: 4px;
-    color: var(--text-pri);
-  }
-
-  .ho-item::before {
-    content: "▪";
-    position: absolute;
-    left: 0;
-    color: var(--text-dim);
-  }
-
-  .ho-crit-badge {
-    color: var(--red);
-    font-weight: 700;
-  }
-
-  .ho-footer {
-    margin-top: 18px;
-    padding-top: 8px;
-    border-top: 1px dashed var(--border);
-    color: var(--text-dim);
-    font-size: 11px;
-  }
-
-  /* ── PROFILE SLIDE OUT OVERLAY ── */
-  .slide-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s;
-  }
+  /* ── DRAWERS AND OVERLAYS ── */
+  .slide-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
   .slide-backdrop.show { opacity: 1; visibility: visible; }
   
-  .slide-panel {
-    position: fixed;
-    top: 0; right: -420px;
-    width: 420px; height: 100vh;
-    background: var(--bg-card);
-    border-left: 2px solid var(--border-bright);
-    box-shadow: -5px 0 25px rgba(0,0,0,0.3);
-    z-index: 1001;
-    transition: right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-  }
+  .slide-panel { position: fixed; top: 0; right: -420px; width: 420px; height: 100vh; background: var(--bg-card); border-left: 2px solid var(--border-bright); box-shadow: -5px 0 25px rgba(0,0,0,0.3); z-index: 1001; transition: right 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
   .slide-panel.show { right: 0; }
   
-  .slide-header {
-    padding: 16px 20px;
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .slide-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    letter-spacing: 1px;
-    color: var(--text-pri);
-  }
-  .slide-close {
-    background: none;
-    border: none;
-    color: var(--text-sec);
-    font-size: 20px;
-    cursor: pointer;
-  }
-  .slide-body {
-    padding: 20px;
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .zone-stat-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .zone-stat-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 12px;
-    text-align: center;
-  }
-  .zone-stat-lbl {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    text-transform: uppercase;
-    color: var(--text-sec);
-  }
-  .zone-stat-val {
-    font-family: var(--font-display);
-    font-size: 24px;
-    color: var(--text-pri);
-  }
-  .slide-section-title {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-sec);
-    letter-spacing: 1px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 4px;
-  }
-  .empty-state {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: center;
-    padding: 40px 20px;
-    font-style: italic;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    background: var(--bg-panel);
-    padding: 12px 32px;
-    border-top: 2px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: auto;
-  }
-
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(9,13,18,0.95);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9000;
-    display: none;
-  }
-  .loading-overlay.show { display: flex; }
+  .slide-header { padding: 16px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .slide-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1px; color: var(--text-pri); }
+  .slide-close { background: none; border: none; color: var(--text-sec); font-size: 20px; cursor: pointer; }
+  .slide-body { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
   
-  .loading-spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  
-  .loading-text {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-pri);
-  }
+  .zone-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .zone-stat-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--r); padding: 12px; text-align: center; }
+  .zone-stat-lbl { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-sec); }
+  .zone-stat-val { font-family: var(--font-display); font-size: 24px; color: var(--text-pri); }
+  .slide-section-title { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-sec); letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .empty-state { font-size: 12px; color: var(--text-dim); text-align: center; padding: 40px 20px; font-style: italic; }
 
-  /* ── SYSTEM LOG FOCUS MODAL ── */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 8000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-  }
+  /* ── SYSTEM LOG MODAL ── */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; display: none; align-items: center; justify-content: center; }
   .modal-backdrop.show { display: flex; }
   
-  .modal {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: 6px;
-    width: 540px;
-    max-width: 90vw;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .modal-header {
-    padding: 16px 22px;
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .modal-title {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--text-pri);
-  }
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--text-sec);
-    font-size: 22px;
-    cursor: pointer;
-  }
-  .modal-body {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .modal-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .modal-field label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    color: var(--text-sec);
-  }
-  .modal-field p {
-    font-size: 13px;
-    color: var(--text-pri);
-    line-height: 1.4;
-  }
-  .actions-list {
-    list-style-type: none;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .actions-list li {
-    font-size: 12px;
-    padding: 6px 10px;
-    background: var(--bg-panel);
-    border-left: 3px solid var(--green);
-    color: var(--text-pri);
-  }
+  .modal { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 6px; width: 540px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+  .modal-header { padding: 16px 22px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-family: var(--font-display); font-size: 20px; color: var(--text-pri); }
+  .modal-close { background: none; border: none; color: var(--text-sec); font-size: 22px; cursor: pointer; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-field { display: flex; flex-direction: column; gap: 4px; }
+  .modal-field label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-sec); }
+  .modal-field p { font-size: 13px; color: var(--text-pri); line-height: 1.4; }
+  .actions-list { list-style-type: none; display: flex; flex-direction: column; gap: 6px; }
+  .actions-list li { font-size: 12px; padding: 6px 10px; background: var(--bg-panel); border-left: 3px solid var(--green); color: var(--text-pri); }
+
+  /* ── FOOTER ── */
+  footer { background: var(--bg-panel); padding: 12px 32px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-top: auto; }
+
+  .loading-overlay { position: fixed; inset: 0; background: rgba(9,13,18,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; display: none; }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
 </style>
 </head>
 <body>
@@ -1119,7 +531,7 @@
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">COMMUNITY RISK DEPLOYMENT MATRIX</div>
-          <div class="panel-badge">Zones / Sectors</div>
+          <div class="panel-badge">Supervisors / Senders</div>
         </div>
         <div class="zone-grid" id="zone-heatmap"></div>
       </div>
@@ -1203,7 +615,7 @@
   <div class="slide-backdrop" id="slide-backdrop" onclick="closeZoneDrawer()"></div>
   <div class="slide-panel" id="slide-panel">
     <div class="slide-header">
-      <div class="slide-title" id="drawer-title">ZONE METRICS CLUSTER</div>
+      <div class="slide-title" id="drawer-title">SUPERVISOR METRICS CLUSTER</div>
       <button class="slide-close" onclick="closeZoneDrawer()">&times;</button>
     </div>
     <div class="slide-body" id="drawer-body"></div>
@@ -1310,7 +722,7 @@
     async function fetchData() {
       const url = document.getElementById('sheet-url').value.trim();
       if (!url) {
-        alert('Please specify a valid deployment index target URL structure link template.');
+        alert('Please specify a valid URL link.');
         return;
       }
       localStorage.setItem('dch-sheet-url', url);
@@ -1318,7 +730,7 @@
       
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error('Network file streaming payload error.');
+        if (!response.ok) throw new Error('Network payload streaming error.');
         const csvText = await response.text();
         parseCSVData(csvText);
       } catch (err) {
@@ -1384,10 +796,10 @@
 
     function loadDemoData() {
       allIncidents = [];
-      const zones = ['Supervisor John Al-Mansoori (DCR / Creek Horizon)', 'Supervisor Robert Sterling (The Cove / Harbour Gate)', 'Supervisor Ahmed Khan (Marina Walkways / Retail)', 'Supervisor Maria Torres (South Gatehouse / Precinct)'];
+      const zones = ['Creek Horizon', 'The Cove', 'Harbour Gate', 'Marina Walkways', 'South Gatehouse Complex'];
       const types = ['Access Control Breach', 'Physical Infrastructure Distress', 'CCTV Disruption Event', 'Asset Key Management Handover', 'Unidentified Floating Object In Creek', 'HVAC Plant Room Thermal Spike', 'Contractor Ingress Non-Compliance', 'VIP Escort Transit Operational Route'];
       const severities = ['Critical', 'High', 'Medium', 'Low'];
-      const officers = ['Supv. J. Al-Mansoori', 'Officer R. Sterling', 'Supv. Ahmed K.', 'Officer Maria T.'];
+      const senders = ['Supervisor John Al-Mansoori', 'Supervisor Robert Sterling', 'Supervisor Ahmed Khan', 'Supervisor Maria Torres'];
       const summaries = [
         'Unidentified individual tracking movement close to restricted marine landing pier zone elements.',
         'Basement B2 level utility storage sensor registers localized standing water accumulator.',
@@ -1414,7 +826,7 @@
         allIncidents.push({
           message_id: 'DCH_SYS_' + i,
           timestamp: d.toISOString(),
-          sender: officers[Math.floor(Math.random() * officers.length)],
+          sender: senders[Math.floor(Math.random() * senders.length)],
           shift: shift,
           day_of_week: days[d.getDay()],
           incident_type: types[Math.floor(Math.random() * types.length)],
@@ -1549,43 +961,32 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
-            x: {
-              grid: { color: gridColor },
-              ticks: { color: textPriColor, font: { family: 'DM Mono', size: 9 } }
-            },
-            y: {
-              grid: { color: gridColor },
-              ticks: { color: textPriColor, precision: 0, stepSize: 1 },
-              min: 0
-            }
+            x: { grid: { color: gridColor }, ticks: { color: textPriColor, font: { family: 'DM Mono', size: 9 } } },
+            y: { grid: { color: gridColor }, ticks: { color: textPriColor, precision: 0, stepSize: 1 }, min: 0 }
           }
         }
       });
     }
 
-    /* ── UPDATED: DISPLAYS DYNAMIC UNTRIMMED NAMES STRAIGHT FROM SHEET DATA SOURCE ── */
+    /* ── MATRIX TASK RE-MAPPING: CAPTURES SENDER COLUMN FIELDS DIRECTLY ── */
     function renderHeatmap(data) {
       const parent = document.getElementById('zone-heatmap');
       parent.innerHTML = '';
       
-      const zoneCounts = {};
-      data.forEach(x => { zoneCounts[x.location_zone] = (zoneCounts[x.location_zone] || 0) + 1; });
-      const sortedZones = Object.entries(zoneCounts).sort((a,b) => b[1] - a[1]);
+      const senderCounts = {};
+      data.forEach(x => { senderCounts[x.sender] = (senderCounts[x.sender] || 0) + 1; });
+      const sortedSenders = Object.entries(senderCounts).sort((a,b) => b[1] - a[1]);
       
-      if(!sortedZones.length) {
-        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No matching records found.</div>';
+      if(!sortedSenders.length) {
+        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No matching sender metrics found.</div>';
         return;
       }
 
-      const maxCount = Math.max(...sortedZones.map(z => z[1]));
+      const maxCount = Math.max(...sortedSenders.map(z => z[1]));
 
-      sortedZones.forEach(([rawName, count]) => {
-        // Direct absolute variable mapping from sheets source target data fields without text slicing
-        const displayLabelName = rawName;
+      sortedSenders.forEach(([senderName, count]) => {
         const ratio = maxCount ? (count / maxCount) : 0;
         const pct = ratio * 100;
         
@@ -1598,10 +999,10 @@
 
         const cell = document.createElement('div');
         cell.className = 'zone-cell';
-        cell.onclick = () => openZoneDrawer(rawName);
+        cell.onclick = () => openSenderDrawer(senderName);
 
         cell.innerHTML = `
-          <div class="zone-name">${displayLabelName}</div>
+          <div class="zone-name">${senderName}</div>
           <div class="zone-count">${count}</div>
           <div class="zone-bar" style="background: ${lineFillColor}; width: ${pct}%"></div>
         `;
@@ -1625,7 +1026,6 @@
         
         let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
         const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-        const resolvedName = inc.location_zone;
 
         item.innerHTML = `
           <div class="severity-dot ${sevClass}"></div>
@@ -1633,7 +1033,7 @@
             <div class="feed-type">${inc.incident_type}</div>
             <div class="feed-summary">${inc.summary || 'No narrative description log attached.'}</div>
             <div class="feed-meta">
-              <span class="tag zone" style="white-space: normal; word-break: break-word;">${resolvedName}</span>
+              <span class="tag zone" style="white-space: normal; word-break: break-word;">${inc.location_zone}</span>
               <span class="tag">${inc.sender}</span>
             </div>
           </div>
@@ -1736,11 +1136,11 @@
       rawText += `▪ High / Medium Risks Trapped: ${medCount}\n`;
       rawText += `▪ Low Routine Verifications: ${lowCount}\n\n`;
       
-      rawText += `*📍 HIGHEST TRAFFIC COMMUNITY SECTORS*\n`;
-      const locs = {};
-      data.forEach(v => locs[v.location_zone] = (locs[v.location_zone] || 0) + 1);
-      Object.entries(locs).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
-        rawText += `▪ ${k}: ${val} telemetry incident records.\n`;
+      rawText += `*📍 HIGHEST OPERATIONAL VOLUMES BY SUPERVISOR*\n`;
+      const sendersMap = {};
+      data.forEach(v => sendersMap[v.sender] = (sendersMap[v.sender] || 0) + 1);
+      Object.entries(sendersMap).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
+        rawText += `▪ ${k}: ${val} telemetry records assigned.\n`;
       });
       
       rawText += `\n*🚨 URGENT ACTION RECORDS REAL-TIME SYNC*\n`;
@@ -1748,11 +1148,11 @@
       if (crits.length > 0) {
         crits.forEach(c => {
           const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
-          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (${c.location_zone})\n`;
+          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (Operator: ${c.sender})\n`;
           rawText += `  Log: ${c.summary}\n`;
         });
       } else {
-        rawText += `▪ No critical target entries recorded in this window.\n`;
+        rawText += `▪ No critical targets recorded in this window.\n`;
       }
       
       rawText += `\n--------------------------------------------------\n`;
@@ -1775,11 +1175,11 @@
         <div class="ho-item">High / Medium Severity Log Rows: <strong>${medCount}</strong></div>
         <div class="ho-item">Routine Low Level Flight Indicators: <strong>${lowCount}</strong></div>
 
-        <div class="ho-section-header">📍 TARGET SECTOR LOG VOLUMES</div>
+        <div class="ho-section-header">📍 ACTIVE SUPERVISOR LOAD BREAKDOWN</div>
       `;
 
-      Object.entries(locs).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
-        htmlOutput += `<div class="ho-item"><strong>${k}</strong>: ${val} active operational reports captured.</div>`;
+      Object.entries(sendersMap).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
+        htmlOutput += `<div class="ho-item"><strong>${k}</strong>: ${val} active operational profiles assigned.</div>`;
       });
 
       htmlOutput += `<div class="ho-section-header">🚨 FLIGHT CRITICAL EVENT TARGETS RUNTIME SYNC</div>`;
@@ -1788,7 +1188,7 @@
           const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
           htmlOutput += `
             <div class="ho-item" style="margin-bottom:8px;">
-              <span class="ho-crit-badge">[CRITICAL - ${t}]</span> <strong>${c.incident_type}</strong> at ${c.location_zone}<br>
+              <span class="ho-crit-badge">[CRITICAL - ${t}]</span> <strong>${c.incident_type}</strong> handled by ${c.sender}<br>
               <span style="color:var(--text-sec); font-size:11px;">Narrative: "${c.summary}"</span>
             </div>`;
         });
@@ -1796,12 +1196,7 @@
         htmlOutput += `<div class="ho-item" style="color:var(--text-dim); font-style:italic;">No critical target vectors identified in selected scope filters.</div>`;
       }
 
-      htmlOutput += `
-        <div class="ho-footer">
-          END MONITOR MATRIX SUMMARY TIMELINE
-        </div>
-      `;
-
+      htmlOutput += `<div class="ho-footer">END MONITOR MATRIX SUMMARY TIMELINE</div>`;
       displayContainer.innerHTML = htmlOutput;
     }
 
@@ -1817,14 +1212,14 @@
       });
     }
 
-    function openZoneDrawer(zoneName) {
-      document.getElementById('drawer-title').textContent = `CLUSTER SNAPSHOT: ${zoneName.toUpperCase()}`;
+    function openSenderDrawer(senderName) {
+      document.getElementById('drawer-title').textContent = `CLUSTER SNAPSHOT: ${senderName.toUpperCase()}`;
       const body = document.getElementById('drawer-body');
       body.innerHTML = '';
 
-      const zoneIncidents = allIncidents.filter(x => x.location_zone === zoneName);
+      const senderIncidents = allIncidents.filter(x => x.sender === senderName);
       let c = 0, h = 0, l = 0;
-      zoneIncidents.forEach(z => {
+      senderIncidents.forEach(z => {
         if (z.severity === 'Critical') c++;
         else if (z.severity === 'High') h++;
         else l++;
@@ -1841,14 +1236,14 @@
 
       const sectionTitle = document.createElement('div');
       sectionTitle.className = 'slide-section-title';
-      sectionTitle.textContent = "Locational Operational Streams Log";
+      sectionTitle.textContent = "Supervisor Incident Log Summary Feed";
       body.appendChild(sectionTitle);
 
       const listWrap = document.createElement('div');
       listWrap.className = 'feed-list';
       listWrap.style.maxHeight = 'calc(100vh - 280px)';
       
-      zoneIncidents.forEach(inc => {
+      senderIncidents.forEach(inc => {
         const row = document.createElement('div');
         row.className = 'feed-item';
         row.onclick = () => showIncidentDetails(inc);
@@ -1859,7 +1254,7 @@
           <div class="severity-dot ${sevClass}"></div>
           <div>
             <div class="feed-type" style="font-size:12px;">${inc.incident_type}</div>
-            <div class="feed-summary" style="font-size:11px;">${inc.summary || '—'}</div>
+            <div class="feed-summary" style="font-size:11px;">Zone: ${inc.location_zone} | ${inc.summary || '—'}</div>
           </div>
           <div class="feed-time" style="font-size:10px;">${timeStr}</div>
         `;
@@ -1876,17 +1271,30 @@
       document.getElementById('slide-panel').classList.remove('show');
     }
 
+    /* ── RE-MAPPED TARGET LOG MODAL ENTRY FIELDS PER SPECIFICATION ── */
     function showIncidentDetails(inc) {
       const target = document.getElementById('modal-content');
-      const actions = inc.immediate_actions ? inc.immediate_actions.split(';') : [];
+      
+      // Mitigation countermeasure generation logic loop back to make sense dynamically
+      let logicalMitigation = inc.immediate_actions;
+      if (!logicalMitigation || logicalMitigation.trim().length === 0) {
+        logicalMitigation = `Deploy tactical responders to area; Verify local camera loops; Inform ${inc.sender} to coordinate counter-measures.`;
+      }
+      const actions = logicalMitigation.split(';');
       
       target.innerHTML = `
         <div class="modal-field"><label>System Event Registry Timestamp</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date(inc.timestamp).toString()}</p></div>
-        <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p>${inc.sender} · ${inc.shift}</p></div>
+        
+        <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p style="font-weight:600; color:var(--blue);">${inc.shift}</p></div>
+        
         <div class="modal-field"><label>Incident Structural Variant Typology</label><p style="font-size:15px; font-weight:600; color:var(--accent);">${inc.incident_type}</p></div>
-        <div class="modal-field"><label>Location Context / Zone Boundary</label><p>${inc.location_zone}</p></div>
+        
+        <div class="modal-field"><label>Location Context / Zone Boundary</label><p style="font-weight:600;">${inc.sender} (Zone: ${inc.location_zone})</p></div>
+        
         <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
-        ${actions.filter(a => a.trim().length > 0).length ? `<div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
+        
+        <div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>
+        
         <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
         <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.summary || '—'}</p></div>
         <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id || '—'}</p></div>
