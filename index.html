@@ -1567,7 +1567,7 @@
       });
     }
 
-    /* ── UPDATED: DISPLAY DYNAMIC FULL UNTRIMMED NAMES RECEIVED FROM REMOTE ROW DATABASES ── */
+    /* ── UPDATED: DISPLAYS DYNAMIC UNTRIMMED NAMES STRAIGHT FROM SHEET DATA SOURCE ── */
     function renderHeatmap(data) {
       const parent = document.getElementById('zone-heatmap');
       parent.innerHTML = '';
@@ -1584,7 +1584,7 @@
       const maxCount = Math.max(...sortedZones.map(z => z[1]));
 
       sortedZones.forEach(([rawName, count]) => {
-        // Display absolute name mapping raw index straight from sheets header variables without cutting elements
+        // Direct absolute variable mapping from sheets source target data fields without text slicing
         const displayLabelName = rawName;
         const ratio = maxCount ? (count / maxCount) : 0;
         const pct = ratio * 100;
