@@ -848,23 +848,18 @@
       document.getElementById('loading-overlay').classList.add('show');
       document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
 
-      // Normalise to a clean CSV export URL
+      // Use URL as-is if it already has output=csv, otherwise normalise
       let csvUrl = url;
       if (url.includes('/edit')) {
         csvUrl = url.replace('/edit', '/pub') + (url.includes('?') ? '&output=csv' : '?output=csv');
       } else if (!url.includes('output=csv')) {
         csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
       }
-      // Ensure single=true is present for published /e/ URLs
-      if (!csvUrl.includes('single=true') && csvUrl.includes('/pub')) {
-        csvUrl = csvUrl + '&single=true';
-      }
 
       const attempts = [
         csvUrl,
-        'https://corsproxy.io/?' + encodeURIComponent(csvUrl),
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
-        'https://opensheet.elk.sh/proxy?url=' + encodeURIComponent(csvUrl)
+        'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl),
+        'https://corsproxy.io/?' + encodeURIComponent(csvUrl)
       ];
 
       let lastError = '';
@@ -872,8 +867,12 @@
         try {
           const resp = await fetch(attemptUrl, { cache: 'no-store' });
           if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
-          const text = await resp.text();
-          // Reject HTML responses (Google login/redirect pages)
+          let text = await resp.text();
+          // allorigins /get wraps response in JSON: { contents: "..." }
+          if (attemptUrl.includes('allorigins.win/get')) {
+            try { text = JSON.parse(text).contents; } catch(e) {}
+          }
+          // Reject HTML responses (Google login / redirect pages)
           if (!text || text.trim().length < 10 || text.trim().startsWith('<!')) { lastError = 'Non-CSV response'; continue; }
           parseCSVData(text);
           document.getElementById('loading-overlay').classList.remove('show');
@@ -886,7 +885,7 @@
 
       document.getElementById('loading-overlay').classList.remove('show');
       document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
-      alert('Could not load sheet data.\n\nMake sure:\n1. The sheet is published (File → Share → Publish to web → CSV)\n2. The published URL is pasted — not the edit URL\n\nLast error: ' + lastError);
+      alert('Could not load sheet data.\n\nLast error: ' + lastError);
     }
 
     function splitCSVLine(line) {
