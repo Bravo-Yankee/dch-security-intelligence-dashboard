@@ -734,705 +734,525 @@
   </div>
 
   <script>
-    let allIncidents = [];
-    let currentShiftFilter = 'All';
-    let timelineChartInstance = null;
-    let selectedHourRange = 24;
-    let rawCopyableText = "";
+// Global State Storage
+let allIncidents = [];
+let timelineChart = null;
+let currentTimelineRange = 24; 
 
-    (function() {
-      const savedTheme = localStorage.getItem('dch-dashboard-theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    })();
+// Initial Dynamic Application Startup
+document.addEventListener('DOMContentLoaded', () => {
+  initClock();
+  initChart();
+  
+  // Set default stored source or fallback to placeholder
+  const storedUrl = localStorage.getItem('dch_sheet_url') || '';
+  if (storedUrl) {
+    document.getElementById('sheet-url').value = storedUrl;
+    fetchData();
+  } else {
+    loadDemoData();
+  }
+});
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-      initClock();
-      
-      const savedUrl = localStorage.getItem('dch-sheet-url');
-      if (savedUrl) {
-        document.getElementById('sheet-url').value = savedUrl;
-        fetchData();
-      } else {
-        loadDemoData();
-      }
-    });
+// Real-Time Clock Initialization
+function initClock() {
+  const clockEl = document.getElementById('live-clock');
+  const dateEl = document.getElementById('live-date');
+  
+  function updateTime() {
+    const now = new Date();
+    clockEl.textContent = now.toTimeString().split(' ')[0];
+    
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    dateEl.textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+}
 
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', nextTheme);
-      localStorage.setItem('dch-dashboard-theme', nextTheme);
-      document.getElementById('theme-icon').textContent = nextTheme === 'dark' ? '☀️' : '🌙';
-      if (allIncidents.length > 0) renderDashboard();
-    }
+// Application Interface Themes Toggle Engine
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+  if (timelineChart) {
+    timelineChart.destroy();
+    initChart();
+    updateTimelineChart();
+  }
+}
 
-    function initClock() {
-      function refreshClock() {
-        const d = new Date();
-        const options = { timeZone: 'Asia/Dubai', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        document.getElementById('live-clock').textContent = d.toLocaleTimeString('en-US', options);
-        
-        const dateOptions = { timeZone: 'Asia/Dubai', weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' };
-        document.getElementById('live-date').textContent = d.toLocaleDateString('en-US', dateOptions).toUpperCase();
-      }
-      refreshClock();
-      setInterval(refreshClock, 1000);
-    }
+// Global Core Canvas Chart Configuration
+function initChart() {
+  const ctx = document.getElementById('timelineChart').getContext('2d');
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  
+  const textPri = isLight ? '#09101d' : '#e8edf5';
+  const borderBright = isLight ? 'rgba(9,16,29,0.15)' : 'rgba(255,255,255,0.07)';
 
-    function getGSTDateTime() {
-      const d = new Date();
-      const gstOffset = 4 * 60 * 60 * 1000;
-      const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-      const gstDate = new Date(utc + gstOffset);
-      return { gstDate };
-    }
-
-    function generateDynamicWeatherMetrics() {
-      const hour = new Date().getHours();
-      let temp = 34;
-      let condition = "Clear Coastal Sky";
-      let wind = "14 km/h NNW";
-      
-      if (hour >= 10 && hour <= 16) {
-        temp = 43;
-        condition = "Extreme Outdoor Heat / High UV Exposure";
-        wind = "19 km/h NW";
-      } else if (hour >= 19 || hour <= 5) {
-        temp = 31;
-        condition = "High Coastal Humidity Density";
-        wind = "9 km/h NE";
-      }
-      return { temp: temp + "°C", condition: condition, wind: wind, hour: hour };
-    }
-
-    function generateDynamicTrafficMetrics(dataCount) {
-      const hour = new Date().getHours();
-      const day = new Date().getDay();
-      let status = "FLUID LOGISTICS FLOW";
-      let delay = "Nominal Parameters";
-      
-      if ((hour >= 16 && hour <= 21) || day === 5 || day === 6 || dataCount > 25) {
-        status = "HIGH EXTERNAL DRIVEWAY VOLUME";
-        delay = "+12 Mins on Island Main Road Intersections";
-      }
-      return { status: status, delay: delay, hour: hour };
-    }
-
-    function computeAIEngineDirectives(weather, traffic, criticalCount) {
-      let weatherAdvisory = "Conditions regular. Maintain normal foot patrols across Central Park walkways and the open Marina Walk promenade loops.";
-      let trafficAdvisory = "Driveways and access intersections operating at baseline speeds. Standard vehicle gate tracking rules apply.";
-
-      if (weather.hour >= 10 && weather.hour <= 16) {
-        weatherAdvisory = "⚠️ CRITICAL HEAT DIRECTIVE: Enforce mandatory 30-minute shade rotations for all supervisors on Marina Walk and Island Road layouts. Ensure water replenishment vehicles stop at all outdoor posts.";
-      } else if (weather.hour >= 19 || weather.hour <= 5) {
-        weatherAdvisory = "High open-air humidity observed. Instruct Central Park and water-facing promenade teams to flag low-visibility hazards and verify security illumination banks are 100% lit.";
-      }
-
-      if (traffic.status.includes("VOLUME") || criticalCount > 0) {
-        trafficAdvisory = "⚡ ROADWAY MANAGEMENT PROTOCOL: Driveways experiencing visitor drop-off surges. Move deployment units directly onto Island Main Road roundabouts and valet pathways to prevent gridlock bottlenecking.";
-      }
-
-      return { weatherAdvisory, trafficAdvisory };
-    }
-
-    function sortIncidentsDescending(list) {
-      list.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    }
-
-    async function fetchData() {
-      let url = document.getElementById('sheet-url').value.trim();
-      if (!url) {
-        alert('Please specify a valid URL link.');
-        return;
-      }
-      
-      if (url.includes("docs.google.com/spreadsheets") && !url.includes("output=csv") && !url.includes("format=csv")) {
-        url = url.replace(/\/edit.*$/, '/pub?output=csv');
-      }
-      
-      localStorage.setItem('dch-sheet-url', url);
-      document.getElementById('loading-overlay').classList.add('show');
-      
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Network payload streaming error.');
-        const csvText = await response.text();
-        parseCSVData(csvText);
-      } catch (err) {
-        alert('Failed fetching remote metrics layer data: ' + err.message);
-      } finally {
-        document.getElementById('loading-overlay').classList.remove('show');
-      }
-    }
-
-    function splitCSVLine(line) {
-      const result = [];
-      let current = '';
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          result.push(current.trim().replace(/^"|"$/g, ''));
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-      result.push(current.trim().replace(/^"|"$/g, ''));
-      return result;
-    }
-
-    function parseCSVData(text) {
-      const lines = text.split(/\r?\n/);
-      if (lines.length < 2) return;
-      
-      const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/ /g, '_'));
-      const records = [];
-      
-      for(let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-        const row = splitCSVLine(lines[i]);
-        
-        if (row.length === headers.length) {
-          let rec = {};
-          headers.forEach((h, idx) => { rec[h] = row[idx]; });
-          records.push(rec);
-        }
-      }
-      
-      allIncidents = records.map((r, i) => {
-        const ts = r.timestamp || new Date().toISOString();
-        const d = new Date(ts);
-        const hour = d.getHours();
-        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
-        
-        const rawSev = r.severity || 'Low';
-        let adjustedSev = rawSev.charAt(0).toUpperCase() + rawSev.slice(1).toLowerCase();
-        if (adjustedSev === 'Medium' || adjustedSev === 'High') {
-          adjustedSev = 'High';
-        }
-        
-        return {
-          message_id: r.message_id || r.system_reference_id || 'DCH_GEN_' + i,
-          timestamp: ts,
-          sender: r.sender || r.officer || 'OUTDOOR_PATROL_NODE',
-          shift: shift,
-          day_of_week: r.day_of_week || d.toLocaleDateString('en-US', {weekday: 'Long'}),
-          incident_type: r.incident_type || 'Unclassified Area Event',
-          severity: adjustedSev,
-          location_zone: r.location_zone || 'Master Community Ground Plain',
-          summary: r.summary || r.operational_narrative_log || '',
-          action_required: (adjustedSev === 'Critical' || adjustedSev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: r.immediate_actions || r.target_resolution_parameters || '',
-          confidence: parseFloat(r.confidence || r.ai_parsing_confidence_score || 0.94)
-        };
-      });
-      
-      sortIncidentsDescending(allIncidents);
-      document.getElementById('fetch-status').textContent = `CONNECTED · ${allIncidents.length} RECORDS SYNCED`;
-      const { gstDate } = getGSTDateTime();
-      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
-      renderDashboard();
-    }
-
-    function loadDemoData() {
-      allIncidents = [];
-      const zones = ['Marina Walk', 'Central Park Plaza', 'Island Main Road', 'East Driveway Link', 'Retail Boulevard Promenades'];
-      const types = ['Promenade Access Infringement', 'Outdoor Infrastructure Obstruction', 'Landscape Irrigation Leak', 'Driveway Delivery Vehicle Snarl', 'Central Park Crowd Surge Control', 'Public Walkway Lighting Outage', 'Unpermitted Commercial Activity', 'Roadway Scooter Hazard Control'];
-      const severities = ['Critical', 'High', 'Medium', 'Low'];
-      const senders = ['Supervisor John Al-Mansoori', 'Supervisor Robert Sterling', 'Supervisor Ahmed Khan', 'Supervisor Maria Torres'];
-      const summaries = [
-        'Unauthorized e-scooters weaving through pedestrian lanes at high speeds along Marina Walk.',
-        'Heavy delivery crates blocking emergency lane accessibility behind the central boulevard driveway.',
-        'Main irrigation lateral pipeline rupture spreading surface water across Central Park lawn sector D.',
-        'Logistics transport idling at main driveway portal, creating a temporary tailback on Island Main Road.',
-        'High volume gathering noted around public fountains; field units deployed to manage outdoor traffic flow.',
-        'Three continuous public walkway illumination poles unlit on North Marina perimeter ring.',
-        'Unregistered mobile vendor operating pop-up stand without master community authorization slips.',
-        'Stray obstacle item detected on the fast lane of Island Main Road; immediate removal dispatch requested.'
-      ];
-      
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const now = new Date();
-      
-      for(let i = 1; i <= 35; i++) {
-        let d = new Date(now.getTime() - (i * 30 * 60 * 1000));
-        let hour = d.getHours();
-        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
-        
-        const sev = severities[Math.floor(Math.random() * severities.length)];
-        let normalizedSev = sev;
-        if (sev === 'High' || sev === 'Medium') normalizedSev = 'High';
-        
-        allIncidents.push({
-          message_id: 'DCH_OUT_' + i,
-          timestamp: d.toISOString(),
-          sender: senders[Math.floor(Math.random() * senders.length)],
-          shift: shift,
-          day_of_week: days[d.getDay()],
-          incident_type: types[Math.floor(Math.random() * types.length)],
-          severity: normalizedSev,
-          location_zone: zones[Math.floor(Math.random() * zones.length)],
-          summary: summaries[Math.floor(Math.random() * summaries.length)],
-          action_required: (normalizedSev === 'Critical' || normalizedSev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: normalizedSev === 'Critical' ? 'Clear driveway lane; Redirect promenade traffic; Alert master field response team' : '',
-          confidence: (0.80 + Math.random() * 0.19).toFixed(2)
-        });
-      }
-      
-      sortIncidentsDescending(allIncidents);
-      document.getElementById('fetch-status').textContent = `DEMO TELEMETRY PROFILE · ${allIncidents.length} OUTDOOR LOGS LOADED`;
-      const { gstDate } = getGSTDateTime();
-      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
-      renderDashboard();
-    }
-
-    function filterShift(type) {
-      currentShiftFilter = type;
-      document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
-      if (type === 'All') document.getElementById('btn-shift-all').classList.add('active');
-      if (type === 'Morning') document.getElementById('btn-shift-day').classList.add('active');
-      if (type === 'Night') document.getElementById('btn-shift-night').classList.add('active');
-      renderDashboard();
-    }
-
-    function changeTimelineRange(hours) {
-      selectedHourRange = hours;
-      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`range-${hours}`).classList.add('active');
-      if (allIncidents.length > 0) {
-        renderTimelineChart(getFilteredIncidents());
-      }
-    }
-
-    function getFilteredIncidents() {
-      if (currentShiftFilter === 'All') return allIncidents;
-      return allIncidents.filter(i => i.shift.toLowerCase().includes(currentShiftFilter.toLowerCase()));
-    }
-
-    function renderDashboard() {
-      const data = getFilteredIncidents();
-      
-      document.getElementById('stat-coverage').textContent = currentShiftFilter === 'All' ? 'Full 24-Hr Outdoor Radar' : currentShiftFilter + ' Open Spectrum';
-      const uniqOfficers = [...new Set(data.map(d => d.sender))];
-      document.getElementById('stat-officers').textContent = `${uniqOfficers.length} Active Personnel`;
-
-      let crit = 0, med = 0, low = 0;
-      data.forEach(x => {
-        if (x.severity === 'Critical') crit++;
-        else if (x.severity === 'High') med++;
-        else low++;
-      });
-      
-      document.getElementById('kpi-crit').textContent = crit;
-      document.getElementById('kpi-med').textContent = med;
-      document.getElementById('kpi-low').textContent = low;
-      document.getElementById('kpi-total').textContent = data.length;
-
-      renderTimelineChart(data);
-      renderHeatmap(data);
-      renderFeedList(data);
-      renderCountermeasures(data);
-      renderTypologyMetrics(data);
-      generateHandoverReport(data);
-    }
-
-    function renderTimelineChart(data) {
-      const ctx = document.getElementById('timelineChart').getContext('2d');
-      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-      const textPriColor = theme === 'dark' ? '#7a8fa8' : '#2b3a51';
-
-      const now = new Date();
-      const hoursArray = [];
-      const datasetMap = {};
-
-      for (let i = selectedHourRange - 1; i >= 0; i--) {
-        const checkTime = new Date(now.getTime() - (i * 60 * 60 * 1000));
-        const hr = checkTime.getHours();
-        const label = (hr < 10 ? '0' : '') + hr + ':00';
-        hoursArray.push(label);
-        datasetMap[label] = 0;
-      }
-
-      data.forEach(x => {
-        const incidentTime = new Date(x.timestamp);
-        const diffMs = now - incidentTime;
-        const diffHours = diffMs / (1000 * 60 * 60);
-
-        if (diffHours <= selectedHourRange && diffHours >= 0) {
-          const hr = incidentTime.getHours();
-          const label = (hr < 10 ? '0' : '') + hr + ':00';
-          if (datasetMap[label] !== undefined) {
-            datasetMap[label]++;
-          }
-        }
-      });
-
-      if (timelineChartInstance) timelineChartInstance.destroy();
-
-      const chartGradient = ctx.createLinearGradient(0, 0, 0, 160);
-      if (theme === 'dark') {
-        chartGradient.addColorStop(0, 'rgba(232, 160, 32, 0.25)');
-        chartGradient.addColorStop(1, 'rgba(232, 160, 32, 0.0)');
-      } else {
-        chartGradient.addColorStop(0, 'rgba(176, 102, 0, 0.2)');
-        chartGradient.addColorStop(1, 'rgba(176, 102, 0, 0.0)');
-      }
-
-      timelineChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: hoursArray,
-          datasets: [{
-            label: 'Incident Rate Track',
-            data: hoursArray.map(h => datasetMap[h]),
-            borderColor: theme === 'dark' ? '#e8a020' : '#b06600',
-            backgroundColor: chartGradient,
-            borderWidth: 2.5,
-            pointBackgroundColor: theme === 'dark' ? '#e8a020' : '#b06600',
-            pointBorderColor: theme === 'dark' ? '#090d12' : '#ffffff',
-            pointBorderWidth: 1.5,
-            pointRadius: 3.5,
-            pointHoverRadius: 5,
-            fill: true,
-            tension: 0.3
-          }]
+  timelineChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { color: borderBright },
+          ticks: { color: textPri, font: { family: 'DM Mono', size: 9 } }
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: gridColor }, ticks: { color: textPriColor, font: { family: 'DM Mono', size: 9 } } },
-            y: { grid: { color: gridColor }, ticks: { color: textPriColor, precision: 0, stepSize: 1 }, min: 0 }
-          }
+        y: {
+          grid: { color: borderBright },
+          ticks: { color: textPri, font: { family: 'DM Mono', size: 9 }, stepSize: 1 },
+          beginAtZero: true
         }
-      });
-    }
-
-    function renderHeatmap(data) {
-      const parent = document.getElementById('zone-heatmap');
-      parent.innerHTML = '';
-      
-      const senderCounts = {};
-      data.forEach(x => { senderCounts[x.sender] = (senderCounts[x.sender] || 0) + 1; });
-      const sortedSenders = Object.entries(senderCounts).sort((a,b) => b[1] - a[1]);
-      
-      if(!sortedSenders.length) {
-        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No matching outdoor sender metrics found.</div>';
-        return;
       }
-
-      const maxCount = Math.max(...sortedSenders.map(z => z[1]));
-
-      sortedSenders.forEach(([senderName, count]) => {
-        const ratio = maxCount ? (count / maxCount) : 0;
-        const pct = ratio * 100;
-        
-        let lineFillColor = 'var(--green)'; 
-        if (ratio > 0.7) {
-          lineFillColor = 'var(--red)';   
-        } else if (ratio > 0.35) {
-          lineFillColor = 'var(--accent)'; 
-        }
-
-        const cell = document.createElement('div');
-        cell.className = 'zone-cell';
-        cell.onclick = () => openSenderDrawer(senderName);
-
-        cell.innerHTML = `
-          <div class="zone-name">${senderName}</div>
-          <div class="zone-count">${count}</div>
-          <div class="zone-bar" style="background: ${lineFillColor}; width: ${pct}%"></div>
-        `;
-        parent.appendChild(cell);
-      });
     }
+  });
+}
 
-    function renderFeedList(data) {
-      const container = document.getElementById('feed-container');
-      container.innerHTML = '';
-      
-      if (!data.length) {
-        container.innerHTML = '<div class="empty-state">Operational parsing stream empty.</div>';
-        return;
-      }
-
-      data.forEach(inc => {
-        const item = document.createElement('div');
-        item.className = 'feed-item';
-        item.onclick = () => showIncidentDetails(inc);
-        
-        let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
-        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-
-        item.innerHTML = `
-          <div class="severity-dot ${sevClass}"></div>
-          <div>
-            <div class="feed-type">${inc.incident_type}</div>
-            <div class="feed-summary">${inc.summary || 'No narrative description log attached.'}</div>
-            <div class="feed-meta">
-              <span class="tag zone" style="white-space: normal; word-break: break-word;">${inc.location_zone}</span>
-              <span class="tag">${inc.sender}</span>
-            </div>
-          </div>
-          <div class="feed-time">${timeStr}</div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function renderCountermeasures(data) {
-      const container = document.getElementById('reco-container');
-      container.innerHTML = '';
-      
-      const criticalEvents = data.filter(x => x.severity === 'Critical');
-      if (!criticalEvents.length) {
-        container.innerHTML = `
-          <div class="reco-item" style="border-left-color: var(--green);">
-            <div class="reco-num" style="color:var(--green)">00</div>
-            <div><strong>OUTDOOR SECTORS SECURE</strong><br>No open space escalation targets triggered inside chosen window.</div>
-          </div>
-        `;
-        return;
-      }
-
-      criticalEvents.slice(0, 3).forEach((ev, idx) => {
-        const num = (idx + 1 < 10 ? '0' : '') + (idx + 1);
-        const item = document.createElement('div');
-        item.className = 'reco-item';
-        item.style.borderLeftColor = 'var(--red)';
-        
-        const actionsList = ev.immediate_actions || 'Clear promenade lane; Redirect driveway traffic; Alert outdoor response vehicles.';
-
-        item.innerHTML = `
-          <div class="reco-num" style="color:var(--red)">${num}</div>
-          <div>
-            <strong>OUTDOOR MITIGATION CAP: ${ev.incident_type}</strong><br>
-            <span style="color:var(--text-pri); font-size:11px;">Target Action Plan: ${actionsList}</span>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function renderTypologyMetrics(data) {
-      const container = document.getElementById('type-container');
-      container.innerHTML = '';
-      
-      const typesMap = {};
-      data.forEach(x => { typesMap[x.incident_type] = (typesMap[x.incident_type] || 0) + 1; });
-      const sorted = Object.entries(typesMap).sort((a,b) => b[1] - a[1]).slice(0, 4);
-      
-      if(!sorted.length) {
-        container.innerHTML = '<div class="empty-state">No typology vectors compiled.</div>';
-        return;
-      }
-
-      const maxVal = Math.max(...Object.values(typesMap));
-
-      sorted.forEach(([name, count]) => {
-        const pct = maxVal ? (count / maxVal) * 100 : 0;
-        const row = document.createElement('div');
-        row.className = 'type-row';
-        row.innerHTML = `
-          <div class="type-name" title="${name}">${name}</div>
-          <div class="type-bar-track"><div class="type-bar-fill" style="width: ${pct}%;"></div></div>
-          <div class="type-count">${count}</div>
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    function generateHandoverReport(data) {
-      const displayContainer = document.getElementById('handover-display-target');
-      
-      const weather = generateDynamicWeatherMetrics();
-      const traffic = generateDynamicTrafficMetrics(data.length);
-
-      let critCount = data.filter(x => x.severity === 'Critical').length;
-      let medCount = data.filter(x => x.severity === 'High').length;
-      let lowCount = data.filter(x => x.severity === 'Low').length;
-
-      // Update sleek layout widget cells
-      document.getElementById('ops-weather-temp').textContent = weather.temp;
-      document.getElementById('ops-weather-cond').textContent = weather.condition;
-      document.getElementById('ops-weather-wind').textContent = weather.wind;
-      
-      document.getElementById('ops-traffic-status').textContent = traffic.status;
-      document.getElementById('ops-traffic-status').style.color = traffic.status.includes("VOLUME") ? "var(--red)" : "var(--green)";
-      document.getElementById('ops-traffic-delay').textContent = traffic.delay;
-
-      // Generate context advisories
-      const advisories = computeAIEngineDirectives(weather, traffic, critCount);
-      document.getElementById('ai-weather-advisory').textContent = advisories.weatherAdvisory;
-      document.getElementById('ai-traffic-advisory').textContent = advisories.trafficAdvisory;
-
-      if (!data.length) {
-        displayContainer.textContent = 'No records available to parse shift handover text strings.';
-        rawCopyableText = "";
-        return;
-      }
-
-      const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' }).toUpperCase();
-      const scopeLabel = currentShiftFilter === 'All' ? 'FULL 24-HOUR OUTDOOR PARMETER CYCLE' : `${currentShiftFilter.toUpperCase()} ROTATION SPECTRUM`;
-
-      let rawText = `*DUBAI CREEK HARBOUR — MASTER COMMUNITY OUTDOOR HANDOVER REPORT*\n`;
-      rawText += `*DATE:* ${dateStr} GST RUN\n`;
-      rawText += `*ROTATION SCOPE:* ${scopeLabel}\n`;
-      rawText += `--------------------------------------------------\n\n`;
-      rawText += `*🌍 OPEN-AIR ENVIRONMENT MATRIX*\n`;
-      rawText += `▪ Weather Station: ${weather.temp} | ${weather.condition} (${weather.wind})\n`;
-      rawText += `▪ Driveways & Roads Traffic: ${traffic.status} — ${traffic.delay}\n`;
-      rawText += `▪ AI Weather Tactical Directive: ${advisories.weatherAdvisory}\n`;
-      rawText += `▪ AI Traffic Logistics Directive: ${advisories.trafficAdvisory}\n\n`;
-      rawText += `*⚖️ OUTDOOR OPERATIONAL LOGS COMPONENT*\n`;
-      rawText += `▪ Total Parsed Records: ${data.length}\n`;
-      rawText += `▪ Critical Actions Enforced: ${critCount}\n`;
-      rawText += `▪ High / Medium Risks Trapped: ${medCount}\n`;
-      rawText += `▪ Low Routine Verifications: ${lowCount}\n\n`;
-      
-      rawText += `*📍 HIGHEST OPERATIONAL LOGGING VOLUMES BY SUPERVISOR*\n`;
-      const sendersMap = {};
-      data.forEach(v => sendersMap[v.sender] = (sendersMap[v.sender] || 0) + 1);
-      Object.entries(sendersMap).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
-        rawText += `▪ ${k}: ${val} telemetry logs verified.\n`;
-      });
-      
-      rawText += `\n*🚨 URGENT ACTIONS ACTIVE OUTSIDE*\n`;
-      const crits = data.filter(x => x.severity === 'Critical');
-      if (crits.length > 0) {
-        crits.forEach(c => {
-          const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
-          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (Zone: ${c.location_zone})\n`;
-          rawText += `  Log Summary: ${c.summary}\n`;
-        });
+// Production CSV Parsing Core Algorithm (Handles linebreaks and escape quotes)
+function parseCSV(text) {
+  let p = '', c = '', r = [];
+  let q = false;
+  let row = [''];
+  for (let i = 0; i < text.length; i++) {
+    c = text[i];
+    p = text[i - 1];
+    if (c === '"') {
+      if (q && text[i + 1] === '"') {
+        row[row.length - 1] += '"';
+        i++;
       } else {
-        rawText += `▪ No critical outdoor parameters triggered inside this spectrum.\n`;
+        q = !q;
       }
-      
-      rawText += `\n--------------------------------------------------\n`;
-      rawText += `*DCH SECURITY OPERATIONS LOG END*`;
-      
-      rawCopyableText = rawText;
-      displayContainer.textContent = rawText;
-    }
-
-    function copyHandoverToClipboard() {
-      if (!rawCopyableText) {
-        alert("Operational text dataset compiling incomplete.");
-        return;
+    } else if (c === ',' && !q) {
+      row.push('');
+    } else if ((c === '\r' || c === '\n') && !q) {
+      if (c === '\n' && p === '\r') {} 
+      else {
+        r.push(row);
+        row = [''];
       }
-      navigator.clipboard.writeText(rawCopyableText).then(() => {
-        alert("Handover report content copied directly to clipboard memory matrix.");
-      }).catch(err => {
-        alert("Clipboard integration failure: " + err);
-      });
+    } else {
+      row[row.length - 1] += c;
     }
+  }
+  if (row.length > 1 || row[0] !== '') {
+    r.push(row);
+  }
+  return r;
+}
 
-    function openSenderDrawer(senderName) {
-      document.getElementById('drawer-title').textContent = `CLUSTER SNAPSHOT: ${senderName.toUpperCase()}`;
-      const body = document.getElementById('drawer-body');
-      body.innerHTML = '';
-
-      const senderIncidents = allIncidents.filter(x => x.sender === senderName);
-      let c = 0, h = 0, l = 0;
-      senderIncidents.forEach(z => {
-        if (z.severity === 'Critical') c++;
-        else if (z.severity === 'High') h++;
-        else l++;
+// Connected Remote Google Sheet Pipeline Fetcher
+async function fetchData() {
+  const urlInput = document.getElementById('sheet-url').value.trim();
+  const statusEl = document.getElementById('fetch-status');
+  
+  if (!urlInput) {
+    statusEl.textContent = "PROVIDE VALID REMOTE TARGET CSV URL";
+    return;
+  }
+  
+  // Show Loading Matrix Overlay
+  document.getElementById('loading-overlay').classList.add('show');
+  statusEl.textContent = "SYNCHRONIZING REPOSITORY...";
+  
+  try {
+    localStorage.setItem('dch_sheet_url', urlInput);
+    const response = await fetch(urlInput);
+    if (!response.ok) throw new Error("Target pipeline error response.");
+    
+    const csvData = await response.text();
+    const rows = parseCSV(csvData);
+    
+    if (rows.length < 2) {
+      throw new Error("Target contains empty metadata structures.");
+    }
+    
+    // Map headers dynamically
+    const headers = rows[0].map(h => h.trim().toLowerCase());
+    
+    allIncidents = rows.slice(1).map((row, index) => {
+      let obj = {};
+      headers.forEach((header, i) => {
+        obj[header] = row[i] ? row[i].trim() : '';
       });
+      
+      // Stand-in mapping parameters if custom structures are parsed
+      return {
+        message_id: obj.message_id || obj.id || `REF-${1000 + index}`,
+        timestamp: obj.timestamp || obj.time || new Date().toISOString(),
+        severity: obj.severity || 'Low',
+        type: obj.type || obj.category || 'General Incident',
+        zone: obj.zone || obj.location || 'Community Perimeter',
+        summary: obj.summary || obj.narrative || 'No log details standard text payload.',
+        sender: obj.sender || obj.supervisor || 'Community Control Desk',
+        actions: obj.actions || obj.mitigation || 'Monitored via Surveillance Matrix.'
+      };
+    });
+    
+    // Refresh Application Sub-Panels
+    processIncidentTelemetry();
+    statusEl.textContent = `TARGET ATTACHED: ${allIncidents.length} DATAPOINTS`;
+    document.getElementById('last-refresh').textContent = `FEED SYNCED: ${new Date().toLocaleTimeString()}`;
+    
+  } catch (error) {
+    console.error(error);
+    statusEl.textContent = "PIPELINE RETRIEVAL CRITICAL EXCEPTION FAILURE";
+  } finally {
+    document.getElementById('loading-overlay').classList.remove('show');
+  }
+}
 
-      const statsGrid = document.createElement('div');
-      statsGrid.className = 'zone-stat-grid';
-      statsGrid.innerHTML = `
-        <div class="zone-stat-card" style="border-top:2px solid var(--red);"><div class="zone-stat-lbl">Critical</div><div class="zone-stat-val">${c}</div></div>
-        <div class="zone-stat-card" style="border-top:2px solid var(--accent);"><div class="zone-stat-lbl">High/Med</div><div class="zone-stat-val">${h}</div></div>
-        <div class="zone-stat-card" style="border-top:2px solid var(--green); grid-column: span 2;"><div class="zone-stat-lbl">Low Routine</div><div class="zone-stat-val">${l}</div></div>
+// Central Analytics Processor Engine
+function processIncidentTelemetry() {
+  updateKPIs();
+  updateTimelineChart();
+  updateDeploymentMatrix();
+  updateIncidentFeed();
+  updateModernHandoverMetrics();
+}
+
+// Metric Handover Panels Computations
+function updateKPIs() {
+  let crit = 0, med = 0, low = 0;
+  
+  allIncidents.forEach(inc => {
+    const sev = inc.severity.toLowerCase();
+    if (sev === 'critical') crit++;
+    else if (sev === 'high' || sev === 'medium' || sev === 'orange') med++;
+    else low++;
+  });
+  
+  document.getElementById('kpi-crit').textContent = crit;
+  document.getElementById('kpi-med').textContent = med;
+  document.getElementById('kpi-low').textContent = low;
+  document.getElementById('kpi-total').textContent = allIncidents.length;
+}
+
+// Chart Engine Timeline Series Redrawer
+function updateTimelineChart() {
+  if (!timelineChart) return;
+  
+  const hoursToFilter = currentTimelineRange;
+  const now = new Date();
+  
+  // Aggregate matrix map slots
+  let aggregatedData = {};
+  for (let i = hoursToFilter - 1; i >= 0; i--) {
+    let d = new Date(now.getTime() - i * 60 * 60 * 1000);
+    let label = d.getHours().toString().padStart(2, '0') + ':00';
+    aggregatedData[label] = 0;
+  }
+  
+  allIncidents.forEach(inc => {
+    const incDate = new Date(inc.timestamp);
+    const diffHours = (now - incDate) / (1000 * 60 * 60);
+    if (diffHours >= 0 && diffHours < hoursToFilter) {
+      let label = incDate.getHours().toString().padStart(2, '0') + ':00';
+      if (aggregatedData[label] !== undefined) aggregatedData[label]++;
+    }
+  });
+  
+  const labels = Object.keys(aggregatedData);
+  const dataValues = Object.values(aggregatedData);
+  
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const themeAccent = isLight ? '#b06600' : '#e8a020';
+  
+  timelineChart.data.labels = labels;
+  timelineChart.data.datasets = [{
+    label: 'Incident Load',
+    data: dataValues,
+    borderColor: themeAccent,
+    backgroundColor: 'rgba(232,160,32,0.06)',
+    fill: true,
+    tension: 0.2,
+    borderWidth: 2,
+    pointRadius: 3,
+    pointBackgroundColor: themeAccent
+  }];
+  
+  timelineChart.update();
+}
+
+function changeTimelineRange(hours) {
+  currentTimelineRange = hours;
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`range-${hours}`).classList.add('active');
+  updateTimelineChart();
+}
+
+// Heatmap Matrix Generator Loop
+function updateDeploymentMatrix() {
+  const container = document.getElementById('zone-heatmap');
+  container.innerHTML = '';
+  
+  let zoneMetrics = {};
+  allIncidents.forEach(inc => {
+    zoneMetrics[inc.zone] = (zoneMetrics[inc.zone] || 0) + 1;
+  });
+  
+  const maxIncidents = Math.max(...Object.values(zoneMetrics), 1);
+  
+  if (Object.keys(zoneMetrics).length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column: span 2;">No zone matrices indexed.</div>`;
+    return;
+  }
+  
+  Object.keys(zoneMetrics).sort().forEach(zone => {
+    const count = zoneMetrics[zone];
+    const percentage = (count / maxIncidents) * 100;
+    
+    const cell = document.createElement('div');
+    cell.className = 'zone-cell';
+    cell.onclick = () => openSlidePanel(zone);
+    
+    cell.innerHTML = `
+      <div class="zone-name">${zone}</div>
+      <div class="zone-count">${count}</div>
+      <div class="zone-bar" style="width: ${percentage}%; background: var(--accent);"></div>
+    `;
+    container.appendChild(cell);
+  });
+}
+
+// Live Incident List Stream Parser Engine
+function updateIncidentFeed() {
+  const container = document.getElementById('feed-container');
+  container.innerHTML = '';
+  
+  if (allIncidents.length === 0) {
+    container.innerHTML = `<div class="empty-state">No real-time incidents registered in target stream.</div>`;
+    return;
+  }
+  
+  // Display inverted ordered list logs (Newest telemetry data payload at top first)
+  const sortedIncidents = [...allIncidents].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  sortedIncidents.forEach(inc => {
+    const rowItem = document.createElement('div');
+    rowItem.className = 'feed-item';
+    rowItem.onclick = () => openModal(inc);
+    
+    let sevClass = 'low';
+    const s = inc.severity.toLowerCase();
+    if (s === 'critical' || s === 'red') sevClass = 'critical';
+    else if (s === 'high' || s === 'medium' || s === 'orange') sevClass = 'high';
+    
+    const formattedTime = new Date(inc.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    rowItem.innerHTML = `
+      <div class="severity-dot ${sevClass}"></div>
+      <div>
+        <div class="feed-type">${inc.type}</div>
+        <div class="feed-summary">${inc.summary.substring(0, 75)}${inc.summary.length > 75 ? '...' : ''}</div>
+        <div class="feed-meta">
+          <span class="tag zone">📍 ${inc.zone}</span>
+          <span class="tag">👤 ${inc.sender}</span>
+        </div>
+      </div>
+      <div class="feed-time">${formattedTime}</div>
+    `;
+    container.appendChild(rowItem);
+  });
+}
+
+// Typology & Outdoor Command Metrics Panel Computation
+function updateModernHandoverMetrics() {
+  // 1. Shift Metrics Computation
+  let dayShiftCount = 0, nightShiftCount = 0;
+  allIncidents.forEach(inc => {
+    const hour = new Date(inc.timestamp).getHours();
+    // Shift model: Morning (07:00-19:00), Night (19:00-07:00)
+    if (hour >= 7 && hour < 19) dayShiftCount++;
+    else nightShiftCount++;
+  });
+  
+  document.getElementById('m-day-count').textContent = dayShiftCount;
+  document.getElementById('m-night-count').textContent = nightShiftCount;
+  
+  // 2. Incident Typology Distribution Progress Metrics
+  const typeContainer = document.getElementById('typology-bars');
+  typeContainer.innerHTML = '';
+  
+  let typeCounts = {};
+  allIncidents.forEach(inc => {
+    typeCounts[inc.type] = (typeCounts[inc.type] || 0) + 1;
+  });
+  
+  const sortedTypes = Object.entries(typeCounts).sort((a,b) => b[1] - a[1]).slice(0, 4);
+  const maxTypeCount = sortedTypes.length > 0 ? sortedTypes[0][1] : 1;
+  
+  if (sortedTypes.length === 0) {
+    typeContainer.innerHTML = '<div class="empty-state">No incident categorization logged.</div>';
+  } else {
+    sortedTypes.forEach(([type, count]) => {
+      const pct = (count / maxTypeCount) * 100;
+      const typeRow = document.createElement('div');
+      typeRow.className = 'type-row';
+      typeRow.innerHTML = `
+        <div class="type-name">${type}</div>
+        <div class="type-bar-track"><div class="type-bar-fill" style="width: ${pct}%"></div></div>
+        <div class="type-count">${count}</div>
       `;
-      body.appendChild(statsGrid);
+      typeContainer.appendChild(typeRow);
+    });
+  }
+  
+  // 3. Raw WhatsApp Output Generation Matrix Handler
+  const outputBox = document.getElementById('handover-string-output');
+  if (allIncidents.length === 0) {
+    outputBox.textContent = "Awaiting deployment parameters initialization...";
+    return;
+  }
+  
+  let handoverString = `*DUBAI CREEK HARBOUR — SECURITY OPERATIONS CENTRE*\n`;
+  handoverString += `*OPERATIONAL AUTOMATION HANDOVER MATRIX LOG*\n`;
+  handoverString += `Generated: ${new Date().toLocaleString()}\n`;
+  handoverString += `--------------------------------------------------------\n\n`;
+  
+  allIncidents.forEach((inc, i) => {
+    handoverString += `${i+1}. [${inc.severity.toUpperCase()}] ${inc.type} @ ${inc.zone}\n`;
+    handoverString += `   Narrative: ${inc.summary}\n`;
+    handoverString += `   Mitigation Actions: ${inc.actions}\n`;
+    handoverString += `   Log Source Desk: ${inc.sender}\n\n`;
+  });
+  
+  outputBox.textContent = handoverString.trim();
+}
 
-      const sectionTitle = document.createElement('div');
-      sectionTitle.className = 'slide-section-title';
-      sectionTitle.textContent = "Supervisor Incident Log Summary Feed";
-      body.appendChild(sectionTitle);
+// Zone Filtering Information Sliding Panel Overlay
+function openSlidePanel(zoneName) {
+  document.getElementById('slide-title').textContent = `ZONE EXPLORER: ${zoneName.toUpperCase()}`;
+  document.getElementById('slide-backdrop').classList.add('show');
+  document.getElementById('slide-panel').classList.add('show');
+  
+  const filtered = allIncidents.filter(inc => inc.zone === zoneName);
+  
+  let crit = 0, highMed = 0, low = 0;
+  filtered.forEach(inc => {
+    const s = inc.severity.toLowerCase();
+    if (s === 'critical') crit++;
+    else if (s === 'high' || s === 'medium' || s === 'orange') highMed++;
+    else low++;
+  });
+  
+  document.getElementById('slide-crit-val').textContent = crit;
+  document.getElementById('slide-med-val').textContent = highMed;
+  document.getElementById('slide-low-val').textContent = low;
+  
+  const historyList = document.getElementById('slide-history-list');
+  historyList.innerHTML = '';
+  
+  if (filtered.length === 0) {
+    historyList.innerHTML = '<div class="empty-state">No regional logs filed.</div>';
+    return;
+  }
+  
+  filtered.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(inc => {
+    const div = document.createElement('div');
+    div.style.padding = '10px';
+    div.style.background = 'var(--bg-panel)';
+    div.style.border = '1px solid var(--border)';
+    div.style.borderRadius = '4px';
+    div.style.fontSize = '12px';
+    
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <strong style="color:var(--accent)">${inc.type}</strong>
+        <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-dim)">${new Date(inc.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+      </div>
+      <p style="color:var(--text-pri); margin-bottom:4px;">${inc.summary}</p>
+      <div style="font-size:11px; color:var(--text-sec); font-style:italic;">Actions: ${inc.actions}</div>
+    `;
+    historyList.appendChild(div);
+  });
+}
 
-      const listWrap = document.createElement('div');
-      listWrap.className = 'feed-list';
-      listWrap.style.maxHeight = 'calc(100vh - 280px)';
-      
-      senderIncidents.forEach(inc => {
-        const row = document.createElement('div');
-        row.className = 'feed-item';
-        row.onclick = () => showIncidentDetails(inc);
-        let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
-        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
-        
-        row.innerHTML = `
-          <div class="severity-dot ${sevClass}"></div>
-          <div>
-            <div class="feed-type" style="font-size:12px;">${inc.incident_type}</div>
-            <div class="feed-summary" style="font-size:11px;">Zone: ${inc.location_zone} | ${inc.summary || '—'}</div>
-          </div>
-          <div class="feed-time" style="font-size:10px;">${timeStr}</div>
-        `;
-        listWrap.appendChild(row);
-      });
-      body.appendChild(listWrap);
+function closeSlidePanel() {
+  document.getElementById('slide-backdrop').classList.remove('show');
+  document.getElementById('slide-panel').classList.remove('show');
+}
 
-      document.getElementById('slide-backdrop').classList.add('show');
-      document.getElementById('slide-panel').classList.add('show');
+// Modal View Component Details Engine
+function openModal(inc) {
+  const modalBody = document.getElementById('modal-body-content');
+  const actions = inc.actions ? inc.actions.split(';') : ['No logged mitigation procedures.'];
+  
+  let sevColor = 'var(--green)';
+  const s = inc.severity.toLowerCase();
+  if (s === 'critical' || s === 'red') sevColor = 'var(--red)';
+  else if (s === 'high' || s === 'medium' || s === 'orange') sevColor = 'var(--accent)';
+  
+  modalBody.innerHTML = `
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div class="modal-field"><label>Incident Category</label><p style="font-weight:600; color:var(--accent);">${inc.type}</p></div>
+      <div class="modal-field"><label>Severity Class</label><p style="color:${sevColor}; font-weight:600;">⚠️ ${inc.severity.toUpperCase()}</p></div>
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div class="modal-field"><label>Assigned Zone</label><p>📍 ${inc.zone}</p></div>
+      <div class="modal-field"><label>Reported Timestamp</label><p style="font-family:var(--font-mono);">${new Date(inc.timestamp).toLocaleString()}</p></div>
+    </div>
+    <div class="modal-field"><label>Log Dispatcher Node</label><p>👤 ${inc.sender}</p></div>
+    <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary}</p></div>
+    <div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a => `<li>${a.trim()}</li>`).join('')}</ul></div>
+    <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim)">${inc.message_id}</p></div>
+  `;
+  document.getElementById('modal-backdrop').classList.add('show');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-backdrop') || e.target.className === 'modal-close') {
+    document.getElementById('modal-backdrop').classList.remove('show');
+  }
+}
+
+// Fallback Mock Local Static Telemetry Data Profile Loader
+function loadDemoData() {
+  document.getElementById('fetch-status').textContent = "RUNNING LOCAL PROFILE ENGINE SIMULATION";
+  
+  const baseTime = new Date();
+  
+  allIncidents = [
+    {
+      message_id: "DEMO-MSG-9901",
+      timestamp: new Date(baseTime.getTime() - 1 * 60 * 60 * 1000).toISOString(),
+      severity: "Critical",
+      type: "Fire Alarm Activation",
+      zone: "Creek Horizon - Tower 1",
+      summary: "Smoke detector triggered zone level 14 kitchen corridor. Civil Defence alerted.",
+      sender: "Supervisor Ben Bridges",
+      actions: "Evacuation protocol initialized; Verified cooking smoke emission; Area ventilated; Alarm isolated and reset."
+    },
+    {
+      message_id: "DEMO-MSG-9902",
+      timestamp: new Date(baseTime.getTime() - 3 * 60 * 60 * 1000).toISOString(),
+      severity: "High",
+      type: "Access Control Breach",
+      zone: "Marina Promenade Gate 2",
+      summary: "Uncontrolled access card tailgating detected by biometric perimeter tracking systems.",
+      sender: "Patrol Officer Alpha",
+      actions: "Intercepted target vehicle; Verified resident guest profile; Logged identification credentials."
+    },
+    {
+      message_id: "DEMO-MSG-9903",
+      timestamp: new Date(baseTime.getTime() - 6 * 60 * 60 * 1000).toISOString(),
+      severity: "Low",
+      type: "Facility Hazard Maintenance",
+      zone: "Creek Park Walkway Area C",
+      summary: "Minor hydraulic oil leakage discovered from landscaping vehicle layout paths.",
+      sender: "CCTV Operator Gamma",
+      actions: "Placed hazard warning cordons; Dispatched chemical absorption cleanup units."
     }
-
-    function closeZoneDrawer() {
-      document.getElementById('slide-backdrop').classList.remove('show');
-      document.getElementById('slide-panel').classList.remove('show');
-    }
-
-    function showIncidentDetails(inc) {
-      const target = document.getElementById('modal-content');
-      
-      let logicalMitigation = inc.immediate_actions;
-      if (!logicalMitigation || logicalMitigation.trim().length === 0) {
-        logicalMitigation = `Deploy outdoor responders to area; Verify nearby area camera loops; Inform ${inc.sender} to coordinate ground response.`;
-      }
-      const actions = logicalMitigation.split(';');
-      
-      target.innerHTML = `
-        <div class="modal-field"><label>System Event Registry Timestamp</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date(inc.timestamp).toString()}</p></div>
-        
-        <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p style="font-weight:600; color:var(--blue);">${inc.shift}</p></div>
-        
-        <div class="modal-field"><label>Incident Structural Variant Typology</label><p style="font-size:15px; font-weight:600; color:var(--accent);">${inc.incident_type}</p></div>
-        
-        <div class="modal-field"><label>Location Context / Zone Boundary</label><p style="font-weight:600;">${inc.sender} (Zone: ${inc.location_zone})</p></div>
-        
-        <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
-        
-        <div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>
-        
-        <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
-        <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.summary || '—'}</p></div>
-        <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id || '—'}</p></div>
-      `;
-      document.getElementById('modal-backdrop').classList.add('show');
-    }
-
-    function closeModal(e) {
-      if (e.target === document.getElementById('modal-backdrop')) {
-        document.getElementById('modal-backdrop').classList.remove('show');
-      }
-    }
-
-    setInterval(() => {
-      const url = document.getElementById('sheet-url').value.trim();
-      if (url && allIncidents.length > 0) fetchData();
-    }, 5 * 60 * 1000);
-  </script>
-</body>
+  ];
+  
+  processIncidentTelemetry();
+  document.getElementById('last-refresh').textContent = "SIMULATION DATA DEMO INSTANTIATED";
+}
+</script>
+  </body>
 </html>
