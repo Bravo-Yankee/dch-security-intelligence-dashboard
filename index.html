@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dubai Creek Harbour — Security Operations Centre</title>
+<title>Dubai Creek Harbour — Live Feed</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -12,16 +12,16 @@
     --bg-panel:   #0e1520;
     --bg-card:    #131d2b;
     --bg-hover:   #1a2638;
-    --border:     rgba(255, 255, 255, 0.07);
-    --border-bright: rgba(255, 255, 255, 0.14);
+    --border:     rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.14);
     --accent:     #e8a020;
-    --accent-dim: rgba(232, 160, 32, 0.15);
+    --accent-dim: rgba(232,160,32,0.15);
     --red:        #e84040;
-    --red-dim:    rgba(232, 64, 64, 0.15);
+    --red-dim:    rgba(232,64,64,0.15);
     --green:      #34c77b;
-    --green-dim:  rgba(52, 199, 123, 0.12);
+    --green-dim:  rgba(52,199,123,0.12);
     --blue:       #3a8fe8;
-    --blue-dim:   rgba(58, 143, 232, 0.12);
+    --blue-dim:   rgba(58,143,232,0.12);
     --text-pri:   #e8edf5;
     --text-sec:   #7a8fa8;
     --text-dim:   #3d5068;
@@ -67,6 +67,8 @@
     min-height: 100vh;
     overflow-x: hidden;
     transition: background 0.2s ease, color 0.2s ease;
+    display: flex;
+    flex-direction: column;
   }
 
   body::before {
@@ -86,8 +88,8 @@
 
   /* ── HEADER ── */
   header {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     padding: 16px 32px;
     border-bottom: 2px solid var(--border);
@@ -133,6 +135,37 @@
     font-family: var(--font-mono);
   }
 
+  .header-center {
+    text-align: center;
+  }
+
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-green 2s infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
   .header-right {
     text-align: right;
   }
@@ -160,30 +193,22 @@
     50% { opacity: 0.85; }
     100% { stroke-dashoffset: 0; }
   }
-
   @keyframes horseGallop {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     25% { transform: translateY(-1.5px) rotate(1deg); }
     50% { transform: translateY(0.5px) rotate(-1deg); }
     75% { transform: translateY(-1px) rotate(0.5deg); }
   }
+  .animated-vector-horse { animation: horseGallop 0.55s infinite ease-in-out; }
+  .animated-vector-horse path { stroke-dasharray: 12; animation: horseRun 0.8s linear infinite; }
 
-  .animated-vector-horse {
-    animation: horseGallop 0.55s infinite ease-in-out;
-  }
-
-  .animated-vector-horse path {
-    stroke-dasharray: 12;
-    animation: horseRun 0.8s linear infinite;
-  }
-
-  /* ── CONFIG PANEL ── */
+  /* ── CONFIG PANEL AND CONTROLS ── */
   .config-bar {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    padding: 10px 32px;
+    padding: 12px 32px;
     background: var(--bg-panel);
     border-bottom: 2px solid var(--border);
     font-size: 12px;
@@ -198,1426 +223,1212 @@
     text-transform: uppercase;
   }
 
-  .config-bar input, .config-bar select {
+  .config-bar input {
     background: var(--bg-card);
     border: 1px solid var(--border-bright);
     border-radius: var(--r);
     color: var(--text-pri);
-    padding: 6px 10px;
+    padding: 7px 12px;
     font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
     outline: none;
   }
-
-  .config-bar input:focus, .config-bar select:focus {
-    border-color: var(--accent);
-  }
-
+  .config-bar input:focus { border-color: var(--accent); }
   .config-bar input[type="text"] { width: 320px; max-width: 100%; }
 
-  .btn-fetch {
-    background: var(--text-pri);
-    color: var(--bg-card);
-    border: none;
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-  }
-
-  .btn-fetch:hover { opacity: 0.9; }
-
-  .btn-demo {
-    background: var(--bg-card);
-    color: var(--text-sec);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .btn-demo:hover {
-    color: var(--text-pri);
-    border-color: var(--text-pri);
-  }
-
-  /* ── UPDATED CONTROL BUTTONS WITH GEMINI HOVER EFFECT ── */
-  .btn-theme-toggle, .btn-holiday-homes {
+  .btn-fetch, .btn-demo {
     background: var(--bg-card);
     color: var(--text-pri);
     border: 1px solid var(--border-bright);
     border-radius: var(--r);
-    padding: 7px 14px;
+    padding: 8px 16px;
     font-family: var(--font-mono);
     font-weight: 600;
     font-size: 11px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .btn-fetch { background: var(--text-pri); color: var(--bg-card); border-color: var(--text-pri); }
+  .btn-fetch:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-demo:hover { background: var(--bg-hover); border-color: var(--text-pri); transform: translateY(-1px); }
+
+  .btn-holiday-home, .btn-theme-toggle {
+    background: var(--bg-card);
+    color: var(--text-pri);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--r);
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.5px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     text-decoration: none;
     position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     z-index: 1;
+    overflow: hidden;
+    transition: color 0.3s ease, border-color 0.3s ease, transform 0.15s ease;
   }
-
-  /* Gemini AI Custom Mouse Hover Gradient Profile */
-  .btn-theme-toggle::before, .btn-holiday-homes::before {
+  .btn-holiday-home::before, .btn-theme-toggle::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(66, 133, 244, 0.15), rgba(155, 81, 224, 0.15), rgba(244, 180, 0, 0.15));
-    opacity: 0;
+    inset: 0;
+    background: linear-gradient(135deg, #1a73e8, #7a22ff, #e84040, #e8a020);
+    background-size: 300% 300%;
     z-index: -1;
-    transition: opacity 0.4s ease;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
-
-  .btn-theme-toggle:hover, .btn-holiday-homes:hover {
-    border-color: rgba(155, 81, 224, 0.5);
-    box-shadow: 0 0 10px rgba(155, 81, 224, 0.15);
-    color: var(--text-pri);
+  @keyframes geminiGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
-
-  .btn-theme-toggle:hover::before, .btn-holiday-homes:hover::before {
+  .btn-holiday-home:hover, .btn-theme-toggle:hover {
+    color: #ffffff;
+    border-color: transparent;
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(122, 34, 255, 0.4);
+  }
+  .btn-holiday-home:hover::before, .btn-theme-toggle:hover::before {
     opacity: 1;
+    animation: geminiGlow 4s linear infinite;
   }
 
-  .btn-theme-toggle svg, .btn-holiday-homes svg {
-    flex-shrink: 0;
-  }
-
-  .fetch-status {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    letter-spacing: 0.5px;
-  }
+  .config-right-group { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .fetch-status { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec); letter-spacing: 0.5px; }
 
   /* ── MAIN LAYOUT ── */
-  main {
-    padding: 24px 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  main { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
 
   /* ── KPI ROW ── */
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-  }
-
-  .kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-  }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 16px; position: relative; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .kpi-card.critical::before { background: var(--red); }
   .kpi-card.medium::before { background: var(--accent); }
   .kpi-card.low::before { background: var(--green); }
   .kpi-card.total::before { background: var(--blue); }
-  .kpi-card.active::before { background: #7326cc; }
 
-  .kpi-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-sec);
-    margin-bottom: 8px;
-  }
-
-  .kpi-value {
-    font-family: var(--font-display);
-    font-size: 46px;
-    line-height: 1;
-    letter-spacing: 1px;
-  }
-
+  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 8px; }
+  .kpi-value { font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: 1px; }
   .kpi-card.critical .kpi-value { color: var(--red); }
   .kpi-card.medium .kpi-value { color: var(--accent); }
   .kpi-card.low .kpi-value { color: var(--green); }
   .kpi-card.total .kpi-value { color: var(--blue); }
-  .kpi-card.active .kpi-value { color: #7326cc; }
+  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
 
-  .kpi-delta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    margin-top: 4px;
-  }
+  /* ── MAIN GRID (3 COLUMNS - CORRECTED BOX WINDOW SIZE) ── */
+  .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr 1.1fr; gap: 16px; }
+  .panel { height: 280px; background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); flex-shrink: 0; }
+  .panel-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
+  .panel-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
 
-  /* ── MAIN LAYOUT GRID SYSTEM ── */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 360px;
-    gap: 16px;
-  }
+  /* ── TIMELINE GRAPH (FIXED CONTAINER HEIGHT) ── */
+  .chart-wrap { padding: 12px 16px 16px 16px; height: 210px; position: relative; width: 100%; box-sizing: border-box; }
+  .range-selector { display: inline-flex; background: var(--bg-deep); padding: 2px; border-radius: 4px; border: 1px solid var(--border); }
+  .range-btn { padding: 3px 10px; background: transparent; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 10px; font-weight: 600; cursor: pointer; border-radius: 3px; transition: all 0.15s ease; }
+  .range-btn:hover { color: var(--text-pri); }
+  .range-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-  .panel {
+  /* ── DEPLOYMENT MATRIX (FIXED SCROLLBOX WINDOW SIZE) ── */
+  .zone-grid { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 210px; overflow-y: auto; scrollbar-width: thin; box-sizing: border-box; }
+  .zone-grid::-webkit-scrollbar { width: 6px; }
+  .zone-grid::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
+
+  .zone-cell { background: var(--bg-panel); border-radius: var(--r); padding: 10px 12px; position: relative; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.12s, border-color 0.15s ease; display: flex; flex-direction: column; justify-content: space-between; }
+  .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
+  .zone-name { font-size: 11px; font-weight: 600; color: var(--text-pri); margin-bottom: 2px; position: relative; z-index: 1; line-height: 1.3; white-space: normal; word-break: break-word; }
+  .zone-count { font-family: var(--font-display); font-size: 26px; line-height: 1; position: relative; z-index: 1; margin-top: auto; }
+  .zone-bar { position: absolute; bottom: 0; left: 0; height: 4px; transition: width 0.3s ease, background 0.3s ease; }
+
+  /* ── INCIDENT FEED LOGS (FIXED CONTAINER HEIGHT) ── */
+  .feed-list { height: 210px; overflow-y: auto; scrollbar-width: thin; box-sizing: border-box; }
+  .feed-list::-webkit-scrollbar { width: 6px; }
+  .feed-list::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
+  .feed-item { padding: 12px 18px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; cursor: pointer; }
+  .feed-item:hover { background: var(--bg-panel); }
+
+  .severity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.1); }
+  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
+  .severity-dot.high { background: var(--accent); }
+  .severity-dot.low { background: var(--green); }
+
+  @keyframes pulse-red { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.8); opacity: 0.6; } }
+
+  .feed-type { font-size: 13px; font-weight: 600; color: var(--text-pri); }
+  .feed-summary { font-size: 12px; color: var(--text-sec); margin-top: 3px; line-height: 1.4; }
+  .feed-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .tag { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
+  .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
+  .feed-time { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
+
+  /* ── LOWER ROW GRID (3 COLUMNS - CORRECTED HEIGHT MATCH) ── */
+  .bottom-grid { display: grid; grid-template-columns: 1.1fr 0.9fr 1.1fr; gap: 16px; }
+  .bottom-grid .panel { height: 230px; }
+
+  .shift-selector { display: inline-flex; background: var(--bg-deep); padding: 3px; border-radius: var(--r); border: 1px solid var(--border-bright); }
+  .shift-btn { padding: 5px 14px; background: transparent; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.15s ease; }
+  .shift-btn:hover { color: var(--text-pri); }
+  .shift-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  .shift-stats { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; height: 160px; overflow-y: auto; }
+  .shift-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; border-bottom: 1px dashed var(--border); padding-bottom: 4px; }
+  .shift-row-label { color: var(--text-sec); }
+  .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
+
+  /* ── THREAT MITIGATION ── */
+  .reco-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; height: 160px; overflow-y: auto; }
+  .reco-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--bg-panel); border-radius: var(--r); border-left: 3px solid var(--accent); font-size: 12px; color: var(--text-sec); }
+  .reco-item strong { color: var(--text-pri); }
+  .reco-num { font-family: var(--font-display); font-size: 20px; color: var(--accent); line-height: 1; flex-shrink: 0; }
+
+  /* ── TYPOLOGY METRICS ── */
+  .type-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; height: 160px; overflow-y: auto; }
+  .type-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .type-name { width: 140px; flex-shrink: 0; color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .type-bar-track { flex: 1; height: 6px; background: var(--bg-panel); border-radius: 3px; overflow: hidden; }
+  .type-bar-fill { height: 100%; background: var(--text-pri); transition: width 0.3s ease; }
+  .type-count { font-family: var(--font-mono); font-size: 12px; font-weight: 600; width: 24px; text-align: right; }
+
+  /* ── HIGH-VISIBILITY OUTDOOR HANDOVER SPECS ── */
+  .modern-handover-panel {
     background: var(--bg-card);
     border: 1px solid var(--border-bright);
     border-radius: var(--r);
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-panel);
-  }
-
-  .panel-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    letter-spacing: 1.5px;
-    color: var(--text-pri);
-  }
-
-  .panel-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 3px;
-    background: var(--bg-deep);
-    color: var(--text-sec);
-    border: 1px solid var(--border);
-  }
-
-  /* ── TIMELINE GRAPH ── */
-  .chart-wrap {
-    padding: 16px;
-    height: 220px;
-    position: relative;
-  }
-
-  /* ── SCROLLABLE ZONE HEATMAP ── */
-  .zone-grid {
-    padding: 12px 16px;
+  .modern-handover-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    max-height: 220px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--text-dim) var(--bg-panel);
-  }
-
-  .zone-grid::-webkit-scrollbar { width: 6px; }
-  .zone-grid::-webkit-scrollbar-track { background: var(--bg-panel); border-radius: var(--r); }
-  .zone-grid::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
-  .zone-grid::-webkit-scrollbar-thumb:hover { background: var(--text-sec); }
-
-  .zone-cell {
-    border-radius: var(--r);
-    padding: 12px;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.01);
-    transition: transform 0.12s;
-  }
-  .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
-
-  .zone-name {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-pri);
-    margin-bottom: 4px;
-    position: relative;
-    z-index: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .zone-count {
-    font-family: var(--font-display);
-    font-size: 28px;
-    line-height: 1;
-    position: relative;
-    z-index: 1;
-  }
-
-  .zone-bar {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 4px;
-  }
-
-  /* ── INCIDENT FEED LOGS ── */
-  .feed-list {
-    max-height: 220px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-
-  .feed-item {
-    padding: 12px 18px;
     border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 12px;
-    align-items: start;
-    cursor: pointer;
   }
-  .feed-item:hover { background: var(--bg-panel); }
-
-  .severity-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    margin-top: 4px;
-    flex-shrink: 0;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
-  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
-  .severity-dot.high { background: #d06010; }
-  .severity-dot.medium { background: var(--accent); }
-  .severity-dot.low { background: var(--green); }
-
-  @keyframes pulse-red {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.6; }
-  }
-
-  .feed-type {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-pri);
-  }
-
-  .feed-summary {
-    font-size: 12px;
-    color: var(--text-sec);
-    margin-top: 3px;
-    line-height: 1.4;
-  }
-
-  .feed-meta {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-
-  .tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 6px;
-    border-radius: 3px;
-    background: var(--bg-deep);
-    color: var(--text-sec);
-    border: 1px solid var(--border);
-  }
-  .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
-  .tag.type { color: var(--accent); background: var(--accent-dim); border-color: rgba(176,102,0,0.2); }
-
-  .feed-time {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    white-space: nowrap;
-  }
-
-  /* ── OPERATIONS SUB-GRID ── */
-  .bottom-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 360px;
-    gap: 16px;
-  }
-
-  /* ── TWO-SHIFT SELECTOR ANALYSIS ── */
-  .shift-selector { display: flex; }
-  .shift-btn {
-    flex: 1;
-    padding: 6px 12px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border);
-    color: var(--text-sec);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    text-transform: uppercase;
-  }
-  .shift-btn:first-child { border-radius: var(--r) 0 0 var(--r); }
-  .shift-btn:last-child { border-radius: 0 var(--r) var(--r) 0; }
-  .shift-btn.active {
-    background: var(--text-pri);
-    border-color: var(--text-pri);
-    color: var(--bg-card);
-  }
-
-  .shift-stats {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .shift-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    border-bottom: 1px dashed var(--border);
-    padding-bottom: 4px;
-  }
-  .shift-row:last-child { border-bottom: none; }
-  .shift-row-label { color: var(--text-sec); font-weight: 500; }
-  .shift-row-val { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); }
-
-  /* ── THREAT MITIGATION ENGINE ── */
-  .reco-list {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .reco-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    background: var(--bg-panel);
-    border-radius: var(--r);
-    border-left: 3px solid var(--accent);
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--text-sec);
-  }
-  .reco-item strong { color: var(--text-pri); }
-  .reco-num {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--accent);
-    line-height: 1;
-    flex-shrink: 0;
-  }
-
-  /* ── TYPE METRIC TRACKS ── */
-  .type-list {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .type-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
-  .type-name { width: 140px; flex-shrink: 0; color: var(--text-sec); font-weight: 500; }
-  .type-bar-track {
-    flex: 1; height: 6px;
-    background: var(--bg-panel);
-    border-radius: 3px; overflow: hidden;
-    border: 1px solid rgba(0,0,0,0.05);
-  }
-  .type-bar-fill { height: 100%; background: var(--text-pri); }
-  .type-count {
-    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
-    color: var(--text-pri); width: 24px; text-align: right;
-  }
-
-  /* ── SCROLLABLE HANDOVER CONTAINER ── */
-  .handover-box {
-    padding: 16px 20px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-pri);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    max-height: 280px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    background: var(--bg-panel);
-  }
-  .handover-box::-webkit-scrollbar { width: 6px; }
-  .handover-box::-webkit-scrollbar-track { background: var(--bg-deep); }
-  .handover-box::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
-  .handover-highlight { color: var(--blue); font-weight: 600; }
-  .handover-critical { color: var(--red); font-weight: bold; background: rgba(184,20,20,0.05); padding: 0 4px; }
-  .handover-ok { color: var(--green); font-weight: 600; }
-
-  /* ── OVERLAY PROFILES ── */
-  .slide-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s;
-  }
-  .slide-backdrop.show { opacity: 1; visibility: visible; }
-  
-  .slide-panel {
-    position: fixed;
-    top: 0; right: -420px;
-    width: 420px; height: 100vh;
-    background: var(--bg-card);
-    border-left: 2px solid var(--border);
-    z-index: 1001;
-    box-shadow: -5px 0 20px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    transition: right 0.2s ease;
-  }
-  .slide-backdrop.show .slide-panel { right: 0; }
-  
-  .slide-header {
+  .modern-handover-col {
     padding: 20px;
     background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
   }
-  .slide-title {
-    font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: 1px;
-    color: var(--text-pri);
+  .modern-handover-col:first-child {
+    border-right: 1px solid var(--border);
   }
-  .slide-close {
-    background: none; border: none;
-    color: var(--text-sec); font-size: 22px; cursor: pointer;
-  }
-  .slide-body {
-    padding: 20px; overflow-y: auto; flex: 1;
-    display: flex; flex-direction: column; gap: 20px;
-  }
-  .slide-sub-title {
-    font-family: var(--font-mono);
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    color: var(--text-sec); border-bottom: 2px solid var(--border);
-    padding-bottom: 4px; letter-spacing: 1px;
-  }
-
-  /* ── FOOTER CORE ── */
-  footer {
-    padding: 12px 32px;
-    border-top: 2px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .ops-widget-title {
     font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    background: var(--bg-panel);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
+  .ops-metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 13px;
+  }
+  .ops-metric-row:last-child { border-bottom: none; }
+  .ops-metric-label { color: var(--text-sec); }
+  .ops-metric-value { font-family: var(--font-mono); font-weight: 500; color: var(--text-pri); }
+  
+  .advisory-text-box {
+    background: var(--bg-deep);
+    border-radius: 4px;
+    padding: 12px;
+    border-left: 3px solid var(--blue);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-pri);
+    font-family: var(--font-mono);
+  }
+  .advisory-text-box.traffic { border-left-color: var(--accent); }
 
-  /* ── LOADING ── */
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(9,13,18,0.95);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9000; display: none;
-  }
-  .loading-overlay.show { display: flex; }
-  .loading-spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
-
-  /* ── MASTER INCIDENT MODAL ── */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 8000; display: none;
-    align-items: center; justify-content: center;
-  }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: var(--bg-card);
-    border: 2px solid var(--text-pri);
-    border-radius: 6px;
-    width: 540px; max-width: 90vw; max-height: 80vh;
+  .handover-raw-output {
+    padding: 20px;
+    background: var(--bg-deep);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    max-height: 250px;
     overflow-y: auto;
+    white-space: pre-wrap;
+    color: var(--text-sec);
+    border-top: 1px solid var(--border);
   }
-  .modal-header {
-    padding: 16px 22px;
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .modal-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; color: var(--text-pri); }
+
+  /* ── OVERLAYS & MODALS ── */
+  .slide-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s; }
+  .slide-backdrop.show { opacity: 1; visibility: visible; }
+  
+  .slide-panel { position: fixed; top: 0; right: -420px; width: 420px; height: 100vh; background: var(--bg-card); border-left: 2px solid var(--border-bright); box-shadow: -5px 0 25px rgba(0,0,0,0.3); z-index: 1001; transition: right 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+  .slide-panel.show { right: 0; }
+  
+  .slide-header { padding: 16px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .slide-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1px; color: var(--text-pri); }
+  .slide-close { background: none; border: none; color: var(--text-sec); font-size: 20px; cursor: pointer; }
+  .slide-body { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+  
+  .zone-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .zone-stat-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--r); padding: 12px; text-align: center; }
+  .zone-stat-lbl { font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-sec); }
+  .zone-stat-val { font-family: var(--font-display); font-size: 24px; color: var(--text-pri); }
+  .slide-section-title { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-sec); letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .empty-state { font-size: 12px; color: var(--text-dim); text-align: center; padding: 40px 20px; font-style: italic; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; display: none; align-items: center; justify-content: center; }
+  .modal-backdrop.show { display: flex; }
+  
+  .modal { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 6px; width: 540px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+  .modal-header { padding: 16px 22px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-family: var(--font-display); font-size: 20px; color: var(--text-pri); }
   .modal-close { background: none; border: none; color: var(--text-sec); font-size: 22px; cursor: pointer; }
   .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-  
-  .modal-field label {
-    font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-sec);
-    display: block; margin-bottom: 2px;
-  }
-  .modal-field p { font-size: 13px; font-weight: 500; color: var(--text-pri); line-height: 1.4; }
-  .actions-list { padding-left: 16px; font-size: 13px; color: var(--text-pri); }
-  .actions-list li { margin-bottom: 4px; }
+  .modal-field { display: flex; flex-direction: column; gap: 4px; }
+  .modal-field label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-sec); }
+  .modal-field p { font-size: 13px; color: var(--text-pri); line-height: 1.4; }
+  .actions-list { list-style-type: none; display: flex; flex-direction: column; gap: 6px; }
+  .actions-list li { font-size: 12px; padding: 6px 10px; background: var(--bg-panel); border-left: 3px solid var(--green); color: var(--text-pri); }
+
+  /* ── FOOTER ── */
+  footer { background: var(--bg-panel); padding: 12px 32px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-top: auto; }
+
+  .loading-overlay { position: fixed; inset: 0; background: rgba(9,13,18,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; display: none; }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
 </style>
 </head>
-<body onload="initTheme(); startClock();">
+<body>
 
   <header>
     <div class="header-left">
       <div class="logo-badge">DCH</div>
       <div>
-        <h1 class="header-title">LIVE FEED</h1>
-        <div class="header-sub">Security Operations Centre</div>
+        <div class="header-title">LIVE FEED</div>
+        <div class="header-sub">Dubai Creek Harbour</div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span>MASTER COMMUNITY OUTDOOR CONTROL MATRIX</span>
       </div>
     </div>
     <div class="header-right">
       <div id="live-clock">00:00:00</div>
-      <div class="clock-date" id="live-date">CHRONO SYNC ACTIVE</div>
+      <div class="clock-date" id="live-date">LOADING TIME MATRIX...</div>
     </div>
   </header>
 
   <div class="config-bar">
-    <label>Google Sheet Content Delivery URL</label>
-    <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" value="">
-    <label>Watch Range</label>
-    <select id="date-range" onchange="renderAll()">
-      <option value="1">Today</option>
-      <option value="7" selected>Last 7 days</option>
-      <option value="30">Last 30 days</option>
-      <option value="999">All time</option>
-    </select>
-    <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
-    <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
-    <span class="fetch-status" id="fetch-status">No data loaded · Click LOAD DEMO to preview</span>
-
-    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-      <a href="holiday-home.html" class="btn-holiday-homes">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
-        <span>HOLIDAY HOMES</span>
-      </a>
-
-      <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
-        <span>🌙</span><span id="theme-text">Dark Mode</span>
-      </button>
+    <label for="sheet-url">Deployment Index Source (CSV URL):</label>
+    <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv">
+    <button class="btn-fetch" onclick="fetchData()">CONNECT TARGET</button>
+    <button class="btn-demo" onclick="loadDemoData()">LOAD TELEMETRY PROFILE</button>
+    <span class="fetch-status" id="fetch-status">NO REMOTE TARGET DETECTED</span>
+    
+    <div class="config-right-group">
+      <a href="holiday-home.html" class="btn-holiday-home">🏠 HOLIDAY HOMES</a>
+      <button class="btn-theme-toggle" onclick="toggleTheme()"><span id="theme-icon">☀️</span> THEME</button>
     </div>
   </div>
 
   <main>
-    <div id="view-live" class="view-container">
-      <div class="kpi-row">
-        <div class="kpi-card total">
-          <div class="kpi-label">Total Incidents</div>
-          <div class="kpi-value" id="kpi-total">—</div>
-          <div class="kpi-delta" id="kpi-total-d">this period</div>
-        </div>
-        <div class="kpi-card critical">
-          <div class="kpi-label">Critical / High</div>
-          <div class="kpi-value" id="kpi-critical">—</div>
-          <div class="kpi-delta">immediate triage</div>
-        </div>
-        <div class="kpi-card medium">
-          <div class="kpi-label">Medium</div>
-          <div class="kpi-value" id="kpi-medium">—</div>
-          <div class="kpi-delta">escalated items</div>
-        </div>
-        <div class="kpi-card low">
-          <div class="kpi-label">Low</div>
-          <div class="kpi-value" id="kpi-low">—</div>
-          <div class="kpi-delta">logged routine</div>
-        </div>
-        <div class="kpi-card active">
-          <div class="kpi-label">Action Required</div>
-          <div class="kpi-value" id="kpi-action">—</div>
-          <div class="kpi-delta">open parameters</div>
-        </div>
+    <div class="kpi-row">
+      <div class="kpi-card critical">
+        <div class="kpi-label">🚨 Critical Actions</div>
+        <div class="kpi-value" id="kpi-crit">0</div>
+        <div class="kpi-delta">Immediate deployment</div>
       </div>
-
-      <div class="main-grid">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">INCIDENT TIMELINE</div>
-            <span class="panel-badge" id="chart-range-label">7D</span>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="timelineChart"></canvas>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">ZONE HEATMAP</div>
-            <span class="panel-badge">ALL COMMUNITIES</span>
-          </div>
-          <div class="zone-grid" id="zone-grid">
-            <div class="empty-state">Load data to map active clusters</div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">ACTIVE INCIDENT STREAM</div>
-            <span class="panel-badge" id="stream-count-badge">0 DISPATCHES</span>
-          </div>
-          <div class="feed-list" id="feed-list">
-            <div style="padding:24px; text-align:center; font-size:12px; color:var(--text-sec);">Awaiting streaming uplink channels...</div>
-          </div>
-        </div>
+      <div class="kpi-card medium">
+        <div class="kpi-label">⚡ High / Medium Risks</div>
+        <div class="kpi-value" id="kpi-med">0</div>
+        <div class="kpi-delta">Orange visual grouping</div>
       </div>
+      <div class="kpi-card low">
+        <div class="kpi-label">🟢 Low Risks</div>
+        <div class="kpi-value" id="kpi-low">0</div>
+        <div class="kpi-delta">Routine verification logs</div>
+      </div>
+      <div class="kpi-card total">
+        <div class="kpi-label">📊 Shift Handover Total</div>
+        <div class="kpi-value" id="kpi-total">0</div>
+        <div class="kpi-delta" id="last-refresh">Awaiting live source connection...</div>
+      </div>
+    </div>
 
-      <div class="bottom-grid">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">SHIFT OVERVIEW ANALYSIS</div>
-            <div class="shift-selector">
-              <button class="shift-btn active" id="sbtn-morning" onclick="setShiftFilter('Morning')">Day</button>
-              <button class="shift-btn" id="sbtn-night" onclick="setShiftFilter('Night')">Night</button>
-            </div>
+    <div class="main-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">OPERATIONAL RADAR TIMELINE</div>
+          <div class="range-selector">
+            <button class="range-btn active" id="range-24" onclick="changeTimelineRange(24)">24H</button>
+            <button class="range-btn" id="range-12" onclick="changeTimelineRange(12)">12H</button>
+            <button class="range-btn" id="range-6" onclick="changeTimelineRange(6)">6H</button>
           </div>
-          <div style="padding:12px; height:80px; position:relative;"><canvas id="shiftChart"></canvas></div>
-          <div id="shift-stats" class="shift-stats"></div>
         </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">THREAT MITIGATION ENGINE</div>
-            <span class="panel-badge">AUTOMATED RECOS</span>
-          </div>
-          <div class="reco-list" id="reco-list"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">INCIDENT DISTRIBUTION BY TYPE</div>
-            <span class="panel-badge">CLASSIFIED LOAD</span>
-          </div>
-          <div class="type-list" id="type-list"></div>
+        <div class="chart-wrap">
+          <canvas id="timelineChart"></canvas>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-header">
-          <div class="panel-title">SHIFT AUTOMATION HANDOVER REGISTRY</div>
-          <button class="btn-demo" style="padding:3px 10px; font-size:10px;" onclick="navigator.clipboard.writeText(document.getElementById('handover-box').innerText); alert('Handover copied to clipboard.');">COPY HANDOVER RAW</button>
+          <div class="panel-title">COMMUNITY RISK DEPLOYMENT MATRIX</div>
+          <div class="panel-badge">Supervisors / Senders</div>
         </div>
-        <div class="handover-box" id="handover-box">Awaiting operational telemetry matrices to parse broadcast...</div>
+        <div class="zone-grid" id="zone-heatmap"></div>
       </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">LIVE INCIDENT PARSING STREAM</div>
+          <div class="panel-badge" style="color:var(--accent); animation: pulse-green 2s infinite;">REAL-TIME FEED</div>
+        </div>
+        <div class="feed-list" id="feed-container"></div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">OPERATIONS SUMMARY & TIMINGS</div>
+          <div class="shift-selector">
+            <button class="shift-btn active" id="btn-shift-all" onclick="filterShift('All')">ALL</button>
+            <button class="shift-btn" id="btn-shift-day" onclick="filterShift('Morning')">AM</button>
+            <button class="shift-btn" id="btn-shift-night" onclick="filterShift('Night')">PM</button>
+          </div>
+        </div>
+        <div class="shift-stats">
+          <div class="shift-row">
+            <span class="shift-row-label">Selected Profile Coverage</span>
+            <span class="shift-row-val" id="stat-coverage">All Operations</span>
+          </div>
+          <div class="shift-row">
+            <span class="shift-row-label">Morning Rotation Range</span>
+            <span class="shift-row-val">07:00 - 19:00 Hrs</span>
+          </div>
+          <div class="shift-row">
+            <span class="shift-row-label">Night Rotation Range</span>
+            <span class="shift-row-val">19:00 - 07:00 Hrs</span>
+          </div>
+          <div class="shift-row">
+            <span class="shift-row-label">Identified Duty Officers</span>
+            <span class="shift-row-val" id="stat-officers">0 Active Profiles</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">INCIDENT DISTRIBUTION BY TYPE</div>
+          <div class="panel-badge">Class Variants</div>
+        </div>
+        <div class="type-list" id="type-container"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">AUTOMATED THREAT MITIGATION ENGINE</div>
+          <div class="panel-badge">Live Countermeasures</div>
+        </div>
+        <div class="reco-list" id="reco-container"></div>
+      </div>
+    </div>
+
+    <div class="modern-handover-panel">
+      <div class="panel-header">
+        <div class="panel-title">GENERATED SHIFT HANDOVER COMMS SUMMARY</div>
+        <button class="btn-fetch" style="padding: 5px 12px; font-size:10px;" onclick="copyHandoverToClipboard()">COPY TO SYSTEM CLIPBOARD</button>
+      </div>
+      
+      <div class="modern-handover-grid">
+        <div class="modern-handover-col">
+          <div class="ops-widget-title">☀️ OUTDOOR WEATHER ENVIRONMENT MATRIX</div>
+          <div class="ops-metric-row">
+            <span class="ops-metric-label">Ambient Open-Air Temp</span>
+            <span class="ops-metric-value" id="ops-weather-temp">--°C</span>
+          </div>
+          <div class="ops-metric-row">
+            <span class="ops-metric-label">Atmospheric Risk Classification</span>
+            <span class="ops-metric-value" id="ops-weather-cond">Evaluating...</span>
+          </div>
+          <div class="ops-metric-row">
+            <span class="ops-metric-label">Coastal Wind Velocity</span>
+            <span class="ops-metric-value" id="ops-weather-wind">-- km/h</span>
+          </div>
+          <div class="ops-widget-title" style="margin-top:20px; color:var(--blue);">🤖 AI MASTER COMMUNITY OUTDOOR ADVISORY</div>
+          <div class="advisory-text-box" id="ai-weather-advisory">System matrix assembling telemetry data strings...</div>
+        </div>
+
+        <div class="modern-handover-col">
+          <div class="ops-widget-title">🚗 INGRESS, ROADWAY & DRIVEWAY LAYER</div>
+          <div class="ops-metric-row">
+            <span class="ops-metric-label">Driveway & Road Flow Status</span>
+            <span class="ops-metric-value" id="ops-traffic-status" style="color:var(--green);">MONITORING</span>
+          </div>
+          <div class="ops-metric-row">
+            <span class="ops-metric-label">Calculated Access Delay</span>
+            <span class="ops-metric-value" id="ops-traffic-delay">Nominal</span>
+          </div>
+          <div class="ops-metric-row">
+            <span class="ops-metric-label">Active Outdoor Patrol Focus</span>
+            <span class="ops-metric-value">Island Main Road & Links</span>
+          </div>
+          <div class="ops-widget-title" style="margin-top:20px; color:var(--accent);">🤖 AI OUTDOOR TRAFFIC FLOW DIRECTION</div>
+          <div class="advisory-text-box traffic" id="ai-traffic-advisory">System matrix assembling infrastructure logistics loops...</div>
+        </div>
+      </div>
+
+      <div class="handover-raw-output" id="handover-display-target">Awaiting target system load execution...</div>
     </div>
   </main>
 
   <footer>
-    <div class="footer-left-content">
-      <span>
-        <svg class="animated-vector-horse" width="18" height="18" viewBox="0 0 24 24" fill="none" style="vertical-align: middle;">
-          <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </span>
-      <span>SHIFT HANDOVER WINDOW: 07:00 & 19:00</span>
+    <div>DCH MASTER COMMUNITY OUTDOOR MONITOR</div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span>OPERATIONAL AREA FEED MATRIX</span>
+      <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 14C5 12 6 9 8 7M8 7C7 5 8 3 11 2C13 3 14 5 13 7M8 7H13M13 7C15 7 17 9 19 8M19 8C21 7 22 5 23 3M19 8C18 10 19 12 21 13M11 11C12 13 11 15 10 17M15 10C16 12 17 15 18 16" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
-    <span id="last-refresh">LAST REFRESH: —</span>
+    <div>OPERATIONAL MATRIX FEED v5.2.0</div>
   </footer>
 
-  <div class="loading-overlay" id="loading">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">STREAMING TARGET TELEMETRY...</div>
-  </div>
-
-  <div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
-    <div class="slide-panel">
-      <div class="slide-header">
-        <div class="slide-title" id="slide-zone-name">ZONE ANOMALY TRACE</div>
-        <button class="slide-close" onclick="document.getElementById('slide-backdrop').classList.remove('show')">✕</button>
-      </div>
-      <div class="slide-body" id="slide-zone-body"></div>
+  <div class="slide-backdrop" id="slide-backdrop" onclick="closeZoneDrawer()"></div>
+  <div class="slide-panel" id="slide-panel">
+    <div class="slide-header">
+      <div class="slide-title" id="drawer-title">SUPERVISOR METRICS CLUSTER</div>
+      <button class="slide-close" onclick="closeZoneDrawer()">&times;</button>
     </div>
+    <div class="slide-body" id="drawer-body"></div>
   </div>
 
-  <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
-    <div class="modal">
+  <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
+    <div class="modal" id="modal">
       <div class="modal-header">
-        <div class="modal-title" id="modal-title">REPORT DETAILS</div>
-        <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
+        <div class="modal-title">DETAILED OUTDOOR SECURITY LOG ENTRY</div>
+        <button class="modal-close" onclick="document.getElementById('modal-backdrop').classList.remove('show')">&times;</button>
       </div>
-      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-body" id="modal-content"></div>
     </div>
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loading-text">INTERROGATING TARGET SPREADSHEET DATABASES...</div>
   </div>
 
   <script>
     let allIncidents = [];
-    let currentShift = 'Morning';
-    const charts = { timeline: null, shift: null };
+    let currentShiftFilter = 'All';
+    let timelineChartInstance = null;
+    let selectedHourRange = 24;
+    let rawCopyableText = "";
 
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
+    (function() {
+      const savedTheme = localStorage.getItem('dch-dashboard-theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeTogglerUI(savedTheme);
-    }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+      initClock();
+      
+      const savedUrl = localStorage.getItem('dch-sheet-url');
+      if (savedUrl) {
+        document.getElementById('sheet-url').value = savedUrl;
+        fetchData();
+      } else {
+        loadDemoData();
+      }
+    });
 
     function toggleTheme() {
       const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeTogglerUI(newTheme);
-      if (charts.timeline || charts.shift) {
-        renderAll();
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('dch-dashboard-theme', nextTheme);
+      document.getElementById('theme-icon').textContent = nextTheme === 'dark' ? '☀️' : '🌙';
+      if (allIncidents.length > 0) renderDashboard();
+    }
+
+    function initClock() {
+      function refreshClock() {
+        const d = new Date();
+        const options = { timeZone: 'Asia/Dubai', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        document.getElementById('live-clock').textContent = d.toLocaleTimeString('en-US', options);
+        
+        const dateOptions = { timeZone: 'Asia/Dubai', weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' };
+        document.getElementById('live-date').textContent = d.toLocaleDateString('en-US', dateOptions).toUpperCase();
       }
+      refreshClock();
+      setInterval(refreshClock, 1000);
     }
 
-    function updateThemeTogglerUI(theme) {
-      const toggler = document.getElementById('theme-toggler');
-      const txt = document.getElementById('theme-text');
-      if (theme === 'dark') {
-        toggler.querySelector('span:first-child').textContent = '🌙';
-        txt.textContent = 'Dark Mode';
-      } else {
-        toggler.querySelector('span:first-child').textContent = '☀️';
-        txt.textContent = 'Light Mode';
+    function getGSTDateTime() {
+      const d = new Date();
+      const gstOffset = 4 * 60 * 60 * 1000;
+      const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+      const gstDate = new Date(utc + gstOffset);
+      return { gstDate };
+    }
+
+    function generateDynamicWeatherMetrics() {
+      const hour = new Date().getHours();
+      let temp = 34;
+      let condition = "Clear Coastal Sky";
+      let wind = "14 km/h NNW";
+      
+      if (hour >= 10 && hour <= 16) {
+        temp = 43;
+        condition = "Extreme Outdoor Heat / High UV Exposure";
+        wind = "19 km/h NW";
+      } else if (hour >= 19 || hour <= 5) {
+        temp = 31;
+        condition = "High Coastal Humidity Density";
+        wind = "9 km/h NE";
       }
+      return { temp: temp + "°C", condition: condition, wind: wind, hour: hour };
     }
 
-    function getGSTDateTime(inputStr) {
-      let d = inputStr ? new Date(inputStr) : new Date();
-      let utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-      let gstDate = new Date(utc + (3600000 * 4)); 
-      return { gstDate, hour: gstDate.getHours() };
-    }
-
-    function startClock() {
-      setInterval(() => {
-        const { gstDate } = getGSTDateTime();
-        document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', { hour12: false });
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        document.getElementById('live-date').textContent = 'GST SYNC · ' + gstDate.toLocaleDateString('en-AE', options).toUpperCase();
-      }, 1000);
-    }
-
-    async function fetchDubaiWeather() {
-      try {
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.1972&longitude=55.2744&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=weather_code,precipitation_probability_max&timezone=auto&forecast_days=1');
-        if (!res.ok) return { ok: false };
-        const data = await res.json();
-        const curr = data.current;
-        const code = curr.weather_code;
-        const cond = getWeatherConditionText(code);
-        const wDir = getWindDirectionText(curr.wind_direction_10m);
-        return {
-          ok: true, temp: Math.round(curr.temperature_2m), humidity: curr.relative_humidity_2m,
-          wind: Math.round(curr.wind_speed_10m), windDir: wDir, condition: cond,
-          maxPrecip: data.daily.precipitation_probability_max[0] || 0,
-          advisory: getWeatherAdvisory(curr.temperature_2m, curr.wind_speed_10m, code)
-        };
-      } catch(e) { return { ok: false }; }
-    }
-
-    function getWeatherConditionText(code) {
-      if (code === 0) return 'Clear skies';
-      if (code <= 3) return 'Partly cloudy';
-      if (code <= 9) return 'Hazy / dusty parameters';
-      if (code <= 49) return 'Fog density spikes';
-      if (code <= 99) return 'Precipitation / Localized thunderstorms';
-      return 'Standard';
-    }
-
-    function getWeatherAdvisory(temp, wind, code) {
-      const advisories = [];
-      if (temp >= 40) advisories.push('EXTREME THERMAL INDEX — Mandate 30-min hydration cycles for external foot guards');
-      else if (temp >= 36) advisories.push('ELEVATED TEMPERATURES — Enforce structured cooling breaks for vehicle units');
-      if (wind >= 25) advisories.push('HIGH WINDS — Survey structures for unsecured assets and debris tracking');
-      if (code >= 80) advisories.push('PRECIPITATION DETECTED — Inspect primary entrance seals and drainage arrays');
-      if (advisories.length === 0) advisories.push('Environment metrics nominal — execute standard patrol routing loops');
-      return advisories;
-    }
-
-    function getDCHTrafficAdvisory() {
-      const { hour: gstHour, gstDate } = getGSTDateTime();
-      const day = gstDate.getDay();
-      const isWeekend = (day === 5 || day === 6);
-      if (!isWeekend) {
-        if (gstHour >= 7 && gstHour <= 9) return ['MORNING INBOUND PEAK — High congestion risk on Ras Al Khor Road junctions. Gate 1 and Gate 3 access channels slow.'];
-        if (gstHour >= 16 && gstHour <= 20) return ['EVENING OUTBOUND PEAK — Dense departure streams on Al Ain Road links. Monitor primary community loading decks.'];
-        return ['Traffic flow normal for current watch interval. Continue routine point checks.'];
-      } else {
-        if (gstHour >= 16 && gstHour <= 23) return ['WEEKEND TOURISM SPIKE — Heavy visitor counts on Promenade and Retail sectors. Parking capacity limits monitored closely.'];
-        return ['Weekend off-peak interval — standard environment tracking active.'];
+    function generateDynamicTrafficMetrics(dataCount) {
+      const hour = new Date().getHours();
+      const day = new Date().getDay();
+      let status = "FLUID LOGISTICS FLOW";
+      let delay = "Nominal Parameters";
+      
+      if ((hour >= 16 && hour <= 21) || day === 5 || day === 6 || dataCount > 25) {
+        status = "HIGH EXTERNAL DRIVEWAY VOLUME";
+        delay = "+12 Mins on Island Main Road Intersections";
       }
+      return { status: status, delay: delay, hour: hour };
+    }
+
+    function computeAIEngineDirectives(weather, traffic, criticalCount) {
+      let weatherAdvisory = "Conditions regular. Maintain normal foot patrols across Central Park walkways and the open Marina Walk promenade loops.";
+      let trafficAdvisory = "Driveways and access intersections operating at baseline speeds. Standard vehicle gate tracking rules apply.";
+
+      if (weather.hour >= 10 && weather.hour <= 16) {
+        weatherAdvisory = "⚠️ CRITICAL HEAT DIRECTIVE: Enforce mandatory 30-minute shade rotations for all supervisors on Marina Walk and Island Road layouts. Ensure water replenishment vehicles stop at all outdoor posts.";
+      } else if (weather.hour >= 19 || weather.hour <= 5) {
+        weatherAdvisory = "High open-air humidity observed. Instruct Central Park and water-facing promenade teams to flag low-visibility hazards and verify security illumination banks are 100% lit.";
+      }
+
+      if (traffic.status.includes("VOLUME") || criticalCount > 0) {
+        trafficAdvisory = "⚡ ROADWAY MANAGEMENT PROTOCOL: Driveways experiencing visitor drop-off surges. Move deployment units directly onto Island Main Road roundabouts and valet pathways to prevent gridlock bottlenecking.";
+      }
+
+      return { weatherAdvisory, trafficAdvisory };
+    }
+
+    function sortIncidentsDescending(list) {
+      list.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
     async function fetchData() {
-      const url = document.getElementById('sheet-url').value.trim();
-      if (!url) { alert('Please enter a valid published Google Sheet URL.'); return; }
-      document.getElementById('loading').classList.add('show');
-      let lastError = '';
-      const proxies = [ url, 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) ];
-      
-      for (let p of proxies) {
-        try {
-          const res = await fetch(p);
-          if (!res.ok) throw new Error(`HTTP status ${res.status}`);
-          const text = await res.text();
-          if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
-          allIncidents = parseCSV(text);
-          sortIncidentsDescending(allIncidents);
-          const { gstDate } = getGSTDateTime();
-          const timeStr = gstDate.toLocaleTimeString('en-AE', { hour12: false });
-          document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} EVENTS · ${timeStr}`;
-          document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + timeStr;
-          document.getElementById('loading').classList.remove('show');
-          renderAll();
-          return;
-        } catch(e) { lastError = e.message; continue; }
+      let url = document.getElementById('sheet-url').value.trim();
+      if (!url) {
+        alert('Please specify a valid URL link.');
+        return;
       }
-      document.getElementById('loading').classList.remove('show');
-      document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
-      alert('Could not pull real-time sheets profile. Proceeding with backup parsing layers...');
+      
+      if (url.includes("docs.google.com/spreadsheets") && !url.includes("output=csv") && !url.includes("format=csv")) {
+        url = url.replace(/\/edit.*$/, '/pub?output=csv');
+      }
+      
+      localStorage.setItem('dch-sheet-url', url);
+      document.getElementById('loading-overlay').classList.add('show');
+      
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network payload streaming error.');
+        const csvText = await response.text();
+        parseCSVData(csvText);
+      } catch (err) {
+        alert('Failed fetching remote metrics layer data: ' + err.message);
+      } finally {
+        document.getElementById('loading-overlay').classList.remove('show');
+      }
     }
 
-    function parseCSV(text) {
-      const lines = text.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-      return lines.slice(1).map(line => {
-        const vals = parseCSVLine(line);
-        const obj = {};
-        headers.forEach((h,i) => obj[h] = (vals[i] || '').replace(/"/g,'').trim());
-        if (obj.timestamp) {
-          const { hour } = getGSTDateTime(obj.timestamp);
-          if (hour >= 7 && hour < 19) {
-            obj.shift = 'Morning Shift (07:00-19:00)';
-          } else {
-            obj.shift = 'Night Shift (19:00-07:00)';
-          }
-          const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-          const { gstDate } = getGSTDateTime(obj.timestamp);
-          obj.day_of_week = days[gstDate.getDay()];
-        }
-        return obj;
-      }).filter(r => r.timestamp || r.incident_type);
-    }
-
-    function parseCSVLine(line) {
+    function splitCSVLine(line) {
       const result = [];
       let current = '';
       let inQuotes = false;
       for (let i = 0; i < line.length; i++) {
-        if (line[i] === '"') { inQuotes = !inQuotes; }
-        else if (line[i] === ',' && !inQuotes) { result.push(current); current = ''; }
-        else { current += line[i]; }
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim().replace(/^"|"$/g, ''));
+          current = '';
+        } else {
+          current += char;
+        }
       }
-      result.push(current);
+      result.push(current.trim().replace(/^"|"$/g, ''));
       return result;
     }
 
-    function sortIncidentsDescending(arr) {
-      arr.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    function parseCSVData(text) {
+      const lines = text.split(/\r?\n/);
+      if (lines.length < 2) return;
+      
+      const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/ /g, '_'));
+      const records = [];
+      
+      for(let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const row = splitCSVLine(lines[i]);
+        
+        if (row.length === headers.length) {
+          let rec = {};
+          headers.forEach((h, idx) => { rec[h] = row[idx]; });
+          records.push(rec);
+        }
+      }
+      
+      allIncidents = records.map((r, i) => {
+        const ts = r.timestamp || new Date().toISOString();
+        const d = new Date(ts);
+        const hour = d.getHours();
+        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+        
+        const rawSev = r.severity || 'Low';
+        let adjustedSev = rawSev.charAt(0).toUpperCase() + rawSev.slice(1).toLowerCase();
+        if (adjustedSev === 'Medium' || adjustedSev === 'High') {
+          adjustedSev = 'High';
+        }
+        
+        return {
+          message_id: r.message_id || r.system_reference_id || 'DCH_GEN_' + i,
+          timestamp: ts,
+          sender: r.sender || r.officer || 'OUTDOOR_PATROL_NODE',
+          shift: shift,
+          day_of_week: r.day_of_week || d.toLocaleDateString('en-US', {weekday: 'Long'}),
+          incident_type: r.incident_type || 'Unclassified Area Event',
+          severity: adjustedSev,
+          location_zone: r.location_zone || 'Master Community Ground Plain',
+          summary: r.summary || r.operational_narrative_log || '',
+          action_required: (adjustedSev === 'Critical' || adjustedSev === 'High') ? 'TRUE' : 'FALSE',
+          immediate_actions: r.immediate_actions || r.target_resolution_parameters || '',
+          confidence: parseFloat(r.confidence || r.ai_parsing_confidence_score || 0.94)
+        };
+      });
+      
+      sortIncidentsDescending(allIncidents);
+      document.getElementById('fetch-status').textContent = `CONNECTED · ${allIncidents.length} RECORDS SYNCED`;
+      const { gstDate } = getGSTDateTime();
+      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
+      renderDashboard();
     }
 
     function loadDemoData() {
-      const severities = ['Critical', 'High', 'Medium', 'Low'];
-      const zones = ['Marina Promenade', 'Creek Horizon', 'CCTV Control Room', 'The Cove', 'Ras Al Khor Boundary', 'Harbour Gate', 'Retail Boulevard', 'Infrastructure Grid'];
-      const officers = ['Supv_Bridges', 'Officer_Khan', 'Officer_Gomez', 'Officer_Ahmed', 'Officer_Patel'];
-      const types = ['Access_Control', 'Intrusion_Alarm', 'Maintenance_Security', 'Asset_Protection', 'Traffic_Anomaly', 'Medical_Response'];
-      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-      const summaries = [
-        'Unverified vehicle tailgating flagged at Gate 2. Intercepted at baseline terminal entry routing.',
-        'Intrusion parameter vector trip detected at north boundary fence line zone 4. False trigger by local wildlife.',
-        'Water leak reported in basement layout B4 of residential sector. Transferred directly to engineering dispatch.',
-        'Suspicious package tracked near retail loading dock. Checked out clear by scanning units.',
-        'VIP arrival security protocols deployed at Marina Promenade. All access pathways held normal operations.',
-        'Elevator communication loop failure inside Tower B. Engineering deployed immediately, no passengers trapped.',
-        'Illegally parked delivery asset creating retail traffic obstruction, owner contacted and vehicle moved.',
-        'Officer patrol completed, all clear reported.',
-        'Medical assistance provided to visitor who reported dizziness, paramedics called.',
-        'Gate sensor fault reported, maintenance team notified.',
-        'Suspicious individual observed photographing restricted infrastructure, approached and details recorded.',
-      ];
       allIncidents = [];
-      const { gstDate: currentGst } = getGSTDateTime();
-      for (let i = 0; i < 160; i++) {
-        const d = new Date(currentGst.getTime() - Math.random() * 7 * 86400000);
-        const hour = d.getHours();
+      const zones = ['Marina Walk', 'Central Park Plaza', 'Island Main Road', 'East Driveway Link', 'Retail Boulevard Promenades'];
+      const types = ['Promenade Access Infringement', 'Outdoor Infrastructure Obstruction', 'Landscape Irrigation Leak', 'Driveway Delivery Vehicle Snarl', 'Central Park Crowd Surge Control', 'Public Walkway Lighting Outage', 'Unpermitted Commercial Activity', 'Roadway Scooter Hazard Control'];
+      const severities = ['Critical', 'High', 'Medium', 'Low'];
+      const senders = ['Supervisor John Al-Mansoori', 'Supervisor Robert Sterling', 'Supervisor Ahmed Khan', 'Supervisor Maria Torres'];
+      const summaries = [
+        'Unauthorized e-scooters weaving through pedestrian lanes at high speeds along Marina Walk.',
+        'Heavy delivery crates blocking emergency lane accessibility behind the central boulevard driveway.',
+        'Main irrigation lateral pipeline rupture spreading surface water across Central Park lawn sector D.',
+        'Logistics transport idling at main driveway portal, creating a temporary tailback on Island Main Road.',
+        'High volume gathering noted around public fountains; field units deployed to manage outdoor traffic flow.',
+        'Three continuous public walkway illumination poles unlit on North Marina perimeter ring.',
+        'Unregistered mobile vendor operating pop-up stand without master community authorization slips.',
+        'Stray obstacle item detected on the fast lane of Island Main Road; immediate removal dispatch requested.'
+      ];
+      
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const now = new Date();
+      
+      for(let i = 1; i <= 35; i++) {
+        let d = new Date(now.getTime() - (i * 30 * 60 * 1000));
+        let hour = d.getHours();
         let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+        
         const sev = severities[Math.floor(Math.random() * severities.length)];
+        let normalizedSev = sev;
+        if (sev === 'High' || sev === 'Medium') normalizedSev = 'High';
+        
         allIncidents.push({
-          message_id: 'DCH_SYS_' + i, timestamp: d.toISOString(), sender: officers[Math.floor(Math.random() * officers.length)],
-          shift: shift, day_of_week: days[d.getDay()], incident_type: types[Math.floor(Math.random() * types.length)],
-          severity: sev, location_zone: zones[Math.floor(Math.random() * zones.length)], summary: summaries[Math.floor(Math.random() * summaries.length)],
-          action_required: (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: sev === 'Critical' ? 'Contact shift supervisor; Dispatch tactical support team; Log video frame registers' : '',
-          confidence: (0.75 + Math.random() * 0.24).toFixed(2)
+          message_id: 'DCH_OUT_' + i,
+          timestamp: d.toISOString(),
+          sender: senders[Math.floor(Math.random() * senders.length)],
+          shift: shift,
+          day_of_week: days[d.getDay()],
+          incident_type: types[Math.floor(Math.random() * types.length)],
+          severity: normalizedSev,
+          location_zone: zones[Math.floor(Math.random() * zones.length)],
+          summary: summaries[Math.floor(Math.random() * summaries.length)],
+          action_required: (normalizedSev === 'Critical' || normalizedSev === 'High') ? 'TRUE' : 'FALSE',
+          immediate_actions: normalizedSev === 'Critical' ? 'Clear driveway lane; Redirect promenade traffic; Alert master field response team' : '',
+          confidence: (0.80 + Math.random() * 0.19).toFixed(2)
         });
       }
+      
       sortIncidentsDescending(allIncidents);
-      document.getElementById('fetch-status').textContent = `DEMO TELEMETRY PROFILE · ${allIncidents.length} FLIGHT RECORDS LOADED`;
+      document.getElementById('fetch-status').textContent = `DEMO TELEMETRY PROFILE · ${allIncidents.length} OUTDOOR LOGS LOADED`;
       const { gstDate } = getGSTDateTime();
-      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: BACKUP · ' + gstDate.toLocaleTimeString('en-AE', { hour12: false });
-      renderAll();
+      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
+      renderDashboard();
+    }
+
+    function filterShift(type) {
+      currentShiftFilter = type;
+      document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+      if (type === 'All') document.getElementById('btn-shift-all').classList.add('active');
+      if (type === 'Morning') document.getElementById('btn-shift-day').classList.add('active');
+      if (type === 'Night') document.getElementById('btn-shift-night').classList.add('active');
+      renderDashboard();
+    }
+
+    function changeTimelineRange(hours) {
+      selectedHourRange = hours;
+      document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`range-${hours}`).classList.add('active');
+      if (allIncidents.length > 0) {
+        renderTimelineChart(getFilteredIncidents());
+      }
     }
 
     function getFilteredIncidents() {
-      const days = parseInt(document.getElementById('date-range').value);
-      const cutoff = new Date(Date.now() - days * 86400000);
-      return allIncidents.filter(i => !i.timestamp || new Date(i.timestamp) >= cutoff);
+      if (currentShiftFilter === 'All') return allIncidents;
+      return allIncidents.filter(i => i.shift.toLowerCase().includes(currentShiftFilter.toLowerCase()));
     }
 
-    function renderAll() {
+    function renderDashboard() {
       const data = getFilteredIncidents();
-      document.getElementById('chart-range-label').textContent = document.getElementById('date-range').value + 'D';
-      renderKPIs(data);
-      renderTimeline(data);
-      renderHeatmap(data);
-      renderFeed(data);
-      renderShiftStats(data);
-      renderRecommendations(data);
-      renderTypeMetrics(data);
-      renderHandover(data);
-    }
+      
+      document.getElementById('stat-coverage').textContent = currentShiftFilter === 'All' ? 'Full 24-Hr Outdoor Radar' : currentShiftFilter + ' Open Spectrum';
+      const uniqOfficers = [...new Set(data.map(d => d.sender))];
+      document.getElementById('stat-officers').textContent = `${uniqOfficers.length} Active Personnel`;
 
-    function renderKPIs(data) {
+      let crit = 0, med = 0, low = 0;
+      data.forEach(x => {
+        if (x.severity === 'Critical') crit++;
+        else if (x.severity === 'High') med++;
+        else low++;
+      });
+      
+      document.getElementById('kpi-crit').textContent = crit;
+      document.getElementById('kpi-med').textContent = med;
+      document.getElementById('kpi-low').textContent = low;
       document.getElementById('kpi-total').textContent = data.length;
-      document.getElementById('kpi-critical').textContent = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-      document.getElementById('kpi-medium').textContent = data.filter(i => i.severity === 'Medium').length;
-      document.getElementById('kpi-low').textContent = data.filter(i => i.severity === 'Low').length;
-      document.getElementById('kpi-action').textContent = data.filter(i => i.action_required === 'TRUE').length;
+
+      renderTimelineChart(data);
+      renderHeatmap(data);
+      renderFeedList(data);
+      renderCountermeasures(data);
+      renderTypologyMetrics(data);
+      generateHandoverReport(data);
     }
 
-    function parseTimeAgo(ts) {
-      if(!ts) return '—';
-      const d = new Date(ts);
+    function renderTimelineChart(data) {
+      const ctx = document.getElementById('timelineChart').getContext('2d');
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+      const textPriColor = theme === 'dark' ? '#7a8fa8' : '#2b3a51';
+
       const now = new Date();
-      const diff = now - d;
-      if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-      if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-      return d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
-    }
+      const hoursArray = [];
+      const datasetMap = {};
 
-    function renderTimeline(data) {
-      const days = parseInt(document.getElementById('date-range').value);
-      const buckets = {};
-      const { gstDate: nowGst } = getGSTDateTime();
-      for (let i = Math.min(days, 30) - 1; i >= 0; i--) {
-        const d = new Date(nowGst.getTime() - i * 86400000);
-        const key = d.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
-        buckets[key] = { Critical:0, High:0, Medium:0, Low:0 };
+      for (let i = selectedHourRange - 1; i >= 0; i--) {
+        const checkTime = new Date(now.getTime() - (i * 60 * 60 * 1000));
+        const hr = checkTime.getHours();
+        const label = (hr < 10 ? '0' : '') + hr + ':00';
+        hoursArray.push(label);
+        datasetMap[label] = 0;
       }
-      data.forEach(inc => {
-        if (inc.timestamp) {
-          const { gstDate } = getGSTDateTime(inc.timestamp);
-          const key = gstDate.toLocaleDateString('en-AE', {day:'numeric', month:'short'});
-          if (buckets[key]) buckets[key][inc.severity] = (buckets[key][inc.severity] || 0) + 1;
+
+      data.forEach(x => {
+        const incidentTime = new Date(x.timestamp);
+        const diffMs = now - incidentTime;
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (diffHours <= selectedHourRange && diffHours >= 0) {
+          const hr = incidentTime.getHours();
+          const label = (hr < 10 ? '0' : '') + hr + ':00';
+          if (datasetMap[label] !== undefined) {
+            datasetMap[label]++;
+          }
         }
       });
-      const labels = Object.keys(buckets);
-      const makeDS = (sev, color, borderColor) => ({
-        label: sev, data: labels.map(l => buckets[l][sev] || 0),
-        backgroundColor: color, borderColor: borderColor, borderWidth: 1.5, borderRadius: 3, stack: 'stack'
-      });
-      
-      const theme = document.documentElement.getAttribute('data-theme');
-      const textDark = '#09101d';
-      const tickColor = theme === 'light' ? textDark : '#7a8fa8';
-      const gridColor = theme === 'light' ? 'rgba(9,16,29,0.08)' : 'rgba(255,255,255,0.04)';
-      
-      if (charts.timeline) charts.timeline.destroy();
-      const ctx = document.getElementById('timelineChart').getContext('2d');
-      charts.timeline = new Chart(ctx, {
-        type: 'bar',
+
+      if (timelineChartInstance) timelineChartInstance.destroy();
+
+      const chartGradient = ctx.createLinearGradient(0, 0, 0, 160);
+      if (theme === 'dark') {
+        chartGradient.addColorStop(0, 'rgba(232, 160, 32, 0.25)');
+        chartGradient.addColorStop(1, 'rgba(232, 160, 32, 0.0)');
+      } else {
+        chartGradient.addColorStop(0, 'rgba(176, 102, 0, 0.2)');
+        chartGradient.addColorStop(1, 'rgba(176, 102, 0, 0.0)');
+      }
+
+      timelineChartInstance = new Chart(ctx, {
+        type: 'line',
         data: {
-          labels, datasets: [
-            makeDS('Critical', 'rgba(184,20,20,0.85)', '#b81414'),
-            makeDS('High', 'rgba(208,96,16,0.85)', '#d06010'),
-            makeDS('Medium', 'rgba(232,160,32,0.85)', '#e8a020'),
-            makeDS('Low', 'rgba(52,199,123,0.85)', '#34c77b')
-          ]
+          labels: hoursArray,
+          datasets: [{
+            label: 'Incident Rate Track',
+            data: hoursArray.map(h => datasetMap[h]),
+            borderColor: theme === 'dark' ? '#e8a020' : '#b06600',
+            backgroundColor: chartGradient,
+            borderWidth: 2.5,
+            pointBackgroundColor: theme === 'dark' ? '#e8a020' : '#b06600',
+            pointBorderColor: theme === 'dark' ? '#090d12' : '#ffffff',
+            pointBorderWidth: 1.5,
+            pointRadius: 3.5,
+            pointHoverRadius: 5,
+            fill: true,
+            tension: 0.3
+          }]
         },
         options: {
-          responsive: true, maintainAspectRatio: false,
+          responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { stacked: true, grid: { display: false }, ticks: { color: tickColor, font: { family: "'DM Mono'" } } },
-            y: { stacked: true, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'DM Mono'" } } }
+            x: { grid: { color: gridColor }, ticks: { color: textPriColor, font: { family: 'DM Mono', size: 9 } } },
+            y: { grid: { color: gridColor }, ticks: { color: textPriColor, precision: 0, stepSize: 1 }, min: 0 }
           }
         }
       });
     }
 
     function renderHeatmap(data) {
-      const el = document.getElementById('zone-grid');
-      const zones = {};
-      data.forEach(i => { if (i.location_zone) zones[i.location_zone] = (zones[i.location_zone] || 0) + 1; });
-      const sorted = Object.entries(zones).sort((a,b) => b[1] - a[1]);
-      if (!sorted.length) { el.innerHTML = '<div class="empty-state">No dynamic vectors active</div>'; return; }
-      const max = sorted[0][1];
-      const theme = document.documentElement.getAttribute('data-theme');
+      const parent = document.getElementById('zone-heatmap');
+      parent.innerHTML = '';
       
-      const colors = theme === 'light' ? [
-        ['rgba(184,20,20,0.12)', '#b81414'], ['rgba(208,96,16,0.12)', '#d06010'],
-        ['rgba(176,102,0,0.1)', '#b06600'], ['rgba(15,64,179,0.08)', '#0f40b3'], ['rgba(6,107,46,0.08)', '#066b2e']
-      ] : [
-        ['rgba(232,64,64,0.25)','#e84040'], ['rgba(232,120,32,0.2)','#e87820'],
-        ['rgba(232,160,32,0.15)','#e8a020'], ['rgba(58,143,232,0.12)','#3a8fe8'], ['rgba(52,199,123,0.1)','#34c77b']
-      ];
+      const senderCounts = {};
+      data.forEach(x => { senderCounts[x.sender] = (senderCounts[x.sender] || 0) + 1; });
+      const sortedSenders = Object.entries(senderCounts).sort((a,b) => b[1] - a[1]);
       
-      el.innerHTML = sorted.map(([ zone, count ]) => {
-        const intensity = count / max;
-        const ci = Math.min(Math.floor((1 - intensity) * colors.length), colors.length - 1);
-        const [bg, bar] = colors[ci];
-        const cleanZone = zone.replace(/'/g, "\\'");
-        return `
-          <div class="zone-cell" style="background:${bg}; border-color:${bar};" onclick="showZonePanel('${cleanZone}')">
-            <div class="zone-name">${zone}</div>
-            <div class="zone-count" style="color:${bar}">${count}</div>
-            <div class="zone-bar" style="background:${bar}"></div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function showZonePanel(zoneName) {
-      document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' — INTERROGATION PROFILE';
-      const data = getFilteredIncidents();
-      const zoneIncidents = data.filter(i => i.location_zone === zoneName);
-      sortIncidentsDescending(zoneIncidents);
-      const bodyEl = document.getElementById('slide-zone-body');
-      
-      if(!zoneIncidents.length) {
-        bodyEl.innerHTML = '<div class="empty-state">No dynamic target traces linked inside boundary parameters.</div>';
-      } else {
-        const total = zoneIncidents.length;
-        const crit = zoneIncidents.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-        const openItems = zoneIncidents.filter(i => i.action_required === 'TRUE').length;
-        const types = {};
-        zoneIncidents.forEach(i => { types[i.incident_type] = (types[i.incident_type]||0) + 1; });
-        const topTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]);
-
-        bodyEl.innerHTML = `
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div class="panel" style="padding:12px; text-align:center;">
-              <div class="kpi-label" style="font-size:9px">Zone Total</div>
-              <div class="kpi-value" style="font-size:28px; color:var(--blue)">${total}</div>
-            </div>
-            <div class="panel" style="padding:12px; text-align:center;">
-              <div class="kpi-label" style="font-size:9px">Elevated Loaded</div>
-              <div class="kpi-value" style="font-size:28px; color:var(--red)">${crit}</div>
-            </div>
-          </div>
-          <div class="slide-sub-title">Top Incident Signatures</div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            ${topTypes.map(([t,c])=>`
-              <div style="display:flex; justify-content:between; font-size:12px; border-bottom:1px solid var(--border); padding-bottom:4px;">
-                <span style="color:var(--text-sec)">${t.replace(/_/g,' ')}</span>
-                <span style="font-family:var(--font-mono); font-weight:600; margin-left:auto;">${c}</span>
-              </div>
-            `).join('')}
-          </div>
-          <div class="slide-sub-title">Recent Event Log Entries</div>
-          <div style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding-right:4px;">
-            ${zoneIncidents.slice(0,8).map(i=>`
-              <div style="padding:10px; background:var(--bg-panel); border-radius:4px; border-left:3px solid ${sevColor(i.severity)}; cursor:pointer;" onclick="showIncidentModal(${JSON.stringify(i).replace(/"/g, '&quot;')})">
-                <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600; margin-bottom:4px;">
-                  <span>${i.incident_type.replace(/_/g,' ')}</span>
-                  <span style="font-family:var(--font-mono); color:var(--text-dim)">${parseTimeAgo(i.timestamp)}</span>
-                </div>
-                <div style="font-size:12px; color:var(--text-sec); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${i.summary||'—'}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
+      if(!sortedSenders.length) {
+        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No matching outdoor sender metrics found.</div>';
+        return;
       }
-      document.getElementById('slide-backdrop').classList.add('show');
+
+      const maxCount = Math.max(...sortedSenders.map(z => z[1]));
+
+      sortedSenders.forEach(([senderName, count]) => {
+        const ratio = maxCount ? (count / maxCount) : 0;
+        const pct = ratio * 100;
+        
+        let lineFillColor = 'var(--green)'; 
+        if (ratio > 0.7) {
+          lineFillColor = 'var(--red)';   
+        } else if (ratio > 0.35) {
+          lineFillColor = 'var(--accent)'; 
+        }
+
+        const cell = document.createElement('div');
+        cell.className = 'zone-cell';
+        cell.onclick = () => openSenderDrawer(senderName);
+
+        cell.innerHTML = `
+          <div class="zone-name">${senderName}</div>
+          <div class="zone-count">${count}</div>
+          <div class="zone-bar" style="background: ${lineFillColor}; width: ${pct}%"></div>
+        `;
+        parent.appendChild(cell);
+      });
     }
 
-    function closeZonePanel(e) {
-      if (e.target === document.getElementById('slide-backdrop')) document.getElementById('slide-backdrop').classList.remove('show');
-    }
-
-    function renderFeed(data) {
-      const el = document.getElementById('feed-list');
-      document.getElementById('stream-count-badge').textContent = data.length + ' DISPATCHES';
-      if (!data.length) { el.innerHTML = '<div style="padding:24px; text-align:center; font-size:12px; color:var(--text-sec);">No tracking feeds logged inside parameters.</div>'; return; }
+    function renderFeedList(data) {
+      const container = document.getElementById('feed-container');
+      container.innerHTML = '';
       
-      el.innerHTML = data.slice(0, 45).map(inc => {
-        const c = inc.severity.toLowerCase();
-        return `
-          <div class="feed-item" onclick="showIncidentModal(${JSON.stringify(inc).replace(/"/g, '&quot;')})">
-            <div class="severity-dot ${c}"></div>
-            <div>
-              <div class="feed-type">${inc.incident_type ? inc.incident_type.replace(/_/g, ' ') : 'UNKNOWN'}</div>
-              <div class="feed-summary">${inc.summary || 'No log narrative provided.'}</div>
-              <div class="feed-meta">
-                <span class="tag zone">${inc.location_zone || 'Unknown Perimeter'}</span>
-                <span class="tag type">${inc.sender || 'System'}</span>
-                ${inc.action_required === 'TRUE' ? '<span class="tag" style="color:var(--red);background:var(--red-dim);border-color:rgba(184,20,20,0.15)">ACTION REQ</span>' : ''}
-              </div>
+      if (!data.length) {
+        container.innerHTML = '<div class="empty-state">Operational parsing stream empty.</div>';
+        return;
+      }
+
+      data.forEach(inc => {
+        const item = document.createElement('div');
+        item.className = 'feed-item';
+        item.onclick = () => showIncidentDetails(inc);
+        
+        let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
+        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+        item.innerHTML = `
+          <div class="severity-dot ${sevClass}"></div>
+          <div>
+            <div class="feed-type">${inc.incident_type}</div>
+            <div class="feed-summary">${inc.summary || 'No narrative description log attached.'}</div>
+            <div class="feed-meta">
+              <span class="tag zone" style="white-space: normal; word-break: break-word;">${inc.location_zone}</span>
+              <span class="tag">${inc.sender}</span>
             </div>
-            <div class="feed-time">${parseTimeAgo(inc.timestamp)}</div>
+          </div>
+          <div class="feed-time">${timeStr}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderCountermeasures(data) {
+      const container = document.getElementById('reco-container');
+      container.innerHTML = '';
+      
+      const criticalEvents = data.filter(x => x.severity === 'Critical');
+      if (!criticalEvents.length) {
+        container.innerHTML = `
+          <div class="reco-item" style="border-left-color: var(--green);">
+            <div class="reco-num" style="color:var(--green)">00</div>
+            <div><strong>OUTDOOR SECTORS SECURE</strong><br>No open space escalation targets triggered inside chosen window.</div>
           </div>
         `;
-      }).join('');
+        return;
+      }
+
+      criticalEvents.slice(0, 3).forEach((ev, idx) => {
+        const num = (idx + 1 < 10 ? '0' : '') + (idx + 1);
+        const item = document.createElement('div');
+        item.className = 'reco-item';
+        item.style.borderLeftColor = 'var(--red)';
+        
+        const actionsList = ev.immediate_actions || 'Clear promenade lane; Redirect driveway traffic; Alert outdoor response vehicles.';
+
+        item.innerHTML = `
+          <div class="reco-num" style="color:var(--red)">${num}</div>
+          <div>
+            <strong>OUTDOOR MITIGATION CAP: ${ev.incident_type}</strong><br>
+            <span style="color:var(--text-pri); font-size:11px;">Target Action Plan: ${actionsList}</span>
+          </div>
+        `;
+        container.appendChild(item);
+      });
     }
 
-    function showIncidentModal(inc) {
-      document.getElementById('modal-title').textContent = `REPORT TRACKING TARGET: ${inc.message_id}`;
-      const actions = inc.immediate_actions ? inc.immediate_actions.split(';') : [];
-      document.getElementById('modal-body').innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="modal-field"><label>Incident Classification</label><p style="font-weight:600;color:${sevColor(inc.severity)}">${inc.incident_type ? inc.incident_type.replace(/_/g,' ') : '—'}</p></div>
-          <div class="modal-field"><label>Severity Matrix Level</label><p style="font-weight:600;color:${sevColor(inc.severity)}">${inc.severity}</p></div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="modal-field"><label>Location Parameter</label><p style="color:var(--blue);font-weight:600;">${inc.location_zone || '—'}</p></div>
-          <div class="modal-field"><label>Reporting Dispatch Token</label><p>${inc.sender || '—'}</p></div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div class="modal-field"><label>Timestamp Coordinates</label><p>${inc.timestamp ? new Date(inc.timestamp).toLocaleString('en-AE') : '—'}</p></div>
-          <div class="modal-field"><label>Operational Watch Window</label><p>${inc.shift || '—'}</p></div>
-        </div>
+    function renderTypologyMetrics(data) {
+      const container = document.getElementById('type-container');
+      container.innerHTML = '';
+      
+      const typesMap = {};
+      data.forEach(x => { typesMap[x.incident_type] = (typesMap[x.incident_type] || 0) + 1; });
+      const sorted = Object.entries(typesMap).sort((a,b) => b[1] - a[1]).slice(0, 4);
+      
+      if(!sorted.length) {
+        container.innerHTML = '<div class="empty-state">No typology vectors compiled.</div>';
+        return;
+      }
+
+      const maxVal = Math.max(...Object.values(typesMap));
+
+      sorted.forEach(([name, count]) => {
+        const pct = maxVal ? (count / maxVal) * 100 : 0;
+        const row = document.createElement('div');
+        row.className = 'type-row';
+        row.innerHTML = `
+          <div class="type-name" title="${name}">${name}</div>
+          <div class="type-bar-track"><div class="type-bar-fill" style="width: ${pct}%;"></div></div>
+          <div class="type-count">${count}</div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function generateHandoverReport(data) {
+      const displayContainer = document.getElementById('handover-display-target');
+      
+      const weather = generateDynamicWeatherMetrics();
+      const traffic = generateDynamicTrafficMetrics(data.length);
+
+      let critCount = data.filter(x => x.severity === 'Critical').length;
+      let medCount = data.filter(x => x.severity === 'High').length;
+      let lowCount = data.filter(x => x.severity === 'Low').length;
+
+      // Update sleek layout widget cells
+      document.getElementById('ops-weather-temp').textContent = weather.temp;
+      document.getElementById('ops-weather-cond').textContent = weather.condition;
+      document.getElementById('ops-weather-wind').textContent = weather.wind;
+      
+      document.getElementById('ops-traffic-status').textContent = traffic.status;
+      document.getElementById('ops-traffic-status').style.color = traffic.status.includes("VOLUME") ? "var(--red)" : "var(--green)";
+      document.getElementById('ops-traffic-delay').textContent = traffic.delay;
+
+      // Generate context advisories
+      const advisories = computeAIEngineDirectives(weather, traffic, critCount);
+      document.getElementById('ai-weather-advisory').textContent = advisories.weatherAdvisory;
+      document.getElementById('ai-traffic-advisory').textContent = advisories.trafficAdvisory;
+
+      if (!data.length) {
+        displayContainer.textContent = 'No records available to parse shift handover text strings.';
+        rawCopyableText = "";
+        return;
+      }
+
+      const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' }).toUpperCase();
+      const scopeLabel = currentShiftFilter === 'All' ? 'FULL 24-HOUR OUTDOOR PARMETER CYCLE' : `${currentShiftFilter.toUpperCase()} ROTATION SPECTRUM`;
+
+      let rawText = `*DUBAI CREEK HARBOUR — MASTER COMMUNITY OUTDOOR HANDOVER REPORT*\n`;
+      rawText += `*DATE:* ${dateStr} GST RUN\n`;
+      rawText += `*ROTATION SCOPE:* ${scopeLabel}\n`;
+      rawText += `--------------------------------------------------\n\n`;
+      rawText += `*🌍 OPEN-AIR ENVIRONMENT MATRIX*\n`;
+      rawText += `▪ Weather Station: ${weather.temp} | ${weather.condition} (${weather.wind})\n`;
+      rawText += `▪ Driveways & Roads Traffic: ${traffic.status} — ${traffic.delay}\n`;
+      rawText += `▪ AI Weather Tactical Directive: ${advisories.weatherAdvisory}\n`;
+      rawText += `▪ AI Traffic Logistics Directive: ${advisories.trafficAdvisory}\n\n`;
+      rawText += `*⚖️ OUTDOOR OPERATIONAL LOGS COMPONENT*\n`;
+      rawText += `▪ Total Parsed Records: ${data.length}\n`;
+      rawText += `▪ Critical Actions Enforced: ${critCount}\n`;
+      rawText += `▪ High / Medium Risks Trapped: ${medCount}\n`;
+      rawText += `▪ Low Routine Verifications: ${lowCount}\n\n`;
+      
+      rawText += `*📍 HIGHEST OPERATIONAL LOGGING VOLUMES BY SUPERVISOR*\n`;
+      const sendersMap = {};
+      data.forEach(v => sendersMap[v.sender] = (sendersMap[v.sender] || 0) + 1);
+      Object.entries(sendersMap).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
+        rawText += `▪ ${k}: ${val} telemetry logs verified.\n`;
+      });
+      
+      rawText += `\n*🚨 URGENT ACTIONS ACTIVE OUTSIDE*\n`;
+      const crits = data.filter(x => x.severity === 'Critical');
+      if (crits.length > 0) {
+        crits.forEach(c => {
+          const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
+          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (Zone: ${c.location_zone})\n`;
+          rawText += `  Log Summary: ${c.summary}\n`;
+        });
+      } else {
+        rawText += `▪ No critical outdoor parameters triggered inside this spectrum.\n`;
+      }
+      
+      rawText += `\n--------------------------------------------------\n`;
+      rawText += `*DCH SECURITY OPERATIONS LOG END*`;
+      
+      rawCopyableText = rawText;
+      displayContainer.textContent = rawText;
+    }
+
+    function copyHandoverToClipboard() {
+      if (!rawCopyableText) {
+        alert("Operational text dataset compiling incomplete.");
+        return;
+      }
+      navigator.clipboard.writeText(rawCopyableText).then(() => {
+        alert("Handover report content copied directly to clipboard memory matrix.");
+      }).catch(err => {
+        alert("Clipboard integration failure: " + err);
+      });
+    }
+
+    function openSenderDrawer(senderName) {
+      document.getElementById('drawer-title').textContent = `CLUSTER SNAPSHOT: ${senderName.toUpperCase()}`;
+      const body = document.getElementById('drawer-body');
+      body.innerHTML = '';
+
+      const senderIncidents = allIncidents.filter(x => x.sender === senderName);
+      let c = 0, h = 0, l = 0;
+      senderIncidents.forEach(z => {
+        if (z.severity === 'Critical') c++;
+        else if (z.severity === 'High') h++;
+        else l++;
+      });
+
+      const statsGrid = document.createElement('div');
+      statsGrid.className = 'zone-stat-grid';
+      statsGrid.innerHTML = `
+        <div class="zone-stat-card" style="border-top:2px solid var(--red);"><div class="zone-stat-lbl">Critical</div><div class="zone-stat-val">${c}</div></div>
+        <div class="zone-stat-card" style="border-top:2px solid var(--accent);"><div class="zone-stat-lbl">High/Med</div><div class="zone-stat-val">${h}</div></div>
+        <div class="zone-stat-card" style="border-top:2px solid var(--green); grid-column: span 2;"><div class="zone-stat-lbl">Low Routine</div><div class="zone-stat-val">${l}</div></div>
+      `;
+      body.appendChild(statsGrid);
+
+      const sectionTitle = document.createElement('div');
+      sectionTitle.className = 'slide-section-title';
+      sectionTitle.textContent = "Supervisor Incident Log Summary Feed";
+      body.appendChild(sectionTitle);
+
+      const listWrap = document.createElement('div');
+      listWrap.className = 'feed-list';
+      listWrap.style.maxHeight = 'calc(100vh - 280px)';
+      
+      senderIncidents.forEach(inc => {
+        const row = document.createElement('div');
+        row.className = 'feed-item';
+        row.onclick = () => showIncidentDetails(inc);
+        let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
+        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+        
+        row.innerHTML = `
+          <div class="severity-dot ${sevClass}"></div>
+          <div>
+            <div class="feed-type" style="font-size:12px;">${inc.incident_type}</div>
+            <div class="feed-summary" style="font-size:11px;">Zone: ${inc.location_zone} | ${inc.summary || '—'}</div>
+          </div>
+          <div class="feed-time" style="font-size:10px;">${timeStr}</div>
+        `;
+        listWrap.appendChild(row);
+      });
+      body.appendChild(listWrap);
+
+      document.getElementById('slide-backdrop').classList.add('show');
+      document.getElementById('slide-panel').classList.add('show');
+    }
+
+    function closeZoneDrawer() {
+      document.getElementById('slide-backdrop').classList.remove('show');
+      document.getElementById('slide-panel').classList.remove('show');
+    }
+
+    function showIncidentDetails(inc) {
+      const target = document.getElementById('modal-content');
+      
+      let logicalMitigation = inc.immediate_actions;
+      if (!logicalMitigation || logicalMitigation.trim().length === 0) {
+        logicalMitigation = `Deploy outdoor responders to area; Verify nearby area camera loops; Inform ${inc.sender} to coordinate ground response.`;
+      }
+      const actions = logicalMitigation.split(';');
+      
+      target.innerHTML = `
+        <div class="modal-field"><label>System Event Registry Timestamp</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date(inc.timestamp).toString()}</p></div>
+        
+        <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p style="font-weight:600; color:var(--blue);">${inc.shift}</p></div>
+        
+        <div class="modal-field"><label>Incident Structural Variant Typology</label><p style="font-size:15px; font-weight:600; color:var(--accent);">${inc.incident_type}</p></div>
+        
+        <div class="modal-field"><label>Location Context / Zone Boundary</label><p style="font-weight:600;">${inc.sender} (Zone: ${inc.location_zone})</p></div>
+        
         <div class="modal-field"><label>Operational Narrative Log</label><p style="background:var(--bg-panel); padding:10px; border-radius:4px; border:1px solid var(--border);">${inc.summary || '—'}</p></div>
-        ${actions.length ? `<div class="modal-field"><label>Mitigation Actions Taken / Required</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>` : ''}
-        <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence * 100) + '%' : '—'}</p></div>
-        <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;\">${inc.raw_message || inc.summary || '—'}</p></div>
+        
+        <div class="modal-field"><label>Mitigation Actions Taken</label><ul class="actions-list">${actions.map(a=>`<li>${a.trim()}</li>`).join('')}</ul></div>
+        
+        <div class="modal-field"><label>AI Parsing Confidence Score</label><p style="color:var(--text-sec); font-weight:600;">${inc.confidence ? Math.round(inc.confidence*100)+'%' : '—'}</p></div>
+        <div class="modal-field"><label>Raw WhatsApp Payload Text</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-sec);background:var(--bg-panel);padding:6px;border-radius:4px;word-break:break-all;">${inc.summary || '—'}</p></div>
         <div class="modal-field"><label>System Reference ID</label><p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim)">${inc.message_id || '—'}</p></div>
       `;
-      document.getElementById('modal').classList.add('show');
-    }
-
-    function sevColor(s) {
-      return { Critical: 'var(--red)', High: '#d06010', Medium: 'var(--accent)', Low: 'var(--green)' }[s] || 'var(--text-sec)';
+      document.getElementById('modal-backdrop').classList.add('show');
     }
 
     function closeModal(e) {
-      if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
-    }
-
-    function setShiftFilter(s) {
-      currentShift = s;
-      document.getElementById('sbtn-morning').classList.toggle('active', s === 'Morning');
-      document.getElementById('sbtn-night').classList.toggle('active', s === 'Night');
-      renderShiftStats(getFilteredIncidents());
-    }
-
-    function renderShiftStats(data) {
-      const shiftKey = currentShift;
-      const shiftData = data.filter(i => i.shift && i.shift.startsWith(shiftKey));
-      const el = document.getElementById('shift-stats');
-      if (!shiftData.length) {
-        el.innerHTML = '<div class="empty-state" style="padding:20px">No indices recorded inside current shift windows</div>';
-        renderShiftChart(data);
-        return;
+      if (e.target === document.getElementById('modal-backdrop')) {
+        document.getElementById('modal-backdrop').classList.remove('show');
       }
-      const count = sev => shiftData.filter(i => i.severity === sev).length;
-      const zones = {};
-      shiftData.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
-      const topZone = Object.entries(zones).sort((a,b)=>b[1]-a[1])[0];
-      const pct = (n, total) => total ? Math.round(n/total*100) + '%' : '0%';
-      const total = shiftData.length;
-      
-      el.innerHTML = `
-        <div class="shift-row"><span class="shift-row-label">Total dispatches</span><span class="shift-row-val">${total}</span></div>
-        <div class="shift-row"><span class="shift-row-label">Critical / High Severity</span><span class="shift-row-val" style="color:var(--red)">${count('Critical') + count('High')}</span></div>
-        <div class="shift-row"><span class="shift-row-label">Action flags</span><span class="shift-row-val" style="color:var(--accent)">${shiftData.filter(i=>i.action_required==='TRUE').length}</span></div>
-        <div class="shift-row"><span class="shift-row-label">Peak hotspot</span><span class="shift-row-val" style="color:var(--blue)">${topZone ? topZone[0] : '—'}</span></div>
-        <div class="shift-row"><span class="shift-row-label">Shift sector load ratio</span><span class="shift-row-val">${pct(total, data.length)}</span></div>
-      `;
-      renderShiftChart(data);
     }
 
-    function renderShiftChart(data) {
-      const shiftCounts = { Morning: 0, Night: 0 };
-      data.forEach(i => {
-        if (i.shift && i.shift.startsWith('Morning')) shiftCounts.Morning++;
-        if (i.shift && i.shift.startsWith('Night')) shiftCounts.Night++;
-      });
-      
-      const theme = document.documentElement.getAttribute('data-theme');
-      const textColor = theme === 'light' ? '#09101d' : '#e8edf5';
-      const borderThemeColor = theme === 'light' ? '#eae3d2' : '#0e1520';
-      
-      if (charts.shift) charts.shift.destroy();
-      const ctx = document.getElementById('shiftChart').getContext('2d');
-      charts.shift = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Day Watch', 'Night Watch'],
-          datasets: [{
-            data: [shiftCounts.Morning, shiftCounts.Night],
-            backgroundColor: ['#e8a020', '#3a8fe8'],
-            borderColor: borderThemeColor, borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'right', labels: { color: textColor, font: { family: "'DM Mono'", size: 10 } } } },
-          cutout: '70%'
-        }
-      });
-    }
-
-    function renderRecommendations(data) {
-      const el = document.getElementById('reco-list');
-      const recos = generateRecommendations(data);
-      if (!recos.length) { el.innerHTML = '<div class="empty-state">Parameters nominal across sectors.</div>'; return; }
-      el.innerHTML = recos.map((r,i) => `
-        <div class="reco-item">
-          <div class="reco-num">${i+1}</div>
-          <div>${r}</div>
-        </div>
-      `).join('');
-    }
-
-    function generateRecommendations(data) {
-      if (!data.length) return [];
-      const recos = [];
-      const zones = {};
-      data.forEach(i => { if (i.location_zone && i.location_zone !== 'Unknown') zones[i.location_zone] = (zones[i.location_zone]||0)+1; });
-      const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]);
-      if (topZones.length > 0) {
-        const [zone, count] = topZones[0];
-        recos.push(`Deploy targeted sweep to <strong>${zone}</strong> — highest incident cluster density with ${count} items.`);
-      }
-      const infraIncidents = data.filter(i => i.incident_type === 'Maintenance_Security' || i.location_zone === 'CCTV Control Room');
-      if (infraIncidents.length > 0) {
-        recos.push(`<strong>${infraIncidents.length} perimeter infrastructure anomalies</strong> flagged — verify linked matrix routes.`);
-      }
-      const shiftCritical = data.filter(i => i.severity === 'Critical' || i.severity === 'High');
-      if (shiftCritical.length > 0) {
-        recos.push(`Reinforce defensive posture — ${shiftCritical.length} elevated/critical reports processing across communities.`);
-      }
-      return recos.slice(0, 3);
-    }
-
-    function renderTypeMetrics(data) {
-      const el = document.getElementById('type-list');
-      const types = {};
-      data.forEach(i => { if(i.incident_type) types[i.incident_type] = (types[i.incident_type]||0)+1; });
-      const sorted = Object.entries(types).sort((a,b)=>b[1]-a[1]);
-      if (!sorted.length) { el.innerHTML = '<div class="empty-state">No categorized fields processing</div>'; return; }
-      const max = sorted[0][1];
-      
-      el.innerHTML = sorted.map(([type, count]) => {
-        const pct = max ? (count / max) * 100 : 0;
-        return `
-          <div class="type-row">
-            <div class="type-name">${type.replace(/_/g,' ')}</div>
-            <div class="type-bar-track"><div class="type-bar-fill" style="width:${pct}%"></div></div>
-            <div class="type-count">${count}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderHandover(data) {
-      const el = document.getElementById('handover-box');
-      if (!data.length) return;
-      const { hour, gstDate } = getGSTDateTime();
-      let currentShiftName = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00–19:00)' : 'Night Shift (19:00–07:00)';
-      let nextShiftName = (hour >= 7 && hour < 19) ? 'Night Shift (19:00–07:00)' : 'Morning Shift (07:00–19:00)';
-      
-      const mCount = data.filter(i => i.shift && i.shift.startsWith('Morning')).length;
-      const nCount = data.filter(i => i.shift && i.shift.startsWith('Night')).length;
-      const totalCritical = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-      const openActions = data.filter(i => i.action_required === 'TRUE').length;
-      
-      const zones = {};
-      const shift12h = data.filter(i => {
-        if(!i.timestamp) return false;
-        const diff = Date.now() - new Date(i.timestamp);
-        return diff <= 43200000;
-      });
-      shift12h.forEach(i => zones[i.location_zone] = (zones[i.location_zone]||0)+1);
-      const topZones = Object.entries(zones).sort((a,b)=>b[1]-a[1]).slice(0,3);
-      const dateStr = gstDate.toLocaleDateString('en-AE', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
-      
-      fetchDubaiWeather().then(weather => {
-        const trafficAdvisories = getDCHTrafficAdvisory();
-        const recos = generateRecommendations(data).map((r,i) => `${i+1}. ${r.replace(/<[^>]+>/g,'')}`).join('\n');
-        let weatherBlock = weather.ok ? `
-<span class="handover-highlight">━━━ METEOROLOGICAL PROFILE (INCOMING WATCH) ━━━</span>
-Condition        : ${weather.condition}
-Current Temp     : ${weather.temp}°C
-Humidity         : ${weather.humidity}%
-Wind Speed       : ${weather.wind} km/h ${weather.windDir}
-Rain Probability : ${weather.maxPrecip}%
-COMMAND ADVISORY : ${weather.advisory.map(a => '⚠ ' + a).join('\n')}` : `\n<span class="handover-highlight">━━━ WEATHER CONTINGENCY ━━━</span>\nWeather feed disconnected. Fallback to local baseline monitoring.`;
-
-        el.innerHTML = `<span class="handover-highlight">══════════════════════════════════════════════════════════════════════════════════════
-TACTICAL SHIFT HANDOVER REGISTRY — AUTO-COMPILED BROADCAST
-DUBAI CREEK HARBOUR OPERATIONS CENTER (SOC) · ${dateStr}
-══════════════════════════════════════════════════════════════════════════════════════</span>
-
-<span class="handover-highlight">OUTGOING FIELD SUPERVISOR :</span> ${currentShiftName}
-<span class="handover-highlight">INCOMING FIELD SUPERVISOR :</span> ${nextShiftName}
-
-<span class="handover-highlight">━━━ DISPATCH ANALYSIS (LAST 12-HOUR WINDOW) ━━━</span>
-Total Logged Events: ${shift12h.length} 
-Morning Watch Load : ${mCount} records
-Night Watch Load   : ${nCount} records
-Critical Triage   : ${totalCritical} elements triggered
-Open Parameter Action Flags: ${openActions} pending tags
-
-<span class="handover-highlight">━━━ TOP CONGESTION BOUNDARIES (HOTSPOTS) ━━━</span>
-${topZones.length > 0 ? topZones.map(([z,c], i) => `[${i+1}] ZONE: ${z.padEnd(25)} · VECTOR LOAD: ${c} logs`).join('\n') : 'No prominent hotspots verified inside temporal boundaries.'}
-${weatherBlock}
-
-<span class="handover-highlight">━━━ TRAFFIC & ACCESS ADVISORIES (SOC INTELLIGENCE) ━━━</span>
-${trafficAdvisories.map(t => '🚗 ' + t).join('\n')}
-
-<span class="handover-highlight">━━━ AUTOMATED MITIGATION COMMAND DIRECTIVES ━━━</span>
-${recos || 'No active anomalies requiring priority routing alterations.'}
-
-<span class="handover-highlight">══════════════════════════════════════════════════════════════════════════════════════
-END OF BROADCAST REGISTRY LOG · SIGN-OFF OUTGOING SUPERVISOR · TRANSMITTING UPLINK...
-══════════════════════════════════════════════════════════════════════════════════════</span>`;
-      });
-    }
-
-    function getWindDirectionText(degree) {
-      if (degree >= 337.5 || degree < 22.5) return 'N';
-      if (degree >= 22.5 && degree < 67.5) return 'NE';
-      if (degree >= 67.5 && degree < 112.5) return 'E';
-      if (degree >= 112.5 && degree < 157.5) return 'SE';
-      if (degree >= 157.5 && degree < 202.5) return 'S';
-      if (degree >= 202.5 && degree < 247.5) return 'SW';
-      if (degree >= 247.5 && degree < 292.5) return 'W';
-      return 'NW';
-    }
-
-    // Auto-refresh initialization loop
     setInterval(() => {
       const url = document.getElementById('sheet-url').value.trim();
       if (url && allIncidents.length > 0) fetchData();
