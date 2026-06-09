@@ -525,7 +525,7 @@
     <div class="header-center">
       <div class="live-indicator">
         <div class="live-dot"></div>
-        <span>MASTER COMMUNITY OUTDOOR CONTROL MATRIX</span>
+        <span>LIVE MONITORING</span>
       </div>
     </div>
     <div class="header-right">
@@ -589,7 +589,7 @@
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">COMMUNITY RISK DEPLOYMENT MATRIX</div>
-          <div class="panel-badge">Supervisors / Senders</div>
+          <div class="panel-badge">DCH Communities</div>
         </div>
         <div class="zone-grid" id="zone-heatmap"></div>
       </div>
@@ -842,54 +842,46 @@
     }
 
     async function fetchData() {
-      let url = document.getElementById('sheet-url').value.trim();
-      if (!url) {
-        alert('Please specify a valid URL link.');
-        return;
-      }
-      
-      // Convert any Google Sheets edit/view URL to a published CSV export URL
-      if (url.includes("docs.google.com/spreadsheets")) {
-        if (!url.includes("output=csv") && !url.includes("format=csv")) {
-          // Preserve gid (sheet tab) if present in the URL
-          const gidMatch = url.match(/[#&?]gid=(\d+)/);
-          const gid = gidMatch ? gidMatch[1] : null;
-          const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-          if (idMatch) {
-            url = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/pub?output=csv` + (gid ? `&gid=${gid}` : '');
-          } else {
-            url = url.replace(/\/edit.*$/, '/pub?output=csv');
-          }
-        }
-      }
+      const url = document.getElementById('sheet-url').value.trim();
+      if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
 
-      localStorage.setItem('dch-sheet-url', url);
       document.getElementById('loading-overlay').classList.add('show');
+      document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
 
-      // Try fetching directly first; if CORS blocks it, retry via proxy
-      const CORS_PROXY = 'https://corsproxy.io/?url=';
-      let csvText = null;
-
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        csvText = await response.text();
-      } catch (directErr) {
-        // Direct fetch failed (likely CORS) — try via CORS proxy
-        try {
-          const proxied = await fetch(CORS_PROXY + encodeURIComponent(url));
-          if (!proxied.ok) throw new Error('HTTP ' + proxied.status);
-          csvText = await proxied.text();
-        } catch (proxyErr) {
-          document.getElementById('loading-overlay').classList.remove('show');
-          alert('Failed fetching remote metrics layer data.\n\nDirect: ' + directErr.message + '\nProxy: ' + proxyErr.message + '\n\nEnsure the Google Sheet is published: File → Share → Publish to web → CSV.');
-          return;
-        }
-      } finally {
-        document.getElementById('loading-overlay').classList.remove('show');
+      let csvUrl = url;
+      if (url.includes('/pub?')) {
+        csvUrl = url;
+      } else if (url.includes('/edit')) {
+        csvUrl = url.replace('/edit', '/pub') + '?output=csv';
+      } else if (!url.includes('output=csv')) {
+        csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
       }
 
-      if (csvText) parseCSVData(csvText);
+      const attempts = [
+        csvUrl,
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
+        'https://corsproxy.io/?' + encodeURIComponent(csvUrl)
+      ];
+
+      let lastError = '';
+      for (const attemptUrl of attempts) {
+        try {
+          const resp = await fetch(attemptUrl, { cache: 'no-store' });
+          if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
+          const text = await resp.text();
+          if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
+          parseCSVData(text);
+          document.getElementById('loading-overlay').classList.remove('show');
+          return;
+        } catch(e) {
+          lastError = e.message;
+          continue;
+        }
+      }
+
+      document.getElementById('loading-overlay').classList.remove('show');
+      document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
+      alert('Could not pull real-time sheets profile. Proceeding with backup parsing layers...');
     }
 
     function splitCSVLine(line) {
@@ -1144,18 +1136,21 @@
       const parent = document.getElementById('zone-heatmap');
       parent.innerHTML = '';
       
-      const senderCounts = {};
-      data.forEach(x => { senderCounts[x.sender] = (senderCounts[x.sender] || 0) + 1; });
-      const sortedSenders = Object.entries(senderCounts).sort((a,b) => b[1] - a[1]);
+      const zoneCounts = {};
+      data.forEach(x => { 
+        const zone = x.location_zone || 'Unknown';
+        zoneCounts[zone] = (zoneCounts[zone] || 0) + 1; 
+      });
+      const sortedZones = Object.entries(zoneCounts).sort((a,b) => b[1] - a[1]);
       
-      if(!sortedSenders.length) {
-        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No matching outdoor sender metrics found.</div>';
+      if(!sortedZones.length) {
+        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No community zone metrics found.</div>';
         return;
       }
 
-      const maxCount = Math.max(...sortedSenders.map(z => z[1]));
+      const maxCount = Math.max(...sortedZones.map(z => z[1]));
 
-      sortedSenders.forEach(([senderName, count]) => {
+      sortedZones.forEach(([zoneName, count]) => {
         const ratio = maxCount ? (count / maxCount) : 0;
         const pct = ratio * 100;
         
@@ -1168,10 +1163,10 @@
 
         const cell = document.createElement('div');
         cell.className = 'zone-cell';
-        cell.onclick = () => openSenderDrawer(senderName);
+        cell.onclick = () => openZoneDrawer(zoneName);
 
         cell.innerHTML = `
-          <div class="zone-name">${senderName}</div>
+          <div class="zone-name">${zoneName}</div>
           <div class="zone-count">${count}</div>
           <div class="zone-bar" style="background: ${lineFillColor}; width: ${pct}%"></div>
         `;
@@ -1403,6 +1398,60 @@
           <div>
             <div class="feed-type" style="font-size:12px;">${inc.incident_type}</div>
             <div class="feed-summary" style="font-size:11px;">Zone: ${inc.location_zone} | ${inc.summary || '—'}</div>
+          </div>
+          <div class="feed-time" style="font-size:10px;">${timeStr}</div>
+        `;
+        listWrap.appendChild(row);
+      });
+      body.appendChild(listWrap);
+
+      document.getElementById('slide-backdrop').classList.add('show');
+      document.getElementById('slide-panel').classList.add('show');
+    }
+
+    function openZoneDrawer(zoneName) {
+      document.getElementById('drawer-title').textContent = `COMMUNITY SNAPSHOT: ${zoneName.toUpperCase()}`;
+      const body = document.getElementById('drawer-body');
+      body.innerHTML = '';
+
+      const zoneIncidents = allIncidents.filter(x => x.location_zone === zoneName);
+      let c = 0, h = 0, l = 0;
+      zoneIncidents.forEach(z => {
+        if (z.severity === 'Critical') c++;
+        else if (z.severity === 'High') h++;
+        else l++;
+      });
+
+      const statsGrid = document.createElement('div');
+      statsGrid.className = 'zone-stat-grid';
+      statsGrid.innerHTML = `
+        <div class="zone-stat-card" style="border-top:2px solid var(--red);"><div class="zone-stat-lbl">Critical</div><div class="zone-stat-val">${c}</div></div>
+        <div class="zone-stat-card" style="border-top:2px solid var(--accent);"><div class="zone-stat-lbl">High/Med</div><div class="zone-stat-val">${h}</div></div>
+        <div class="zone-stat-card" style="border-top:2px solid var(--green); grid-column: span 2;"><div class="zone-stat-lbl">Low Routine</div><div class="zone-stat-val">${l}</div></div>
+      `;
+      body.appendChild(statsGrid);
+
+      const sectionTitle = document.createElement('div');
+      sectionTitle.className = 'slide-section-title';
+      sectionTitle.textContent = "Community Incident Log Summary Feed";
+      body.appendChild(sectionTitle);
+
+      const listWrap = document.createElement('div');
+      listWrap.className = 'feed-list';
+      listWrap.style.maxHeight = 'calc(100vh - 280px)';
+
+      zoneIncidents.forEach(inc => {
+        const row = document.createElement('div');
+        row.className = 'feed-item';
+        row.onclick = () => showIncidentDetails(inc);
+        let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
+        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+
+        row.innerHTML = `
+          <div class="severity-dot ${sevClass}"></div>
+          <div>
+            <div class="feed-type" style="font-size:12px;">${inc.incident_type}</div>
+            <div class="feed-summary" style="font-size:11px;">Sender: ${inc.sender} | ${inc.summary || '—'}</div>
           </div>
           <div class="feed-time" style="font-size:10px;">${timeStr}</div>
         `;
