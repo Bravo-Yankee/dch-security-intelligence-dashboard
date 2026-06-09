@@ -841,118 +841,128 @@
       list.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
+    // ── XHR helper — follows redirects natively unlike fetch() on GitHub Pages ──
+    function xhrGet(url) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 12000;
+        xhr.onload  = () => xhr.status >= 200 && xhr.status < 400 ? resolve(xhr.responseText) : reject(new Error('HTTP ' + xhr.status));
+        xhr.onerror   = () => reject(new Error('Network error'));
+        xhr.ontimeout = () => reject(new Error('Timeout'));
+        xhr.send();
+      });
+    }
+
     async function fetchData() {
-      const url = document.getElementById('sheet-url').value.trim();
-      if (!url) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
+      const raw = document.getElementById('sheet-url').value.trim();
+      if (!raw) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
+
+      // Normalise to a ?output=csv URL
+      let csvUrl = raw;
+      if (raw.includes('/edit')) {
+        csvUrl = raw.split('/edit')[0] + '/pub?output=csv';
+      } else if (!raw.includes('output=csv')) {
+        csvUrl = raw + (raw.includes('?') ? '&' : '?') + 'output=csv';
+      }
 
       document.getElementById('loading-overlay').classList.add('show');
       document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
 
-      let csvUrl = url;
-      if (url.includes('/pub?')) {
-        csvUrl = url;
-      } else if (url.includes('/edit')) {
-        csvUrl = url.replace('/edit', '/pub') + '?output=csv';
-      } else if (!url.includes('output=csv')) {
-        csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
-      }
+      const PROXY_GET = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl);
+      const PROXY_RAW = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl);
 
-      const attempts = [
-        { url: csvUrl, raw: true },
-        { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl), raw: false },
-        { url: 'https://corsproxy.io/?' + encodeURIComponent(csvUrl), raw: true }
+      const strategies = [
+        async () => {                              // 1. Direct XHR — handles Google 302 redirects
+          const t = await xhrGet(csvUrl);
+          if (t.trimStart().startsWith('<!')) throw new Error('HTML response');
+          return t;
+        },
+        async () => {                              // 2. allorigins /get — JSON-wrapped, no Content-Length bug
+          const t = await xhrGet(PROXY_GET);
+          const c = JSON.parse(t).contents;
+          if (!c || c.trimStart().startsWith('<!')) throw new Error('HTML response');
+          return c;
+        },
+        async () => {                              // 3. allorigins /raw — last resort
+          const t = await xhrGet(PROXY_RAW);
+          if (t.trimStart().startsWith('<!')) throw new Error('HTML response');
+          return t;
+        }
       ];
 
-      let lastError = '';
-      for (const attempt of attempts) {
+      let lastErr = '';
+      for (const run of strategies) {
         try {
-          const resp = await fetch(attempt.url, { cache: 'no-store' });
-          if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
-          let text = await resp.text();
-          if (!attempt.raw) {
-            try { text = JSON.parse(text).contents; } catch(e) {}
-          }
-          if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
-          parseCSVData(text);
+          const csv = await run();
+          if (!csv || csv.trim().length < 10) { lastErr = 'Empty response'; continue; }
+          parseCSVData(csv);
           document.getElementById('loading-overlay').classList.remove('show');
           return;
-        } catch(e) {
-          lastError = e.message;
-          continue;
-        }
+        } catch (e) { lastErr = e.message; }
       }
 
       document.getElementById('loading-overlay').classList.remove('show');
       document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
-      alert('Could not pull real-time sheets profile. Proceeding with backup parsing layers...');
+      alert('Could not load sheet data.\nLast error: ' + lastErr + '\n\nEnsure the sheet is published: File → Share → Publish to web → CSV.');
     }
 
+    // ── CSV parser ───────────────────────────────────────────────────────────────
     function splitCSVLine(line) {
-      const result = [];
-      let current = '';
-      let inQuotes = false;
+      const res = []; let cur = '', inQ = false;
       for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          result.push(current.trim().replace(/^"|"$/g, ''));
-          current = '';
-        } else {
-          current += char;
-        }
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
+        else { cur += c; }
       }
-      result.push(current.trim().replace(/^"|"$/g, ''));
-      return result;
+      res.push(cur.trim());
+      return res;
     }
 
     function parseCSVData(text) {
       const lines = text.trim().split(/\r?\n/);
       if (lines.length < 2) return;
-      
-      const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/ /g, '_'));
+
+      const headers = splitCSVLine(lines[0]).map(h => h.replace(/"/g, '').toLowerCase().replace(/\s+/g, '_'));
       const records = [];
-      
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
-        const row = splitCSVLine(lines[i]);
-        let rec = {};
-        headers.forEach((h, idx) => { rec[h] = (row[idx] || ''); });
+        const vals = splitCSVLine(lines[i]);
+        const rec  = {};
+        headers.forEach((h, idx) => { rec[h] = (vals[idx] || '').replace(/^"|"$/g, '').trim(); });
         if (rec.timestamp || rec.incident_type) records.push(rec);
       }
-      
+
       allIncidents = records.map((r, i) => {
-        const ts = r.timestamp || new Date().toISOString();
-        const d = new Date(ts);
+        const ts   = r.timestamp || new Date().toISOString();
+        const d    = new Date(ts);
         const hour = d.getHours();
-        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
-        
-        const rawSev = r.severity || 'Low';
-        let adjustedSev = rawSev.charAt(0).toUpperCase() + rawSev.slice(1).toLowerCase();
-        if (adjustedSev === 'Medium' || adjustedSev === 'High') {
-          adjustedSev = 'High';
-        }
-        
+        const shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+        let sev = (r.severity || 'Low');
+        sev = sev.charAt(0).toUpperCase() + sev.slice(1).toLowerCase();
+        if (sev === 'Medium') sev = 'High';
         return {
-          message_id: r.message_id || r.system_reference_id || 'DCH_GEN_' + i,
-          timestamp: ts,
-          sender: r.sender || r.officer || 'OUTDOOR_PATROL_NODE',
-          shift: shift,
-          day_of_week: r.day_of_week || d.toLocaleDateString('en-US', {weekday: 'Long'}),
-          incident_type: r.incident_type || 'Unclassified Area Event',
-          severity: adjustedSev,
-          location_zone: r.location_zone || 'Master Community Ground Plain',
-          summary: r.summary || r.operational_narrative_log || '',
-          action_required: (adjustedSev === 'Critical' || adjustedSev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: r.immediate_actions || r.target_resolution_parameters || '',
-          confidence: parseFloat(r.confidence || r.ai_parsing_confidence_score || 0.94)
+          message_id:        r.message_id || 'DCH_' + i,
+          timestamp:         ts,
+          sender:            r.sender || r.officer || 'PATROL',
+          shift,
+          day_of_week:       r.day_of_week || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()],
+          incident_type:     r.incident_type || 'Unclassified',
+          severity:          sev,
+          location_zone:     r.location_zone || 'Master Community',
+          summary:           r.summary || r.operational_narrative_log || '',
+          action_required:   (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
+          immediate_actions: r.immediate_actions || '',
+          confidence:        parseFloat(r.confidence || r.ai_parsing_confidence_score || 0.94)
         };
       });
-      
+
       sortIncidentsDescending(allIncidents);
-      document.getElementById('fetch-status').textContent = `CONNECTED · ${allIncidents.length} RECORDS SYNCED`;
       const { gstDate } = getGSTDateTime();
-      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
+      const timeStr = gstDate.toLocaleTimeString('en-US', { hour12: false });
+      document.getElementById('fetch-status').textContent  = `CONNECTED · ${allIncidents.length} RECORDS SYNCED · ${timeStr}`;
+      document.getElementById('last-refresh').textContent  = 'LAST TELEMETRY UPDATE: ' + timeStr;
       renderDashboard();
     }
 
