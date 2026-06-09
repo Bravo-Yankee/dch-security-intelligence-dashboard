@@ -848,19 +848,23 @@
       document.getElementById('loading-overlay').classList.add('show');
       document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
 
+      // Normalise to a clean CSV export URL
       let csvUrl = url;
-      if (url.includes('/pub?')) {
-        csvUrl = url;
-      } else if (url.includes('/edit')) {
-        csvUrl = url.replace('/edit', '/pub') + '?output=csv';
+      if (url.includes('/edit')) {
+        csvUrl = url.replace('/edit', '/pub') + (url.includes('?') ? '&output=csv' : '?output=csv');
       } else if (!url.includes('output=csv')) {
         csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
+      }
+      // Ensure single=true is present for published /e/ URLs
+      if (!csvUrl.includes('single=true') && csvUrl.includes('/pub')) {
+        csvUrl = csvUrl + '&single=true';
       }
 
       const attempts = [
         csvUrl,
+        'https://corsproxy.io/?' + encodeURIComponent(csvUrl),
         'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl),
-        'https://corsproxy.io/?' + encodeURIComponent(csvUrl)
+        'https://opensheet.elk.sh/proxy?url=' + encodeURIComponent(csvUrl)
       ];
 
       let lastError = '';
@@ -869,7 +873,8 @@
           const resp = await fetch(attemptUrl, { cache: 'no-store' });
           if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
           const text = await resp.text();
-          if (!text || text.trim().length < 10) { lastError = 'Empty response'; continue; }
+          // Reject HTML responses (Google login/redirect pages)
+          if (!text || text.trim().length < 10 || text.trim().startsWith('<!')) { lastError = 'Non-CSV response'; continue; }
           parseCSVData(text);
           document.getElementById('loading-overlay').classList.remove('show');
           return;
@@ -881,7 +886,7 @@
 
       document.getElementById('loading-overlay').classList.remove('show');
       document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
-      alert('Could not pull real-time sheets profile. Proceeding with backup parsing layers...');
+      alert('Could not load sheet data.\n\nMake sure:\n1. The sheet is published (File → Share → Publish to web → CSV)\n2. The published URL is pasted — not the edit URL\n\nLast error: ' + lastError);
     }
 
     function splitCSVLine(line) {
