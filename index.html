@@ -909,21 +909,18 @@
     }
 
     function parseCSVData(text) {
-      const lines = text.split(/\r?\n/);
+      const lines = text.trim().split(/\r?\n/);
       if (lines.length < 2) return;
       
       const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/ /g, '_'));
       const records = [];
       
-      for(let i = 1; i < lines.length; i++) {
+      for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
         const row = splitCSVLine(lines[i]);
-        
-        if (row.length === headers.length) {
-          let rec = {};
-          headers.forEach((h, idx) => { rec[h] = row[idx]; });
-          records.push(rec);
-        }
+        let rec = {};
+        headers.forEach((h, idx) => { rec[h] = (row[idx] || ''); });
+        if (rec.timestamp || rec.incident_type) records.push(rec);
       }
       
       allIncidents = records.map((r, i) => {
