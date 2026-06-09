@@ -848,7 +848,6 @@
       document.getElementById('loading-overlay').classList.add('show');
       document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
 
-      // Use URL as-is if it already has output=csv, otherwise normalise
       let csvUrl = url;
       if (url.includes('/edit')) {
         csvUrl = url.replace('/edit', '/pub') + (url.includes('?') ? '&output=csv' : '?output=csv');
@@ -856,23 +855,23 @@
         csvUrl = url + (url.includes('?') ? '&' : '?') + 'output=csv';
       }
 
+      // allorigins /get wraps response as JSON { contents: "..." } and handles Google redirects
+      const alloriginsUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl);
+
       const attempts = [
-        csvUrl,
-        'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl),
-        'https://corsproxy.io/?' + encodeURIComponent(csvUrl)
+        { url: csvUrl,         isAllOrigins: false },
+        { url: alloriginsUrl,  isAllOrigins: true  }
       ];
 
       let lastError = '';
-      for (const attemptUrl of attempts) {
+      for (const attempt of attempts) {
         try {
-          const resp = await fetch(attemptUrl, { cache: 'no-store' });
+          const resp = await fetch(attempt.url, { cache: 'no-store' });
           if (!resp.ok) { lastError = 'HTTP ' + resp.status; continue; }
           let text = await resp.text();
-          // allorigins /get wraps response in JSON: { contents: "..." }
-          if (attemptUrl.includes('allorigins.win/get')) {
+          if (attempt.isAllOrigins) {
             try { text = JSON.parse(text).contents; } catch(e) {}
           }
-          // Reject HTML responses (Google login / redirect pages)
           if (!text || text.trim().length < 10 || text.trim().startsWith('<!')) { lastError = 'Non-CSV response'; continue; }
           parseCSVData(text);
           document.getElementById('loading-overlay').classList.remove('show');
