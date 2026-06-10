@@ -311,51 +311,49 @@
   main { padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
 
   /* ── KPI ROW ── */
-  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 20px 24px 16px; position: relative; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); min-width: 0; height: 120px; display: flex; flex-direction: column; justify-content: flex-start; }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .kpi-card { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); padding: 16px; position: relative; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
   .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
   .kpi-card.critical::before { background: var(--red); }
   .kpi-card.medium::before { background: var(--accent); }
   .kpi-card.low::before { background: var(--green); }
   .kpi-card.total::before { background: var(--blue); }
 
-  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .kpi-value { font-family: var(--font-display); font-size: 52px; line-height: 1; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .kpi-label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-sec); margin-bottom: 8px; }
+  .kpi-value { font-family: var(--font-display); font-size: 46px; line-height: 1; letter-spacing: 1px; }
   .kpi-card.critical .kpi-value { color: var(--red); }
   .kpi-card.medium .kpi-value { color: var(--accent); }
   .kpi-card.low .kpi-value { color: var(--green); }
   .kpi-card.total .kpi-value { color: var(--blue); }
-  .kpi-delta { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi-delta { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 4px; }
 
-  /* ── MAIN GRID (3 COLUMNS - CORRECTED BOX WINDOW SIZE) ── */
+  /* ── MAIN GRID (3 COLUMNS) ── */
   .main-grid { display: grid; grid-template-columns: 1.1fr 0.9fr 1.1fr; gap: 16px; }
-  .panel { height: 280px; background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+  .panel { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
   .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); flex-shrink: 0; }
   .panel-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
   .panel-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
 
-  /* ── TIMELINE GRAPH (FIXED CONTAINER HEIGHT) ── */
-  .chart-wrap { padding: 12px 16px 16px 16px; height: 210px; position: relative; width: 100%; box-sizing: border-box; }
+  /* ── TIMELINE GRAPH ── */
+  .chart-wrap { padding: 16px; height: 220px; position: relative; flex: 1; }
   .range-selector { display: inline-flex; background: var(--bg-deep); padding: 2px; border-radius: 4px; border: 1px solid var(--border); }
   .range-btn { padding: 3px 10px; background: transparent; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 10px; font-weight: 600; cursor: pointer; border-radius: 3px; transition: all 0.15s ease; }
   .range-btn:hover { color: var(--text-pri); }
   .range-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-  /* ── DEPLOYMENT MATRIX (FIXED SCROLLBOX WINDOW SIZE) ── */
-  .zone-grid { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 210px; overflow-y: auto; scrollbar-width: thin; box-sizing: border-box; }
+  /* ── DEPLOYMENT MATRIX ── */
+  .zone-grid { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 220px; overflow-y: auto; scrollbar-width: thin; flex: 1; }
   .zone-grid::-webkit-scrollbar { width: 6px; }
   .zone-grid::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
 
-  .zone-cell { background: var(--bg-panel); border-radius: var(--r); padding: 10px 12px; position: relative; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.12s, border-color 0.15s ease; display: flex; flex-direction: column; justify-content: space-between; }
+  .zone-cell { background: var(--bg-panel); border-radius: var(--r); padding: 12px; position: relative; overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: transform 0.12s, border-color 0.15s ease; }
   .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
-  .zone-name { font-size: 11px; font-weight: 600; color: var(--text-pri); margin-bottom: 2px; position: relative; z-index: 1; line-height: 1.3; white-space: normal; word-break: break-word; }
-  .zone-count { font-family: var(--font-display); font-size: 26px; line-height: 1; position: relative; z-index: 1; margin-top: auto; }
+  .zone-name { font-size: 11px; font-weight: 600; color: var(--text-pri); margin-bottom: 4px; position: relative; z-index: 1; line-height: 1.3; white-space: normal; word-break: break-word; }
+  .zone-count { font-family: var(--font-display); font-size: 28px; line-height: 1; position: relative; z-index: 1; }
   .zone-bar { position: absolute; bottom: 0; left: 0; height: 4px; transition: width 0.3s ease, background 0.3s ease; }
 
-  /* ── INCIDENT FEED LOGS (FIXED CONTAINER HEIGHT) ── */
-  .feed-list { height: 210px; overflow-y: auto; scrollbar-width: thin; box-sizing: border-box; }
-  .feed-list::-webkit-scrollbar { width: 6px; }
-  .feed-list::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
+  /* ── INCIDENT FEED LOGS ── */
+  .feed-list { height: 220px; overflow-y: auto; scrollbar-width: thin; flex: 1; }
   .feed-item { padding: 12px 18px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; cursor: pointer; }
   .feed-item:hover { background: var(--bg-panel); }
 
@@ -373,9 +371,8 @@
   .tag.zone { color: var(--blue); background: var(--blue-dim); border-color: rgba(15,64,179,0.2); }
   .feed-time { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-dim); white-space: nowrap; }
 
-  /* ── LOWER ROW GRID (3 COLUMNS - CORRECTED HEIGHT MATCH) ── */
+  /* ── LOWER ROW GRID ── */
   .bottom-grid { display: grid; grid-template-columns: 1.1fr 0.9fr 1.1fr; gap: 16px; }
-  .bottom-grid .panel { height: 230px; }
 
   .shift-selector { display: inline-flex; background: var(--bg-deep); padding: 3px; border-radius: var(--r); border: 1px solid var(--border-bright); }
   .shift-btn { padding: 5px 14px; background: transparent; border: none; color: var(--text-sec); font-family: var(--font-mono); font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.15s ease; }
@@ -401,7 +398,7 @@
   .type-bar-fill { height: 100%; background: var(--text-pri); transition: width 0.3s ease; }
   .type-count { font-family: var(--font-mono); font-size: 12px; font-weight: 600; width: 24px; text-align: right; }
 
-  /* ── HIGH-VISIBILITY OUTDOOR HANDOVER SPECS ── */
+  /* ── NEW SLEEK OPERATIONS COMMS BLOCK ── */
   .modern-handover-panel {
     background: var(--bg-card);
     border: 1px solid var(--border-bright);
@@ -525,7 +522,7 @@
     <div class="header-center">
       <div class="live-indicator">
         <div class="live-dot"></div>
-        <span>LIVE MONITORING</span>
+        <span>REAL-TIME PARSING LOGS ACTIVE</span>
       </div>
     </div>
     <div class="header-right">
@@ -567,10 +564,9 @@
       <div class="kpi-card total">
         <div class="kpi-label">📊 Shift Handover Total</div>
         <div class="kpi-value" id="kpi-total">0</div>
-        <div class="kpi-delta">All records loaded</div>
+        <div class="kpi-delta" id="last-refresh">Awaiting live source connection...</div>
       </div>
     </div>
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);text-align:right;margin-top:-6px;padding-right:4px;" id="last-refresh">Awaiting live source connection...</div>
 
     <div class="main-grid">
       <div class="panel">
@@ -590,7 +586,7 @@
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">COMMUNITY RISK DEPLOYMENT MATRIX</div>
-          <div class="panel-badge">DCH Communities</div>
+          <div class="panel-badge">Supervisors / Senders</div>
         </div>
         <div class="zone-grid" id="zone-heatmap"></div>
       </div>
@@ -659,38 +655,38 @@
       
       <div class="modern-handover-grid">
         <div class="modern-handover-col">
-          <div class="ops-widget-title">☀️ OUTDOOR WEATHER ENVIRONMENT MATRIX</div>
+          <div class="ops-widget-title">☀️ LIVE METEOROLOGICAL MATRIX</div>
           <div class="ops-metric-row">
-            <span class="ops-metric-label">Ambient Open-Air Temp</span>
+            <span class="ops-metric-label">Ambient Station Temp</span>
             <span class="ops-metric-value" id="ops-weather-temp">--°C</span>
           </div>
           <div class="ops-metric-row">
-            <span class="ops-metric-label">Atmospheric Risk Classification</span>
+            <span class="ops-metric-label">Atmospheric Classification</span>
             <span class="ops-metric-value" id="ops-weather-cond">Evaluating...</span>
           </div>
           <div class="ops-metric-row">
-            <span class="ops-metric-label">Coastal Wind Velocity</span>
+            <span class="ops-metric-label">Ground Stream Velocity</span>
             <span class="ops-metric-value" id="ops-weather-wind">-- km/h</span>
           </div>
-          <div class="ops-widget-title" style="margin-top:20px; color:var(--blue);">🤖 AI MASTER COMMUNITY OUTDOOR ADVISORY</div>
+          <div class="ops-widget-title" style="margin-top:20px; color:var(--blue);">🤖 AI METEOROLOGICAL SECURITY ADVISORY</div>
           <div class="advisory-text-box" id="ai-weather-advisory">System matrix assembling telemetry data strings...</div>
         </div>
 
         <div class="modern-handover-col">
-          <div class="ops-widget-title">🚗 INGRESS, ROADWAY & DRIVEWAY LAYER</div>
+          <div class="ops-widget-title">🚗 HARBOUR INGRESS TRAFFIC LAYER</div>
           <div class="ops-metric-row">
-            <span class="ops-metric-label">Driveway & Road Flow Status</span>
+            <span class="ops-metric-label">Gate Access Status</span>
             <span class="ops-metric-value" id="ops-traffic-status" style="color:var(--green);">MONITORING</span>
           </div>
           <div class="ops-metric-row">
-            <span class="ops-metric-label">Calculated Access Delay</span>
+            <span class="ops-metric-label">Calculated Access Delta</span>
             <span class="ops-metric-value" id="ops-traffic-delay">Nominal</span>
           </div>
           <div class="ops-metric-row">
-            <span class="ops-metric-label">Active Outdoor Patrol Focus</span>
-            <span class="ops-metric-value">Island Main Road & Links</span>
+            <span class="ops-metric-label">Active Channel Patrolled</span>
+            <span class="ops-metric-value">Ras Al Khor Entry Matrix</span>
           </div>
-          <div class="ops-widget-title" style="margin-top:20px; color:var(--accent);">🤖 AI OUTDOOR TRAFFIC FLOW DIRECTION</div>
+          <div class="ops-widget-title" style="margin-top:20px; color:var(--accent);">🤖 AI LOGISTICS FLOW MITIGATION DIRECTIVE</div>
           <div class="advisory-text-box traffic" id="ai-traffic-advisory">System matrix assembling infrastructure logistics loops...</div>
         </div>
       </div>
@@ -700,45 +696,14 @@
   </main>
 
   <footer>
+    <div>DCH SECURITY HUB GLOBAL MONITOR</div>
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span>Powered By:</span>
-      <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
-        <svg viewBox="0 0 64 64" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
-          <style>
-            .brain-path { stroke: var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke-dasharray:200; stroke-dashoffset:200; animation: brainDraw 3s ease forwards infinite; }
-            .brain-path:nth-child(2){ animation-delay:0.3s; }
-            .brain-path:nth-child(3){ animation-delay:0.6s; }
-            .brain-path:nth-child(4){ animation-delay:0.9s; }
-            .brain-path:nth-child(5){ animation-delay:1.1s; }
-            .brain-pulse { stroke: var(--accent); opacity:0; animation: brainPulse 3s ease 1.5s infinite; }
-            @keyframes brainDraw {
-              0%   { stroke-dashoffset:200; opacity:1; }
-              60%  { stroke-dashoffset:0;   opacity:1; }
-              85%  { stroke-dashoffset:0;   opacity:1; }
-              100% { stroke-dashoffset:200; opacity:0.3; }
-            }
-            @keyframes brainPulse {
-              0%,100% { opacity:0; r:4; }
-              50%     { opacity:0.6; r:7; }
-            }
-          </style>
-          <!-- Left hemisphere -->
-          <path class="brain-path" d="M32 10 C22 10 14 17 14 26 C14 30 16 34 19 37 C16 38 13 41 13 45 C13 50 17 54 22 55 C22 57 23 59 25 60 L32 60"/>
-          <!-- Right hemisphere -->
-          <path class="brain-path" d="M32 10 C42 10 50 17 50 26 C50 30 48 34 45 37 C48 38 51 41 51 45 C51 50 47 54 42 55 C42 57 41 59 39 60 L32 60"/>
-          <!-- Center divide -->
-          <path class="brain-path" d="M32 10 L32 60" style="stroke-dasharray:60;stroke-dashoffset:60;"/>
-          <!-- Left folds -->
-          <path class="brain-path" d="M20 28 C23 26 26 27 27 30 M18 38 C21 36 25 37 26 40" style="stroke-dasharray:40;stroke-dashoffset:40;"/>
-          <!-- Right folds -->
-          <path class="brain-path" d="M44 28 C41 26 38 27 37 30 M46 38 C43 36 39 37 38 40" style="stroke-dasharray:40;stroke-dashoffset:40;"/>
-          <!-- Pulse dot -->
-          <circle class="brain-pulse" cx="32" cy="35" r="4" stroke-width="1.5" fill="none"/>
-        </svg>
-      </div>
+      <span>OPERATIONAL AREA FEED MATRIX</span>
+      <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 14C5 12 6 9 8 7M8 7C7 5 8 3 11 2C13 3 14 5 13 7M8 7H13M13 7C15 7 17 9 19 8M19 8C21 7 22 5 23 3M19 8C18 10 19 12 21 13M11 11C12 13 11 15 10 17M15 10C16 12 17 15 18 16" stroke="var(--horse-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
-    <div>© 2026 Dubai Creek Harbour Command Center. All rights reserved.</div>
-    <div></div>
+    <div>OPERATIONAL MATRIX FEED v5.1.0</div>
   </footer>
 
   <div class="slide-backdrop" id="slide-backdrop" onclick="closeZoneDrawer()"></div>
@@ -753,7 +718,7 @@
   <div class="modal-backdrop" id="modal-backdrop" onclick="closeModal(event)">
     <div class="modal" id="modal">
       <div class="modal-header">
-        <div class="modal-title">DETAILED OUTDOOR SECURITY LOG ENTRY</div>
+        <div class="modal-title">DETAILED SECURITY LOG ENTRY</div>
         <button class="modal-close" onclick="document.getElementById('modal-backdrop').classList.remove('show')">&times;</button>
       </div>
       <div class="modal-body" id="modal-content"></div>
@@ -823,18 +788,18 @@
 
     function generateDynamicWeatherMetrics() {
       const hour = new Date().getHours();
-      let temp = 34;
+      let temp = 33;
       let condition = "Clear Coastal Sky";
-      let wind = "14 km/h NNW";
+      let wind = "12 km/h NNW";
       
       if (hour >= 10 && hour <= 16) {
-        temp = 43;
-        condition = "Extreme Outdoor Heat / High UV Exposure";
-        wind = "19 km/h NW";
+        temp = 42;
+        condition = "Extreme Thermal Exposure / Clear";
+        wind = "18 km/h WNW";
       } else if (hour >= 19 || hour <= 5) {
-        temp = 31;
-        condition = "High Coastal Humidity Density";
-        wind = "9 km/h NE";
+        temp = 30;
+        condition = "High Coastal Humidity Mix";
+        wind = "8 km/h NE";
       }
       return { temp: temp + "°C", condition: condition, wind: wind, hour: hour };
     }
@@ -842,28 +807,28 @@
     function generateDynamicTrafficMetrics(dataCount) {
       const hour = new Date().getHours();
       const day = new Date().getDay();
-      let status = "FLUID LOGISTICS FLOW";
+      let status = "FLUID FLOW";
       let delay = "Nominal Parameters";
       
-      if ((hour >= 16 && hour <= 21) || day === 5 || day === 6 || dataCount > 25) {
-        status = "HIGH EXTERNAL DRIVEWAY VOLUME";
-        delay = "+12 Mins on Island Main Road Intersections";
+      if ((hour >= 16 && hour <= 20) || day === 5 || day === 6 || dataCount > 25) {
+        status = "CONGESTED ACCESS GATEWAYS";
+        delay = "+14 Mins on Ras Al Khor Core Link";
       }
       return { status: status, delay: delay, hour: hour };
     }
 
     function computeAIEngineDirectives(weather, traffic, criticalCount) {
-      let weatherAdvisory = "Conditions regular. Maintain normal foot patrols across Central Park walkways and the open Marina Walk promenade loops.";
-      let trafficAdvisory = "Driveways and access intersections operating at baseline speeds. Standard vehicle gate tracking rules apply.";
+      let weatherAdvisory = "All systems green. Instruct ground patrol to enforce standard verification routines across open plazas.";
+      let trafficAdvisory = "Inbound lane tracking indicates normal processing speeds. Proceed with basic vehicle lane monitoring loops.";
 
       if (weather.hour >= 10 && weather.hour <= 16) {
-        weatherAdvisory = "⚠️ CRITICAL HEAT DIRECTIVE: Enforce mandatory 30-minute shade rotations for all supervisors on Marina Walk and Island Road layouts. Ensure water replenishment vehicles stop at all outdoor posts.";
+        weatherAdvisory = "⚠️ CRITICAL HEAT ALERT: Execute strict 45-minute tactical squad rotation intervals. Transition all vulnerable point-check postings to shade shelters and enforce mandatory hydration stops.";
       } else if (weather.hour >= 19 || weather.hour <= 5) {
-        weatherAdvisory = "High open-air humidity observed. Instruct Central Park and water-facing promenade teams to flag low-visibility hazards and verify security illumination banks are 100% lit.";
+        weatherAdvisory = "Coastal haze conditions observed. Activate high-output illumination parameters at dark quay access walls and double marine line foot-patrol sequences.";
       }
 
-      if (traffic.status.includes("VOLUME") || criticalCount > 0) {
-        trafficAdvisory = "⚡ ROADWAY MANAGEMENT PROTOCOL: Driveways experiencing visitor drop-off surges. Move deployment units directly onto Island Main Road roundabouts and valet pathways to prevent gridlock bottlenecking.";
+      if (traffic.status.includes("CONGESTED") || criticalCount > 0) {
+        trafficAdvisory = "⚡ SECURITY FLOW ESCALATION: Gateway metrics reflect inbound queuing profiles. Deploy secondary check-lane inspectors at the main vehicle portals immediately and activate cross-zone CCTV tracking vectors.";
       }
 
       return { weatherAdvisory, trafficAdvisory };
@@ -873,163 +838,119 @@
       list.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
-    // ── XHR helper — follows redirects natively unlike fetch() on GitHub Pages ──
-    function xhrGet(url) {
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.timeout = 12000;
-        xhr.onload  = () => xhr.status >= 200 && xhr.status < 400 ? resolve(xhr.responseText) : reject(new Error('HTTP ' + xhr.status));
-        xhr.onerror   = () => reject(new Error('Network error'));
-        xhr.ontimeout = () => reject(new Error('Timeout'));
-        xhr.send();
-      });
-    }
-
     async function fetchData() {
-      const raw = document.getElementById('sheet-url').value.trim();
-      if (!raw) { alert('Please paste your Google Sheets published CSV URL first.'); return; }
-
-      // Normalise to a ?output=csv URL
-      let csvUrl = raw;
-      if (raw.includes('/edit')) {
-        csvUrl = raw.split('/edit')[0] + '/pub?output=csv';
-      } else if (!raw.includes('output=csv')) {
-        csvUrl = raw + (raw.includes('?') ? '&' : '?') + 'output=csv';
+      let url = document.getElementById('sheet-url').value.trim();
+      if (!url) {
+        alert('Please specify a valid URL link.');
+        return;
       }
-
-      // Save URL so it auto-loads on next visit
-      localStorage.setItem('dch-sheet-url', raw);
-
+      
+      if (url.includes("docs.google.com/spreadsheets") && !url.includes("output=csv") && !url.includes("format=csv")) {
+        url = url.replace(/\/edit.*$/, '/pub?output=csv');
+      }
+      
+      localStorage.setItem('dch-sheet-url', url);
       document.getElementById('loading-overlay').classList.add('show');
-      document.getElementById('fetch-status').textContent = 'FETCHING SYSTEM REGISTERS...';
-
-      const PROXY_GET = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvUrl);
-      const PROXY_RAW = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvUrl);
-
-      const strategies = [
-        async () => {                              // 1. Direct XHR — handles Google 302 redirects
-          const t = await xhrGet(csvUrl);
-          if (t.trimStart().startsWith('<!')) throw new Error('HTML response');
-          return t;
-        },
-        async () => {                              // 2. allorigins /get — JSON-wrapped, no Content-Length bug
-          const t = await xhrGet(PROXY_GET);
-          const c = JSON.parse(t).contents;
-          if (!c || c.trimStart().startsWith('<!')) throw new Error('HTML response');
-          return c;
-        },
-        async () => {                              // 3. allorigins /raw — last resort
-          const t = await xhrGet(PROXY_RAW);
-          if (t.trimStart().startsWith('<!')) throw new Error('HTML response');
-          return t;
-        }
-      ];
-
-      let lastErr = '';
-      for (const run of strategies) {
-        try {
-          const csv = await run();
-          if (!csv || csv.trim().length < 10) { lastErr = 'Empty response'; continue; }
-          parseCSVData(csv);
-          document.getElementById('loading-overlay').classList.remove('show');
-          return;
-        } catch (e) { lastErr = e.message; }
+      
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network payload streaming error.');
+        const csvText = await response.text();
+        parseCSVData(csvText);
+      } catch (err) {
+        alert('Failed fetching remote metrics layer data: ' + err.message);
+      } finally {
+        document.getElementById('loading-overlay').classList.remove('show');
       }
-
-      document.getElementById('loading-overlay').classList.remove('show');
-      document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
-      alert('Could not load sheet data.\nLast error: ' + lastErr + '\n\nEnsure the sheet is published: File → Share → Publish to web → CSV.');
     }
 
-    // ── CSV parser ───────────────────────────────────────────────────────────────
     function splitCSVLine(line) {
-      const res = []; let cur = '', inQ = false;
+      const result = [];
+      let current = '';
+      let inQuotes = false;
       for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') { inQ = !inQ; }
-        else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
-        else { cur += c; }
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim().replace(/^"|"$/g, ''));
+          current = '';
+        } else {
+          current += char;
+        }
       }
-      res.push(cur.trim());
-      return res;
+      result.push(current.trim().replace(/^"|"$/g, ''));
+      return result;
     }
 
     function parseCSVData(text) {
-      const lines = text.trim().split(/\r?\n/);
+      const lines = text.split(/\r?\n/);
       if (lines.length < 2) return;
-
-      const headers = splitCSVLine(lines[0]).map(h => h.replace(/"/g, '').toLowerCase().replace(/\s+/g, '_'));
+      
+      const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/ /g, '_'));
       const records = [];
-      for (let i = 1; i < lines.length; i++) {
+      
+      for(let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
-        const vals = splitCSVLine(lines[i]);
-        const rec  = {};
-        headers.forEach((h, idx) => { rec[h] = (vals[idx] || '').replace(/^"|"$/g, '').trim(); });
-        if (rec.timestamp || rec.incident_type) records.push(rec);
+        const row = splitCSVLine(lines[i]);
+        
+        if (row.length === headers.length) {
+          let rec = {};
+          headers.forEach((h, idx) => { rec[h] = row[idx]; });
+          records.push(rec);
+        }
       }
-
-      const GST_OFFSET_MS = 4 * 60 * 60 * 1000; // UTC+4 Dubai
-
+      
       allIncidents = records.map((r, i) => {
-        const ts  = r.timestamp || new Date().toISOString();
-        const utcMs = new Date(ts).getTime();
-        const gstMs = utcMs + GST_OFFSET_MS;
-        const gstDate = new Date(gstMs);
-        const gstHour = gstDate.getUTCHours(); // use UTC methods on the shifted date
-
-        // Prefer shift value from sheet; fall back to GST-based calculation
-        const shiftRaw = r.shift || '';
-        const shift = shiftRaw
-          ? shiftRaw
-          : (gstHour >= 7 && gstHour < 19)
-            ? 'Morning Shift (07:00-19:00)'
-            : 'Night Shift (19:00-07:00)';
-
-        let sev = (r.severity || 'Low').trim();
-        sev = sev.charAt(0).toUpperCase() + sev.slice(1).toLowerCase();
-        if (sev === 'Medium') sev = 'High';
-
+        const ts = r.timestamp || new Date().toISOString();
+        const d = new Date(ts);
+        const hour = d.getHours();
+        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+        
+        const rawSev = r.severity || 'Low';
+        let adjustedSev = rawSev.charAt(0).toUpperCase() + rawSev.slice(1).toLowerCase();
+        if (adjustedSev === 'Medium' || adjustedSev === 'High') {
+          adjustedSev = 'High';
+        }
+        
         return {
-          message_id:        r.message_id || 'DCH_' + i,
-          timestamp:         ts,           // keep original UTC ISO string
-          gstMs,                           // pre-computed GST ms for timeline bucketing
-          sender:            r.sender || r.officer || 'PATROL',
-          shift,
-          day_of_week:       r.day_of_week || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][gstDate.getUTCDay()],
-          incident_type:     r.incident_type || 'Unclassified',
-          severity:          sev,
-          location_zone:     r.location_zone || 'Master Community',
-          summary:           r.summary || r.operational_narrative_log || '',
-          action_required:   (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: r.immediate_actions || '',
-          confidence:        parseFloat(r.confidence || r.ai_parsing_confidence_score || 0.94)
+          message_id: r.message_id || r.system_reference_id || 'DCH_GEN_' + i,
+          timestamp: ts,
+          sender: r.sender || r.officer || 'SOC_CONSOLE_NODE',
+          shift: shift,
+          day_of_week: r.day_of_week || d.toLocaleDateString('en-US', {weekday: 'Long'}),
+          incident_type: r.incident_type || 'Unclassified Event',
+          severity: adjustedSev,
+          location_zone: r.location_zone || 'Harbour Perimeter Boundary',
+          summary: r.summary || r.operational_narrative_log || '',
+          action_required: (adjustedSev === 'Critical' || adjustedSev === 'High') ? 'TRUE' : 'FALSE',
+          immediate_actions: r.immediate_actions || r.target_resolution_parameters || '',
+          confidence: parseFloat(r.confidence || r.ai_parsing_confidence_score || 0.92)
         };
       });
-
+      
       sortIncidentsDescending(allIncidents);
+      document.getElementById('fetch-status').textContent = `CONNECTED · ${allIncidents.length} RECORDS SYNCED`;
       const { gstDate } = getGSTDateTime();
-      const timeStr = gstDate.toLocaleTimeString('en-US', { hour12: false });
-      document.getElementById('fetch-status').textContent  = `CONNECTED · ${allIncidents.length} RECORDS SYNCED · ${timeStr}`;
-      document.getElementById('last-refresh').textContent  = 'LAST TELEMETRY UPDATE: ' + timeStr;
+      document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
       renderDashboard();
     }
 
     function loadDemoData() {
       allIncidents = [];
-      const zones = ['Marina Walk', 'Central Park Plaza', 'Island Main Road', 'East Driveway Link', 'Retail Boulevard Promenades'];
-      const types = ['Promenade Access Infringement', 'Outdoor Infrastructure Obstruction', 'Landscape Irrigation Leak', 'Driveway Delivery Vehicle Snarl', 'Central Park Crowd Surge Control', 'Public Walkway Lighting Outage', 'Unpermitted Commercial Activity', 'Roadway Scooter Hazard Control'];
+      const zones = ['Creek Horizon', 'The Cove', 'Harbour Gate', 'Marina Walkways', 'South Gatehouse Complex'];
+      const types = ['Access Control Breach', 'Physical Infrastructure Distress', 'CCTV Disruption Event', 'Asset Key Management Handover', 'Unidentified Floating Object In Creek', 'HVAC Plant Room Thermal Spike', 'Contractor Ingress Non-Compliance', 'VIP Escort Transit Operational Route'];
       const severities = ['Critical', 'High', 'Medium', 'Low'];
       const senders = ['Supervisor John Al-Mansoori', 'Supervisor Robert Sterling', 'Supervisor Ahmed Khan', 'Supervisor Maria Torres'];
       const summaries = [
-        'Unauthorized e-scooters weaving through pedestrian lanes at high speeds along Marina Walk.',
-        'Heavy delivery crates blocking emergency lane accessibility behind the central boulevard driveway.',
-        'Main irrigation lateral pipeline rupture spreading surface water across Central Park lawn sector D.',
-        'Logistics transport idling at main driveway portal, creating a temporary tailback on Island Main Road.',
-        'High volume gathering noted around public fountains; field units deployed to manage outdoor traffic flow.',
-        'Three continuous public walkway illumination poles unlit on North Marina perimeter ring.',
-        'Unregistered mobile vendor operating pop-up stand without master community authorization slips.',
-        'Stray obstacle item detected on the fast lane of Island Main Road; immediate removal dispatch requested.'
+        'Unidentified individual tracking movement close to restricted marine landing pier zone elements.',
+        'Basement B2 level utility storage sensor registers localized standing water accumulator.',
+        'Data line timeout fault flags primary optical core monitoring node connectivity failure.',
+        'Handover checklist protocols logged for security office equipment assets configuration shift swap.',
+        'Commercial vendor cargo transport holding zone unauthorized parking access violation outside designated bay.',
+        'HVAC main system intake panel 3 alerts temperature sensor register deviation over normal operational levels.',
+        'Contractor logistics crew found moving without valid security operational passes.',
+        'Escort protocols initiated for secure transport coordination route movement.'
       ];
       
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1045,7 +966,7 @@
         if (sev === 'High' || sev === 'Medium') normalizedSev = 'High';
         
         allIncidents.push({
-          message_id: 'DCH_OUT_' + i,
+          message_id: 'DCH_SYS_' + i,
           timestamp: d.toISOString(),
           sender: senders[Math.floor(Math.random() * senders.length)],
           shift: shift,
@@ -1055,13 +976,13 @@
           location_zone: zones[Math.floor(Math.random() * zones.length)],
           summary: summaries[Math.floor(Math.random() * summaries.length)],
           action_required: (normalizedSev === 'Critical' || normalizedSev === 'High') ? 'TRUE' : 'FALSE',
-          immediate_actions: normalizedSev === 'Critical' ? 'Clear driveway lane; Redirect promenade traffic; Alert master field response team' : '',
-          confidence: (0.80 + Math.random() * 0.19).toFixed(2)
+          immediate_actions: normalizedSev === 'Critical' ? 'Contact shift supervisor; Dispatch tactical support team; Log video frame registers' : '',
+          confidence: (0.75 + Math.random() * 0.24).toFixed(2)
         });
       }
       
       sortIncidentsDescending(allIncidents);
-      document.getElementById('fetch-status').textContent = `DEMO TELEMETRY PROFILE · ${allIncidents.length} OUTDOOR LOGS LOADED`;
+      document.getElementById('fetch-status').textContent = `DEMO TELEMETRY PROFILE · ${allIncidents.length} RECORDS LOADED`;
       const { gstDate } = getGSTDateTime();
       document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + gstDate.toLocaleTimeString('en-US', {hour12:false});
       renderDashboard();
@@ -1093,7 +1014,7 @@
     function renderDashboard() {
       const data = getFilteredIncidents();
       
-      document.getElementById('stat-coverage').textContent = currentShiftFilter === 'All' ? 'Full 24-Hr Outdoor Radar' : currentShiftFilter + ' Open Spectrum';
+      document.getElementById('stat-coverage').textContent = currentShiftFilter === 'All' ? 'Full 24-Hr Cycle' : currentShiftFilter + ' Shift Spectrum';
       const uniqOfficers = [...new Set(data.map(d => d.sender))];
       document.getElementById('stat-officers').textContent = `${uniqOfficers.length} Active Personnel`;
 
@@ -1120,75 +1041,62 @@
     function renderTimelineChart(data) {
       const ctx = document.getElementById('timelineChart').getContext('2d');
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const gridColor    = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+      const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
       const textPriColor = theme === 'dark' ? '#7a8fa8' : '#2b3a51';
 
-      if (timelineChartInstance) { timelineChartInstance.destroy(); timelineChartInstance = null; }
-      if (!data.length) return;
+      const now = new Date();
+      const hoursArray = [];
+      const datasetMap = {};
 
-      const GST_OFFSET_MS = 4 * 60 * 60 * 1000;
-      const HOUR_MS = 60 * 60 * 1000;
-
-      // Use gstMs if available, otherwise compute it
-      const validMs = data
-        .map(x => x.gstMs || (new Date(x.timestamp).getTime() + GST_OFFSET_MS))
-        .filter(t => !isNaN(t));
-      if (!validMs.length) return;
-
-      const latestMs   = Math.max(...validMs);
-      const windowMs   = selectedHourRange * HOUR_MS;
-      const earliestMs = latestMs - windowMs;
-
-      // Build N unique hour buckets using epoch-based keys (no label collision)
-      const buckets = []; // [{epochMs, label, count}]
       for (let i = selectedHourRange - 1; i >= 0; i--) {
-        const bucketStart = latestMs - (i * HOUR_MS);
-        // Snap to hour boundary in GST
-        const gstSnapped = new Date(bucketStart);
-        const snappedMs  = bucketStart - (gstSnapped.getUTCMinutes() * 60000) - (gstSnapped.getUTCSeconds() * 1000);
-        const hh = new Date(snappedMs).getUTCHours();
-        const label = (hh < 10 ? '0' : '') + hh + ':00';
-        buckets.push({ epochMs: snappedMs, label, count: 0 });
+        const checkTime = new Date(now.getTime() - (i * 60 * 60 * 1000));
+        const hr = checkTime.getHours();
+        const label = (hr < 10 ? '0' : '') + hr + ':00';
+        hoursArray.push(label);
+        datasetMap[label] = 0;
       }
 
-      // Count incidents into their correct bucket
       data.forEach(x => {
-        const ms = x.gstMs || (new Date(x.timestamp).getTime() + GST_OFFSET_MS);
-        if (isNaN(ms) || ms < earliestMs || ms > latestMs) return;
-        // Find which bucket this belongs to
-        for (let i = buckets.length - 1; i >= 0; i--) {
-          if (ms >= buckets[i].epochMs) {
-            buckets[i].count++;
-            break;
+        const incidentTime = new Date(x.timestamp);
+        const diffMs = now - incidentTime;
+        const diffHours = diffMs / (1000 * 60 * 60);
+
+        if (diffHours <= selectedHourRange && diffHours >= 0) {
+          const hr = incidentTime.getHours();
+          const label = (hr < 10 ? '0' : '') + hr + ':00';
+          if (datasetMap[label] !== undefined) {
+            datasetMap[label]++;
           }
         }
       });
 
-      const chartGradient = ctx.createLinearGradient(0, 0, 0, 160);
+      if (timelineChartInstance) timelineChartInstance.destroy();
+
+      const chartGradient = ctx.createLinearGradient(0, 0, 0, 200);
       if (theme === 'dark') {
-        chartGradient.addColorStop(0, 'rgba(232,160,32,0.25)');
-        chartGradient.addColorStop(1, 'rgba(232,160,32,0.0)');
+        chartGradient.addColorStop(0, 'rgba(232, 160, 32, 0.25)');
+        chartGradient.addColorStop(1, 'rgba(232, 160, 32, 0.0)');
       } else {
-        chartGradient.addColorStop(0, 'rgba(176,102,0,0.2)');
-        chartGradient.addColorStop(1, 'rgba(176,102,0,0.0)');
+        chartGradient.addColorStop(0, 'rgba(176, 102, 0, 0.2)');
+        chartGradient.addColorStop(1, 'rgba(176, 102, 0, 0.0)');
       }
 
       timelineChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: buckets.map(b => b.label),
+          labels: hoursArray,
           datasets: [{
-            label: 'Incident Rate',
-            data:  buckets.map(b => b.count),
-            borderColor:          theme === 'dark' ? '#e8a020' : '#b06600',
-            backgroundColor:      chartGradient,
-            borderWidth:          2.5,
+            label: 'Incident Rate Track',
+            data: hoursArray.map(h => datasetMap[h]),
+            borderColor: theme === 'dark' ? '#e8a020' : '#b06600',
+            backgroundColor: chartGradient,
+            borderWidth: 2.5,
             pointBackgroundColor: theme === 'dark' ? '#e8a020' : '#b06600',
-            pointBorderColor:     theme === 'dark' ? '#090d12' : '#ffffff',
+            pointBorderColor: theme === 'dark' ? '#090d12' : '#ffffff',
             pointBorderWidth: 1.5,
-            pointRadius:      3.5,
-            pointHoverRadius: 5,
-            fill:    true,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: true,
             tension: 0.3
           }]
         },
@@ -1208,21 +1116,18 @@
       const parent = document.getElementById('zone-heatmap');
       parent.innerHTML = '';
       
-      const zoneCounts = {};
-      data.forEach(x => { 
-        const zone = x.location_zone || 'Unknown';
-        zoneCounts[zone] = (zoneCounts[zone] || 0) + 1; 
-      });
-      const sortedZones = Object.entries(zoneCounts).sort((a,b) => b[1] - a[1]);
+      const senderCounts = {};
+      data.forEach(x => { senderCounts[x.sender] = (senderCounts[x.sender] || 0) + 1; });
+      const sortedSenders = Object.entries(senderCounts).sort((a,b) => b[1] - a[1]);
       
-      if(!sortedZones.length) {
-        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No community zone metrics found.</div>';
+      if(!sortedSenders.length) {
+        parent.innerHTML = '<div class="empty-state" style="grid-column: span 2;">No matching sender metrics found.</div>';
         return;
       }
 
-      const maxCount = Math.max(...sortedZones.map(z => z[1]));
+      const maxCount = Math.max(...sortedSenders.map(z => z[1]));
 
-      sortedZones.forEach(([zoneName, count]) => {
+      sortedSenders.forEach(([senderName, count]) => {
         const ratio = maxCount ? (count / maxCount) : 0;
         const pct = ratio * 100;
         
@@ -1235,10 +1140,10 @@
 
         const cell = document.createElement('div');
         cell.className = 'zone-cell';
-        cell.onclick = () => openZoneDrawer(zoneName);
+        cell.onclick = () => openSenderDrawer(senderName);
 
         cell.innerHTML = `
-          <div class="zone-name">${zoneName}</div>
+          <div class="zone-name">${senderName}</div>
           <div class="zone-count">${count}</div>
           <div class="zone-bar" style="background: ${lineFillColor}; width: ${pct}%"></div>
         `;
@@ -1255,30 +1160,13 @@
         return;
       }
 
-      const GST_OFFSET_MS = 4 * 60 * 60 * 1000;
-
-      // Only render the 200 most recent (data is already sorted descending)
-      const visible = data.slice(0, 200);
-
-      // Show a header with the date of the most recent incident
-      const latestGstMs = visible[0].gstMs || (new Date(visible[0].timestamp).getTime() + GST_OFFSET_MS);
-      const latestDate  = new Date(latestGstMs).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' });
-      const header = document.createElement('div');
-      header.style.cssText = 'font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:1px;color:var(--accent);padding:6px 18px 4px;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-panel);position:sticky;top:0;z-index:1;';
-      header.textContent = `LATEST: ${latestDate} · ${data.length} TOTAL RECORDS`;
-      container.appendChild(header);
-
-      visible.forEach(inc => {
+      data.forEach(inc => {
         const item = document.createElement('div');
         item.className = 'feed-item';
         item.onclick = () => showIncidentDetails(inc);
         
         let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
-        const gstMs  = inc.gstMs || (new Date(inc.timestamp).getTime() + GST_OFFSET_MS);
-        const gstD   = new Date(gstMs);
-        const timeStr = (gstD.getUTCHours()   < 10 ? '0' : '') + gstD.getUTCHours()   + ':' +
-                        (gstD.getUTCMinutes() < 10 ? '0' : '') + gstD.getUTCMinutes();
-        const dateStr = gstD.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: '2-digit' });
+        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 
         item.innerHTML = `
           <div class="severity-dot ${sevClass}"></div>
@@ -1290,7 +1178,7 @@
               <span class="tag">${inc.sender}</span>
             </div>
           </div>
-          <div class="feed-time">${timeStr}<br><span style="font-size:9px;color:var(--text-dim)">${dateStr}</span></div>
+          <div class="feed-time">${timeStr}</div>
         `;
         container.appendChild(item);
       });
@@ -1305,7 +1193,7 @@
         container.innerHTML = `
           <div class="reco-item" style="border-left-color: var(--green);">
             <div class="reco-num" style="color:var(--green)">00</div>
-            <div><strong>OUTDOOR SECTORS SECURE</strong><br>No open space escalation targets triggered inside chosen window.</div>
+            <div><strong>ALL SECTORS SECURE</strong><br>No escalation targets triggered inside chosen profile window.</div>
           </div>
         `;
         return;
@@ -1317,12 +1205,12 @@
         item.className = 'reco-item';
         item.style.borderLeftColor = 'var(--red)';
         
-        const actionsList = ev.immediate_actions || 'Clear promenade lane; Redirect driveway traffic; Alert outdoor response vehicles.';
+        const actionsList = ev.immediate_actions || 'Deploy tactical responders; Verify local camera loops; Inform area supervisor.';
 
         item.innerHTML = `
           <div class="reco-num" style="color:var(--red)">${num}</div>
           <div>
-            <strong>OUTDOOR MITIGATION CAP: ${ev.incident_type}</strong><br>
+            <strong>CRITICAL ACTS APPLIED: ${ev.incident_type}</strong><br>
             <span style="color:var(--text-pri); font-size:11px;">Target Action Plan: ${actionsList}</span>
           </div>
         `;
@@ -1374,7 +1262,7 @@
       document.getElementById('ops-weather-wind').textContent = weather.wind;
       
       document.getElementById('ops-traffic-status').textContent = traffic.status;
-      document.getElementById('ops-traffic-status').style.color = traffic.status.includes("VOLUME") ? "var(--red)" : "var(--green)";
+      document.getElementById('ops-traffic-status').style.color = traffic.status.includes("CONGESTED") ? "var(--red)" : "var(--green)";
       document.getElementById('ops-traffic-delay').textContent = traffic.delay;
 
       // Generate context advisories
@@ -1389,44 +1277,44 @@
       }
 
       const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' }).toUpperCase();
-      const scopeLabel = currentShiftFilter === 'All' ? 'FULL 24-HOUR OUTDOOR PARMETER CYCLE' : `${currentShiftFilter.toUpperCase()} ROTATION SPECTRUM`;
+      const scopeLabel = currentShiftFilter === 'All' ? 'FULL 24-HOUR RADAR CYCLE' : `${currentShiftFilter.toUpperCase()} ROTATION SPECTRUM`;
 
-      let rawText = `*DUBAI CREEK HARBOUR — MASTER COMMUNITY OUTDOOR HANDOVER REPORT*\n`;
+      let rawText = `*DUBAI CREEK HARBOUR — SOC HANDOVER REPORT*\n`;
       rawText += `*DATE:* ${dateStr} GST RUN\n`;
-      rawText += `*ROTATION SCOPE:* ${scopeLabel}\n`;
+      rawText += `*ROTATION WINDOW:* ${scopeLabel}\n`;
       rawText += `--------------------------------------------------\n\n`;
-      rawText += `*🌍 OPEN-AIR ENVIRONMENT MATRIX*\n`;
+      rawText += `*🌍 REAL-TIME COMMUNITY ENVIRONMENT CONTEXT*\n`;
       rawText += `▪ Weather Station: ${weather.temp} | ${weather.condition} (${weather.wind})\n`;
-      rawText += `▪ Driveways & Roads Traffic: ${traffic.status} — ${traffic.delay}\n`;
-      rawText += `▪ AI Weather Tactical Directive: ${advisories.weatherAdvisory}\n`;
-      rawText += `▪ AI Traffic Logistics Directive: ${advisories.trafficAdvisory}\n\n`;
-      rawText += `*⚖️ OUTDOOR OPERATIONAL LOGS COMPONENT*\n`;
+      rawText += `▪ Traffic Access: ${traffic.status} — ${traffic.delay}\n`;
+      rawText += `▪ AI Weather Advisory: ${advisories.weatherAdvisory}\n`;
+      rawText += `▪ AI Traffic Directive: ${advisories.trafficAdvisory}\n\n`;
+      rawText += `*⚖️ OPERATIONAL METRICS QUANTITY*\n`;
       rawText += `▪ Total Parsed Records: ${data.length}\n`;
       rawText += `▪ Critical Actions Enforced: ${critCount}\n`;
       rawText += `▪ High / Medium Risks Trapped: ${medCount}\n`;
       rawText += `▪ Low Routine Verifications: ${lowCount}\n\n`;
       
-      rawText += `*📍 HIGHEST OPERATIONAL LOGGING VOLUMES BY SUPERVISOR*\n`;
+      rawText += `*📍 HIGHEST OPERATIONAL VOLUMES BY SUPERVISOR*\n`;
       const sendersMap = {};
       data.forEach(v => sendersMap[v.sender] = (sendersMap[v.sender] || 0) + 1);
       Object.entries(sendersMap).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([k,val]) => {
-        rawText += `▪ ${k}: ${val} telemetry logs verified.\n`;
+        rawText += `▪ ${k}: ${val} telemetry records assigned.\n`;
       });
       
-      rawText += `\n*🚨 URGENT ACTIONS ACTIVE OUTSIDE*\n`;
+      rawText += `\n*🚨 URGENT ACTION RECORDS REAL-TIME SYNC*\n`;
       const crits = data.filter(x => x.severity === 'Critical');
       if (crits.length > 0) {
         crits.forEach(c => {
           const t = new Date(c.timestamp).toLocaleTimeString('en-US',{hour12:false, hour:'2-digit', minute:'2-digit'});
-          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (Zone: ${c.location_zone})\n`;
-          rawText += `  Log Summary: ${c.summary}\n`;
+          rawText += `▪ [CRIT] ${t} | ${c.incident_type} (Operator: ${c.sender})\n`;
+          rawText += `  Log: ${c.summary}\n`;
         });
       } else {
-        rawText += `▪ No critical outdoor parameters triggered inside this spectrum.\n`;
+        rawText += `▪ No critical targets recorded in this window.\n`;
       }
       
       rawText += `\n--------------------------------------------------\n`;
-      rawText += `*DCH SECURITY OPERATIONS LOG END*`;
+      rawText += `*SOC DATA EXTRACT NODE RUN OVER*`;
       
       rawCopyableText = rawText;
       displayContainer.textContent = rawText;
@@ -1498,62 +1386,6 @@
       document.getElementById('slide-panel').classList.add('show');
     }
 
-    function openZoneDrawer(zoneName) {
-      document.getElementById('drawer-title').textContent = `COMMUNITY SNAPSHOT: ${zoneName.toUpperCase()}`;
-      const body = document.getElementById('drawer-body');
-      body.innerHTML = '';
-
-      const zoneIncidents = allIncidents.filter(x => x.location_zone === zoneName);
-      let c = 0, h = 0, l = 0;
-      zoneIncidents.forEach(z => {
-        if (z.severity === 'Critical') c++;
-        else if (z.severity === 'High') h++;
-        else l++;
-      });
-
-      const statsGrid = document.createElement('div');
-      statsGrid.className = 'zone-stat-grid';
-      statsGrid.innerHTML = `
-        <div class="zone-stat-card" style="border-top:2px solid var(--red);"><div class="zone-stat-lbl">Critical</div><div class="zone-stat-val">${c}</div></div>
-        <div class="zone-stat-card" style="border-top:2px solid var(--accent);"><div class="zone-stat-lbl">High/Med</div><div class="zone-stat-val">${h}</div></div>
-        <div class="zone-stat-card" style="border-top:2px solid var(--green); grid-column: span 2;"><div class="zone-stat-lbl">Low Routine</div><div class="zone-stat-val">${l}</div></div>
-      `;
-      body.appendChild(statsGrid);
-
-      const sectionTitle = document.createElement('div');
-      sectionTitle.className = 'slide-section-title';
-      sectionTitle.textContent = "Community Incident Log Summary Feed";
-      body.appendChild(sectionTitle);
-
-      const listWrap = document.createElement('div');
-      listWrap.className = 'feed-list';
-      listWrap.style.maxHeight = 'calc(100vh - 280px)';
-
-      zoneIncidents.forEach(inc => {
-        const row = document.createElement('div');
-        row.className = 'feed-item';
-        row.onclick = () => showIncidentDetails(inc);
-        let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
-        const gstMs  = inc.gstMs || (new Date(inc.timestamp).getTime() + 4*3600000);
-        const gd     = new Date(gstMs);
-        const timeStr = (gd.getUTCHours() < 10 ? '0' : '') + gd.getUTCHours() + ':' + (gd.getUTCMinutes() < 10 ? '0' : '') + gd.getUTCMinutes();
-
-        row.innerHTML = `
-          <div class="severity-dot ${sevClass}"></div>
-          <div>
-            <div class="feed-type" style="font-size:12px;">${inc.incident_type}</div>
-            <div class="feed-summary" style="font-size:11px;">Sender: ${inc.sender} | ${inc.summary || '—'}</div>
-          </div>
-          <div class="feed-time" style="font-size:10px;">${timeStr}</div>
-        `;
-        listWrap.appendChild(row);
-      });
-      body.appendChild(listWrap);
-
-      document.getElementById('slide-backdrop').classList.add('show');
-      document.getElementById('slide-panel').classList.add('show');
-    }
-
     function closeZoneDrawer() {
       document.getElementById('slide-backdrop').classList.remove('show');
       document.getElementById('slide-panel').classList.remove('show');
@@ -1564,12 +1396,12 @@
       
       let logicalMitigation = inc.immediate_actions;
       if (!logicalMitigation || logicalMitigation.trim().length === 0) {
-        logicalMitigation = `Deploy outdoor responders to area; Verify nearby area camera loops; Inform ${inc.sender} to coordinate ground response.`;
+        logicalMitigation = `Deploy tactical responders to area; Verify local camera loops; Inform ${inc.sender} to coordinate counter-measures.`;
       }
       const actions = logicalMitigation.split(';');
       
       target.innerHTML = `
-        <div class="modal-field"><label>System Event Registry Timestamp (GST / UTC+4)</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date((inc.gstMs || (new Date(inc.timestamp).getTime() + 4*3600000))).toUTCString().replace('GMT','GST')}</p></div>
+        <div class="modal-field"><label>System Event Registry Timestamp</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date(inc.timestamp).toString()}</p></div>
         
         <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p style="font-weight:600; color:var(--blue);">${inc.shift}</p></div>
         
