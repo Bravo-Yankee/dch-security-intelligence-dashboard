@@ -84,7 +84,6 @@
     z-index: 9999;
   }
 
-  /* ── HEADER ── */
   header {
     display: flex;
     justify-content: space-between;
@@ -154,7 +153,6 @@
     margin-top: 2px;
   }
 
-  /* ── VECTOR HORSE GRAPHIC ANIMATION ── */
   @keyframes horseRun {
     0% { stroke-dashoffset: 24; }
     50% { opacity: 0.85; }
@@ -177,7 +175,6 @@
     animation: horseRun 0.8s linear infinite;
   }
 
-  /* ── CONFIG PANEL ── */
   .config-bar {
     display: flex;
     align-items: center;
@@ -248,7 +245,6 @@
     border-color: var(--text-pri);
   }
 
-  /* ── CONTROL BUTTONS ── */
   .btn-theme-toggle, .btn-holiday-homes {
     background: var(--bg-card);
     color: var(--text-pri);
@@ -301,7 +297,6 @@
     letter-spacing: 0.5px;
   }
 
-  /* ── MAIN LAYOUT ── */
   main {
     padding: 24px 32px;
     display: flex;
@@ -309,7 +304,6 @@
     gap: 20px;
   }
 
-  /* ── KPI ROW ── */
   .kpi-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -370,7 +364,6 @@
     margin-top: 4px;
   }
 
-  /* ── MAIN LAYOUT GRID SYSTEM ── */
   .main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 360px;
@@ -414,14 +407,8 @@
     border: 1px solid var(--border);
   }
 
-  /* ── TIMELINE GRAPH ── */
-  .chart-wrap {
-    padding: 16px;
-    height: 220px;
-    position: relative;
-  }
+  .chart-wrap { padding: 16px; height: 220px; position: relative; }
 
-  /* ── SCROLLABLE ZONE HEATMAP ── */
   .zone-grid {
     padding: 12px 16px;
     display: grid;
@@ -430,13 +417,7 @@
     max-height: 220px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--text-dim) var(--bg-panel);
   }
-
-  .zone-grid::-webkit-scrollbar { width: 6px; }
-  .zone-grid::-webkit-scrollbar-track { background: var(--bg-panel); border-radius: var(--r); }
-  .zone-grid::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: var(--r); }
-  .zone-grid::-webkit-scrollbar-thumb:hover { background: var(--text-sec); }
 
   .zone-cell {
     border-radius: var(--r);
@@ -445,251 +426,114 @@
     overflow: hidden;
     cursor: pointer;
     border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.01);
-    transition: transform 0.12s;
   }
 
-  .zone-cell:hover { transform: scale(1.02); border-color: var(--text-pri); }
+  .zone-cell:hover { border-color: var(--text-pri); }
+  .zone-name { font-size: 12px; font-weight: 600; color: var(--text-pri); margin-bottom: 4px; position: relative; z-index: 1; }
+  .zone-count { font-family: var(--font-display); font-size: 28px; line-height: 1; position: relative; z-index: 1; }
+  .zone-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
 
-  .zone-name {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-pri);
-    margin-bottom: 4px;
-    position: relative;
-    z-index: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .zone-count {
-    font-family: var(--font-display);
-    font-size: 28px;
-    line-height: 1;
-    position: relative;
-    z-index: 1;
-  }
-
-  .zone-bar {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 4px;
-  }
-
-  /* ── INCIDENT FEED LOGS ── */
-  .feed-list {
-    max-height: 220px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-
-  .feed-item {
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 12px;
-    align-items: start;
-    cursor: pointer;
-  }
-
+  .feed-list { max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
+  .feed-item { padding: 12px 18px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; cursor: pointer; }
   .feed-item:hover { background: var(--bg-panel); }
-
-  .severity-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    margin-top: 4px;
-    flex-shrink: 0;
-    border: 1px solid rgba(0,0,0,0.1);
-  }
-
-  .severity-dot.critical { background: var(--red); animation: pulse-red 1.5s infinite; }
+  .severity-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .severity-dot.critical { background: var(--red); }
   .severity-dot.high { background: #d06010; }
   .severity-dot.medium { background: var(--accent); }
   .severity-dot.low { background: var(--green); }
-
-  @keyframes pulse-red {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.6; }
-  }
-
   .feed-type { font-size: 13px; font-weight: 600; color: var(--text-pri); }
-  .feed-meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-sec); margin-top: 2px; }
-  .feed-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); text-align: right; white-space: nowrap; }
+  .feed-summary { font-size: 12px; color: var(--text-sec); margin-top: 3px; }
+  .feed-meta { display: flex; gap: 6px; margin-top: 6px; }
+  .tag { font-family: var(--font-mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--bg-deep); color: var(--text-sec); border: 1px solid var(--border); }
+  .tag.zone { color: var(--blue); }
+  .tag.type { color: var(--accent); }
+  .feed-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
 
-  /* ── VIEWPORT LAYOUT CONTAINER ── */
-  .view-container { display: none; flex-direction: column; gap: 20px; }
-  .view-container.active { display: flex; }
+  .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 360px; gap: 16px; }
+  .shift-selector { display: flex; }
+  .shift-btn { flex: 1; padding: 6px; font-family: var(--font-mono); font-weight: 600; font-size: 11px; background: var(--bg-card); color: var(--text-sec); border: 1px solid var(--border); cursor: pointer; }
+  .shift-btn.active { background: var(--bg-panel); color: var(--text-pri); border-color: var(--text-pri); }
+  .shift-btn:first-child { border-radius: var(--r) 0 0 var(--r); }
+  .shift-btn:last-child { border-radius: 0 var(--r) var(--r) 0; border-left: none; }
 
-  /* ── SHIFT MANAGEMENT CARD ── */
-  .shift-controls { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
-  .shift-btn {
-    flex: 1; padding: 12px; text-align: center;
-    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-    letter-spacing: 1px; text-transform: uppercase;
-    color: var(--text-sec); background: transparent; border: none; cursor: pointer;
-    border-bottom: 2px solid transparent;
-  }
-  .shift-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg-card); }
-
-  .shift-stats-box { padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 120px; }
-  .shift-row { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
-  .shift-row-label { color: var(--text-sec); }
-  .shift-row-val { font-weight: 600; font-family: var(--font-mono); }
-
-  /* ── MITIGATION RECOMMENDATIONS ── */
-  .reco-list { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .reco-item {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 10px 12px; background: var(--bg-panel); border-radius: var(--r);
-    border-left: 3px solid var(--accent); font-size: 12px; line-height: 1.5; color: var(--text-sec);
-  }
+  .reco-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .reco-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; background: var(--bg-panel); border-radius: var(--r); border-left: 3px solid var(--accent); font-size: 12px; color: var(--text-sec); }
   .reco-item strong { color: var(--text-pri); }
-  .reco-num { font-family: var(--font-display); font-size: 20px; color: var(--accent); line-height: 1; flex-shrink: 0; }
+  .reco-num { font-family: var(--font-display); font-size: 20px; color: var(--accent); line-height: 1; }
 
-  /* ── TYPE METRIC TRACKS ── */
   .type-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
   .type-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
-  .type-name { width: 140px; flex-shrink: 0; color: var(--text-sec); font-weight: 500; }
-  .type-bar-track { flex: 1; height: 6px; background: var(--bg-panel); border-radius: 3px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
-  .type-bar-fill { height: 100%; background: var(--text-pri); }
-  .type-count { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); width: 24px; text-align: right; }
+  .type-name { width: 110px; color: var(--text-sec); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .type-bar-track { flex: 1; height: 6px; background: var(--bg-panel); border-radius: 3px; overflow: hidden; }
+  .type-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; }
+  .type-count { font-family: var(--font-mono); font-weight: 600; color: var(--text-pri); width: 24px; text-align: right; }
 
-  /* ── HANDOVER BROADCAST CONTAINER ── */
-  .handover-box {
-    padding: 16px 20px; font-family: var(--font-mono); font-size: 11px;
-    line-height: 1.6; color: var(--text-sec); background: var(--bg-deep);
-    border-radius: var(--r); border: 1px dashed var(--border-bright);
-    white-space: pre-wrap; word-break: break-all; max-height: 220px; overflow-y: auto;
-  }
+  .handover-container { padding: 16px; position: relative; }
+  .handover-textarea { width: 100%; height: 180px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--r); color: var(--text-pri); font-family: var(--font-mono); font-size: 11px; padding: 12px; resize: none; outline: none; line-height: 1.5; }
   .handover-highlight { color: var(--accent); font-weight: 600; }
-  .btn-copy {
-    background: var(--bg-card); color: var(--text-pri); border: 1px solid var(--border-bright);
-    border-radius: var(--r); padding: 5px 12px; font-family: var(--font-mono); font-size: 10px;
-    font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 10px;
-  }
-  .btn-copy:hover { background: var(--bg-hover); }
 
-  /* ── FOOTER LAYOUT ── */
-  footer {
-    padding: 12px 32px; border-top: 2px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text-sec);
-    background: var(--bg-panel);
-  }
-  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
-
-  /* ── LOADING OVERLAY ── */
-  .loading-overlay {
-    position: fixed; inset: 0; background: rgba(9,13,18,0.95);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9000; display: none;
-  }
-  .loading-overlay.show { display: flex; }
-  .loading-spinner {
-    width: 40px; height: 40px; border: 3px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: spin 0.8s linear infinite; margin-bottom: 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-pri); }
-
-  /* ── SLIDE OVER PANEL ── */
-  .slide-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 7500; display: none; }
-  .slide-backdrop.show { display: block; }
-  .slide-panel {
-    position: fixed; top: 0; right: -420px; bottom: 0; width: 400px;
-    background: var(--bg-card); border-left: 2px solid var(--border-bright);
-    z-index: 7600; transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex; flex-direction: column; box-shadow: -5px 0 25px rgba(0,0,0,0.25);
-  }
-  .slide-panel.show { right: 0; }
-  .slide-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
-  .slide-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
-  .slide-close { background: transparent; border: none; color: var(--text-sec); font-size: 18px; cursor: pointer; }
-  .slide-close:hover { color: var(--text-pri); }
-  .slide-body { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-  .slide-sub-title { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
-
-  /* ── MASTER MODAL ── */
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 8000; display: none; align-items: center; justify-content: center; }
-  .modal-backdrop.show { display: flex; }
-  .modal { background: var(--bg-card); border: 2px solid var(--text-pri); border-radius: 6px; width: 540px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
-  .modal-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1.5px; color: var(--text-pri); }
-  .modal-close { background: transparent; border: none; color: var(--text-sec); font-size: 16px; cursor: pointer; }
-  .modal-close:hover { color: var(--text-pri); }
-  .modal-body { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
-  .modal-field { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-  .modal-field label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-sec); display: block; margin-bottom: 2px; }
+  .modal-backdrop, .slide-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 1000; }
+  .modal-backdrop.show, .slide-backdrop.show { opacity: 1; pointer-events: auto; }
+  .modal { background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: var(--r); width: 480px; max-width: 90%; overflow: hidden; }
+  .modal-header, .slide-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--bg-panel); }
+  .modal-title, .slide-title { font-family: var(--font-display); font-size: 16px; letter-spacing: 1px; }
+  .modal-close, .slide-close { background: none; border: none; color: var(--text-sec); font-size: 16px; cursor: pointer; }
+  .modal-close:hover, .slide-close:hover { color: var(--text-pri); }
+  .modal-body, .slide-body { padding: 18px; max-height: 400px; overflow-y: auto; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { display: block; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
   .modal-field p { font-size: 13px; color: var(--text-pri); line-height: 1.4; }
-  .modal-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
 
-  /* ── HOLIDAY HOMES VIEW LAYOUT ── */
-  .hh-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 16px; }
-  .hh-form-box { display: flex; flex-direction: column; gap: 12px; padding: 18px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-sec); font-weight: 600; }
-  .form-group input, .form-group select, .form-group textarea { background: var(--bg-deep); border: 1px solid var(--border-bright); border-radius: var(--r); color: var(--text-pri); padding: 8px 12px; font-size: 13px; outline: none; font-family: var(--font-body); }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
-  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .btn-submit { background: var(--accent); color: #000; border: none; border-radius: var(--r); padding: 10px; font-family: var(--font-body); font-weight: 600; font-size: 13px; cursor: pointer; letter-spacing: 0.5px; text-align: center; margin-top: 4px; }
-  .btn-submit:hover { opacity: 0.9; }
-  
-  .hh-table-wrap { padding: 0; max-height: 480px; overflow-y: auto; }
-  .hh-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
-  .hh-table th { background: var(--bg-panel); padding: 12px 14px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-sec); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
-  .hh-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-pri); vertical-align: middle; }
-  .hh-table tr:hover td { background: var(--bg-panel); }
-  
-  .status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; }
-  .status-pill.active { background: var(--green-dim); color: var(--green); }
-  .status-pill.expired { background: var(--red-dim); color: var(--red); }
-  .status-pill.pending { background: var(--accent-dim); color: var(--accent); }
-  .action-icon-btn { background: transparent; border: none; color: var(--text-sec); cursor: pointer; padding: 2px; border-radius: 4px; }
-  .action-icon-btn:hover { color: var(--red); background: var(--bg-hover); }
-  .empty-state { padding: 40px; text-align: center; color: var(--text-dim); font-size: 13px; font-family: var(--font-mono); }
+  .slide-backdrop { justify-content: flex-end; }
+  .slide-panel { background: var(--bg-card); border-left: 2px solid var(--border-bright); width: 420px; height: 100%; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s ease; }
+  .slide-backdrop.show .slide-panel { transform: translateX(0); }
+  .slide-body { flex: 1; max-height: none; }
+  .slide-sub-title { font-family: var(--font-display); font-size: 13px; letter-spacing: 1px; color: var(--accent); margin: 16px 0 8px 0; border-bottom: 1px dashed var(--border); padding-bottom: 4px; }
+
+  footer { padding: 12px 32px; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--text-sec); background: var(--bg-panel); }
+  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
+  .loading-overlay { position: fixed; inset: 0; background: rgba(9,13,18,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9000; display: none; }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
 </style>
 </head>
 <body>
 
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loading-msg">CONNECTING TO SOC TELEMETRY...</div>
+</div>
+
 <header>
   <div class="header-left">
-    <div class="logo-badge">SOC</div>
+    <div class="logo-badge">DCH</div>
     <div>
-      <h1 class="header-title">DUBAI CREEK HARBOUR</h1>
-      <div class="header-sub">SECURITY OPERATIONS DASHBOARD</div>
+      <div class="header-title">DUBAI CREEK HARBOUR</div>
+      <div class="header-sub">Security Operations Centre</div>
     </div>
   </div>
   <div class="header-right">
     <div id="live-clock">00:00:00</div>
-    <div class="clock-date" id="live-date">LOADING GST SYSTEM TIMES...</div>
+    <div class="clock-date" id="live-date">UTM REGISTRY TIME</div>
   </div>
 </header>
 
 <div class="config-bar">
-  <label for="sheet-url">DATABASE CONNECTION STRINGS</label>
-  <input type="text" id="sheet-url" placeholder="Paste Google Sheet Telemetry URL here..." value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRG95N3O5UELiCI_D9bVtbfssN7wohUvxJeTH2EBm8JaLvpzU8lAB2O114myIHlDMMdpK1ZWLRF2T62/pub?gid=1090631214&single=true&output=csv">
+  <label>Data Stream Uplink</label>
+  <input type="text" id="sheet-url" placeholder="Paste your direct n8n webhook data URL here..." value="">
+  <button class="btn-fetch" onclick="fetchSheetData()">CONNECT</button>
+  <button class="btn-demo" onclick="loadDemoDataset()">INJECT LAB MATRIX</button>
+  <span class="fetch-status" id="status-text">DISCONNECTED</span>
   
-  <label for="date-range">RANGE</label>
-  <select id="date-range" onchange="renderAll()">
-    <option value="1">Today</option>
-    <option value="7" selected>Last 7 days</option>
-    <option value="30">Last 30 days</option>
-    <option value="999">All time</option>
-  </select>
-
-  <button class="btn-fetch" onclick="fetchData()">FETCH DATA</button>
-  <button class="btn-demo" onclick="loadDemoData()">LOAD DEMO</button>
-
-  <div style="margin-left: auto; display:flex; gap:8px; align-items:center;">
-    <a href="#" class="btn-holiday-homes" id="view-toggler" onclick="toggleView(event)">
-      <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="13" width="13" xmlns="http://www.w3.org/2000/svg">
+  <div style="margin-left: auto; display: flex; gap: 8px;">
+    <a href="HH_Tracker.html" class="btn-holiday-homes">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      <span id="view-toggler-text">HOLIDAY HOMES</span>
+      <span>HOLIDAY HOMES</span>
     </a>
     <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
       <span>🌙</span><span id="theme-text">Dark Mode</span>
@@ -697,218 +541,90 @@
   </div>
 </div>
 
-<div style="padding: 4px 32px; background: var(--bg-deep); border-bottom: 1px solid var(--border);">
-  <span class="fetch-status" id="fetch-status">No data loaded · Click FETCH DATA or LOAD DEMO to begin</span>
-</div>
-
 <main>
-  <div id="view-live" class="view-container active">
-    <div class="kpi-row">
-      <div class="kpi-card total">
-        <div class="kpi-label">Total Incidents</div>
-        <div class="kpi-value" id="kpi-total">—</div>
-        <div class="kpi-delta" id="kpi-total-d">this period</div>
-      </div>
-      <div class="kpi-card critical">
-        <div class="kpi-label">Critical / High</div>
-        <div class="kpi-value" id="kpi-critical">—</div>
-        <div class="kpi-delta">immediate triage</div>
-      </div>
-      <div class="kpi-card medium">
-        <div class="kpi-label">Medium</div>
-        <div class="kpi-value" id="kpi-medium">—</div>
-        <div class="kpi-delta">escalated items</div>
-      </div>
-      <div class="kpi-card low">
-        <div class="kpi-label">Low / Routine</div>
-        <div class="kpi-value" id="kpi-low">—</div>
-        <div class="kpi-delta">tracked parameters</div>
-      </div>
-      <div class="kpi-card active">
-        <div class="kpi-label">Action Flag Pending</div>
-        <div class="kpi-value" id="kpi-active">—</div>
-        <div class="kpi-delta">requires review</div>
-      </div>
+  <div class="kpi-row">
+    <div class="kpi-card total">
+      <div class="kpi-label">Total Incidents</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-delta" id="kpi-total-d">this period</div>
     </div>
-
-    <div class="main-grid">
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <div class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">TEMPORAL ANOMALY DISTRIBUTION TIMELINE</h2>
-            <span class="panel-badge">CHART.JS INTEL</span>
-          </div>
-          <div class="chart-wrap">
-            <canvas id="timelineChart"></canvas>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">COMMUNITY RISK VECTOR DENSITY HEATMAP</h2>
-            <span class="panel-badge" id="heatmap-count">0 CLUSTERS</span>
-          </div>
-          <div class="zone-grid" id="zone-heatmap">
-            <div class="empty-state">Initialize dataset registry to evaluate map matrices</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <div class="panel" style="display: flex; flex-direction: column; flex: 1;">
-          <div class="panel-header">
-            <h2 class="panel-title">LIVE INCIDENT STREAM LOGS</h2>
-            <span class="panel-badge">REAL-TIME FEED</span>
-          </div>
-          <div class="feed-list" id="feed-list" style="flex: 1; max-height: 525px;">
-            <div class="empty-state">No real-time logs currently streaming inside system cache</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        <div class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">TACTICAL SHIFT SUMMARY WINDOWS</h2>
-            <span class="panel-badge">METRIC MATRIX</span>
-          </div>
-          <div class="shift-controls">
-            <button class="shift-btn active" id="sbtn-morning" onclick="setShiftFilter('Morning')">MORNING WATCH</button>
-            <button class="shift-btn" id="sbtn-night" onclick="setShiftFilter('Night')">NIGHT WATCH</button>
-          </div>
-          <div class="shift-stats-box" id="shift-stats">
-            <div class="empty-state">Perform system fetch loop to parse operational segments</div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">CATEGORIZED INCIDENT TRACKS</h2>
-            <span class="panel-badge">SIGNATURE COUNTS</span>
-          </div>
-          <div class="type-list" id="type-list" style="max-height: 165px; overflow-y: auto;">
-            <div class="empty-state">Awaiting signature distribution load...</div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">AUTOMATED SOC MITIGATION DIRECTIVES</h2>
-            <span class="panel-badge">AI COMMANDS</span>
-          </div>
-          <div class="reco-list" id="reco-list">
-            <div class="reco-item">
-              <div class="reco-num">i</div>
-              <div>System standing by. Load Google Sheet dataset streams to activate proactive mitigation modeling frameworks.</div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="kpi-card critical">
+      <div class="kpi-label">Critical / High</div>
+      <div class="kpi-value" id="kpi-critical">—</div>
+      <div class="kpi-delta">immediate triage</div>
     </div>
-
-    <div class="panel" style="margin-top: 4px;">
-      <div class="panel-header">
-        <h2 class="panel-title">DYNAMIC COMMAND HANDOVER VECTOR BROADCAST</h2>
-        <span class="panel-badge">SOC TRANSMISSION REGISTRY</span>
-      </div>
-      <div style="padding: 16px;">
-        <div class="handover-box" id="handover-box">Awaiting active data stream initialization loop matrices to generate broadcast registry text summaries...</div>
-        <button class="btn-copy" onclick="copyHandoverText()">
-          <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="12" width="12" xmlns="http://www.w3.org/2000/svg">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <span>COPY BROADCAST PACKET</span>
-        </button>
-      </div>
+    <div class="kpi-card medium">
+      <div class="kpi-label">Medium Urgency</div>
+      <div class="kpi-value" id="kpi-medium">—</div>
+      <div class="kpi-delta">standard routing</div>
+    </div>
+    <div class="kpi-card low">
+      <div class="kpi-label">Minor Anomalies</div>
+      <div class="kpi-value" id="kpi-low">—</div>
+      <div class="kpi-delta">logged monitoring</div>
+    </div>
+    <div class="kpi-card active">
+      <div class="kpi-label">Action Orders</div>
+      <div class="kpi-value" id="kpi-actions">—</div>
+      <div class="kpi-delta" id="kpi-actions-d">requiring loops</div>
     </div>
   </div>
 
-  <div id="view-holiday" class="view-container">
-    <div class="hh-grid">
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">DETDT REGISTRATION & PERMIT DECLARATION</h2>
-          <span class="panel-badge">SECURE ENTRY FORM</span>
-        </div>
-        <form class="hh-form-box" id="hh-form" onsubmit="handleHHSubmit(event)">
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="hh-unit">Unit / Villa Reference</label>
-              <input type="text" id="hh-unit" placeholder="e.g. Creek Horizon T1-1204" required>
-            </div>
-            <div class="form-group">
-              <label for="hh-operator">Registered Operator Name</label>
-              <input type="text" id="hh-operator" placeholder="e.g. Deluxe Holiday Homes" required>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="hh-permit">DETDT Permit License Number</label>
-              <input type="text" id="hh-permit" placeholder="e.g. 1084291-HH" required>
-            </div>
-            <div class="form-group">
-              <label for="hh-status">Current Permit Status</label>
-              <select id="hh-status">
-                <option value="Active">Active / Compliant</option>
-                <option value="Pending">Pending Audit Review</option>
-                <option value="Expired">Expired / Non-Compliant</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="hh-start">Permit Issuance Date</label>
-              <input type="date" id="hh-start" required>
-            </div>
-            <div class="form-group">
-              <label for="hh-end">Permit Expiration Date</label>
-              <input type="date" id="hh-end" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="hh-contact">Emergency Property Management Contact Line (UAE)</label>
-            <input type="text" id="hh-contact" placeholder="e.g. +971 4 XXX XXXX or 050 XXXXXXX" required>
-          </div>
-
-          <div class="form-group">
-            <label for="hh-notes">Operational Directives &amp; Access Boundaries</label>
-            <textarea id="hh-notes" rows="3" placeholder="Specify building access constraints, parking bay allocations, or specific community rule declarations..."></textarea>
-          </div>
-
-          <button type="submit" class="btn-submit">COMMIT FILE TO LOG REGISTRY</button>
-        </form>
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Temporal Incident Densities</div>
+        <div class="panel-badge">Hourly Vectors</div>
       </div>
+      <div class="chart-wrap">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">COMMUNITY HOLIDAY HOME ACCESS REGISTRY INDEX</h2>
-          <span class="panel-badge" id="hh-badge-count">0 PROPERTIES</span>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Community Heatmap Distribution</div>
+        <div class="panel-badge">Spatial Allocation</div>
+      </div>
+      <div class="zone-grid" id="zone-grid"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Active Incident Feed Logs</div>
+        <div class="panel-badge">Live Intake Stream</div>
+      </div>
+      <div class="feed-list" id="feed-list"></div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Operational Shift Analysis Dashboard</div>
+        <div class="shift-selector">
+          <button class="shift-btn active" id="sbtn-morning" onclick="setShiftFilter('Morning')">Day Watch</button>
+          <button class="shift-btn" id="sbtn-night" onclick="setShiftFilter('Night')">Night Watch</button>
         </div>
-        <div class="hh-table-wrap">
-          <table class="hh-table">
-            <thead>
-              <tr>
-                <th>Property Unit</th>
-                <th>Operator Agency</th>
-                <th>DETDT License ID</th>
-                <th>Expiration Boundary</th>
-                <th>Permit State</th>
-                <th style="text-align:center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="hh-table-body">
-              <tr>
-                <td colspan="6">
-                  <div class="empty-state">No active holiday homes configured inside local storage index databases.</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      </div>
+      <div id="shift-stats"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Strategic Response Profiler</div>
+        <div class="panel-badge">Automated Directives</div>
+      </div>
+      <div class="reco-list" id="reco-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Automated Shift Handover Registry Log</div>
+        <div class="panel-badge" id="handover-time-badge">GST Uplink Array</div>
+      </div>
+      <div class="handover-container">
+        <textarea class="handover-textarea" id="handover-box" readonly onclick="this.select();" placeholder="Inject or connect system data to compile broadcast arrays..."></textarea>
       </div>
     </div>
   </div>
@@ -916,37 +632,29 @@
 
 <footer>
   <div class="footer-left-content">
-    <span>SYSTEM TELEMETRY TERMINAL INTERFACE v5.0.0</span>
-    <span style="margin-left:14px; display:inline-flex; align-items:center; opacity:0.85;">
-      <svg class="animated-vector-horse" width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-        <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </span>
-    <span style="margin-left: 4px;">SHIFT HANDOVER WINDOW: 07:00 &amp; 19:00</span>
+    <span>© 2026 DUBAI CREEK HARBOUR SECURITY ALLIANCE</span>
+    <svg class="animated-vector-horse" width="22" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;">
+      <path d="M4 18c2-1 3-3 3-5s-1-4-3-5M20 18c-2-1-3-3-3-5s1-4 3-5M12 4v16M8 8h8M7 12h10M9 16h6"/>
+    </svg>
   </div>
-  <span id="last-refresh">LAST REFRESH: —</span>
+  <div>CLASSIFICATION: RESTRICTED SOC TELEMETRY INTERFACE</div>
 </footer>
 
-<div class="loading-overlay" id="loading">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">STREAMING TARGET TELEMETRY DATA FIELDS...</div>
-</div>
-
 <div class="slide-backdrop" id="slide-backdrop" onclick="closeZonePanel(event)">
-  <div class="slide-panel" onclick="event.stopPropagation()">
+  <div class="slide-panel">
     <div class="slide-header">
       <div class="slide-title" id="slide-zone-name">ZONE ANOMALY TRACE</div>
-      <button class="slide-close" onclick="document.getElementById('slide-backdrop').classList.remove('show'); document.getElementById('slide-panel').classList.remove('show');">✕</button>
+      <button class="slide-close" onclick="document.getElementById('slide-backdrop').classList.remove('show')">✕</button>
     </div>
     <div class="slide-body" id="slide-zone-body"></div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
+  <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="modal-title">REPORT DETAILS</div>
-      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show');">✕</button>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
   </div>
@@ -955,150 +663,105 @@
 <script>
   let allIncidents = [];
   let currentShift = 'Morning';
-  let holidayHomesList = [];
   const charts = { timeline: null };
 
-  // Initialize System Core Frameworks
   function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeTogglerUI(savedTheme);
-  }
-
-  function toggleTheme() {
-    const curr = document.documentElement.getAttribute('data-theme');
-    const next = curr === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    updateThemeTogglerUI(next);
-    renderAll();
-  }
-
-  function updateThemeTogglerUI(theme) {
+    const saved = localStorage.getItem('dch-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
     const textEl = document.getElementById('theme-text');
     const toggler = document.getElementById('theme-toggler');
-    if (theme === 'light') {
-      textEl.textContent = 'Light Mode';
-      toggler.querySelector('span').textContent = '☀️';
-    } else {
-      textEl.textContent = 'Dark Mode';
-      toggler.querySelector('span').textContent = '🌙';
+    if (textEl) {
+      textEl.innerText = saved === 'light' ? 'Light Mode' : 'Dark Mode';
+      toggler.querySelector('span').innerText = saved === 'light' ? '☀️' : '🌙';
+    }
+  }
+  initTheme();
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('dch-theme', next);
+    const textEl = document.getElementById('theme-text');
+    const toggler = document.getElementById('theme-toggler');
+    textEl.innerText = next === 'light' ? 'Light Mode' : 'Dark Mode';
+    toggler.querySelector('span').innerText = next === 'light' ? '☀️' : '🌙';
+    if(allIncidents.length) {
+      renderTimelineChart(getFilteredIncidents());
     }
   }
 
-  function toggleView(e) {
-    e.preventDefault();
-    const liveView = document.getElementById('view-live');
-    const holidayView = document.getElementById('view-holiday');
-    const btnText = document.getElementById('view-toggler-text');
-
-    if (liveView.classList.contains('active')) {
-      liveView.classList.remove('active');
-      holidayView.classList.add('active');
-      btnText.textContent = 'MONITORING FEED';
-    } else {
-      holidayView.classList.remove('active');
-      liveView.classList.add('active');
-      btnText.textContent = 'HOLIDAY HOMES';
-      renderAll(); 
-    }
-  }
-
-  // Time & Clock Engine (GST / Dubai Standard Time - UTC+4 Alignment)
-  function getGSTDateTime(customTimestamp = null) {
-    const d = customTimestamp ? new Date(customTimestamp) : new Date();
+  function getGSTDateTime(dateInput = null) {
+    const d = dateInput ? new Date(dateInput) : new Date();
     const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-    const gstDate = new Date(utc + (3600000 * 4));
-    return { gstDate, hour: gstDate.getHours() };
+    const gstDate = new Date(utc + (3600000 * 4)); // GST is UTC+4
+    return { hour: gstDate.getHours(), gstDate };
   }
 
-  function startClock() {
-    setInterval(() => {
-      const { gstDate } = getGSTDateTime();
-      document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', { hour12: false });
-      document.getElementById('live-date').textContent = gstDate.toLocaleDateString('en-AE', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      }).toUpperCase() + ' · SYSTEM GST UPLINK';
-    }, 1000);
+  function updateClock() {
+    const { gstDate } = getGSTDateTime();
+    const timeStr = gstDate.toTimeString().split(' ')[0];
+    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const dateStr = `${days[gstDate.getDay()]} ${gstDate.getDate().toString().padStart(2,'0')} ${months[gstDate.getMonth()]} ${gstDate.getFullYear()}`;
+    document.getElementById('live-clock').innerText = timeStr;
+    document.getElementById('live-date').innerText = dateStr + ' · SYSTEM LIVE [GST]';
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function showLoading(msg) {
+    const el = document.getElementById('loading');
+    document.getElementById('loading-msg').innerText = msg;
+    el.classList.add('show');
   }
 
-  // ==========================================
-  // EMULATED GOOGLE SHEETS FETCH ENGINE 
-  // ==========================================
-  async function fetchData() {
-    const inputUrl = document.getElementById('sheet-url').value.trim();
-    if (!inputUrl) {
-      alert('Please provide a valid Google Sheet connection link.');
+  function hideLoading() {
+    document.getElementById('loading').classList.remove('show');
+  }
+
+  async function fetchSheetData() {
+    const url = document.getElementById('sheet-url').value.trim();
+    if (!url) {
+      alert('Please provide a functional telemetry endpoint string.');
       return;
     }
-
-    let finalFetchUrl = inputUrl;
-
-    // Direct translation rule: Convert basic editing strings into clean CSV data dumps
-    if (inputUrl.includes('/d/') && !inputUrl.includes('/pub')) {
-      const docId = inputUrl.split('/d/')[1].split('/')[0];
-      finalFetchUrl = `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv`;
+    showLoading('CONTACTING ENDPOINT MATRIX...');
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Uplink rejected stream handshake.');
+      const dataText = await res.text();
+      
+      allIncidents = parseSheetCSV(dataText);
+      
+      document.getElementById('status-text').innerText = `CONNECTED · ${allIncidents.length} VECTORS`;
+      document.getElementById('status-text').style.color = 'var(--green)';
+      
+      processDataPipeline();
+    } catch(err) {
+      console.error(err);
+      alert('Connection breakdown: ' + err.message);
+      document.getElementById('status-text').innerText = 'LINK DISRUPTED';
+      document.getElementById('status-text').style.color = 'var(--red)';
+    } finally {
+      hideLoading();
     }
-
-    // Proxy targets list to securely handle browser CORS filter blocks
-    const targets = [
-      finalFetchUrl,
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(finalFetchUrl)}`,
-      `https://cors-anywhere.herokuapp.com/${finalFetchUrl}`
-    ];
-
-    document.getElementById('loading').classList.add('show');
-    document.getElementById('fetch-status').textContent = 'CONNECTING TO REMOTE DATALINK MATRIX...';
-
-    let lastError = '';
-
-    for (let url of targets) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP Error Status: ${res.status}`);
-        
-        const text = await res.text();
-        if (!text || text.trim().length < 10) {
-          lastError = 'Empty or truncated response payload';
-          continue;
-        }
-
-        // Parse records safely using internal processing tools
-        allIncidents = parseCSV(text);
-        sortIncidentsDescending(allIncidents);
-
-        const { gstDate } = getGSTDateTime();
-        const timeStr = gstDate.toLocaleTimeString('en-AE');
-        document.getElementById('fetch-status').textContent = `LOADED ${allIncidents.length} REAL-TIME EVENTS · ${timeStr}`;
-        document.getElementById('last-refresh').textContent = 'LAST TELEMETRY UPDATE: ' + timeStr;
-        document.getElementById('loading').classList.remove('show');
-        
-        renderAll(); 
-        return; 
-      } catch (e) {
-        lastError = e.message;
-        continue;
-      }
-    }
-
-    document.getElementById('loading').classList.remove('show');
-    document.getElementById('fetch-status').textContent = 'CONNECTION REFUSED';
-    alert(`Could not pull real-time sheets profile (${lastError}). Re-checking configurations...`);
   }
 
-  function parseCSV(text) {
-    const lines = text.trim().split('\n');
-    if (lines.length === 0) return [];
+  /* ── UPGRADED AND ROBUST CSV PARSER ENGINE FROM INDEX.HTML ── */
+  function parseSheetCSV(text) {
+    if (!text || !text.includes('\n')) return [];
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length < 2) return [];
     
-    const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
-
+    // Clean headers explicitly into lowercase string parameters
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim().toLowerCase());
+    
     return lines.slice(1).map(line => {
       const vals = parseCSVLine(line);
       const obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = (vals[i] || '').replace(/"/g,'').trim();
-      });
-
+      headers.forEach((h, i) => obj[h] = (vals[i] || '').replace(/"/g, '').trim());
+      
       if (obj.timestamp) {
         const { hour } = getGSTDateTime(obj.timestamp);
         if (hour >= 7 && hour < 19) {
@@ -1106,7 +769,7 @@
         } else {
           obj.shift = 'Night Shift (19:00-07:00)';
         }
-        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const { gstDate } = getGSTDateTime(obj.timestamp);
         obj.day_of_week = days[gstDate.getDay()];
       }
@@ -1132,133 +795,98 @@
     return result;
   }
 
-  function sortIncidentsDescending(data) {
-    data.sort((a, b) => {
-      if (!a.timestamp) return 1;
-      if (!b.timestamp) return -1;
-      return new Date(b.timestamp) - new Date(a.timestamp);
-    });
+  function loadDemoDataset() {
+    showLoading('GENERATING SIMULATED ARRAYS...');
+    setTimeout(() => {
+      allIncidents = [];
+      const zones = ['Creek Marina', 'Harbour Promenade', 'Creek Beach', 'Island Park', 'Address Grand', 'Vida Creek', 'Central Park', 'CCTV Control Room'];
+      const types = ['Access_Control_Issue', 'Intrusion_Alert', 'Asset_Damage', 'Medical_Emergency', 'Suspicious_Activity', 'System_Fault', 'Traffic_Congestion', 'Maintenance_Security'];
+      const summaries = [
+        'Tailgating event reported at vehicle barrier zone entry.',
+        'Motion trace triggered on perimeter line 04 outside hours.',
+        'Water intake seal failure causing floor pooling in B2 array.',
+        'Visitor slip injury monitored on lower promenade steps.',
+        'Unattended luggage cluster flagged on pier access pontoon.',
+        'Primary storage telemetry array reported a drop link packet fault.',
+        'Delivery fleet back-up stalling primary roundabout entry point.',
+        'HVAC breaker cycle tripped in community server hub room.'
+      ];
+      const officers = ['Supv. Benson Gitonga', 'S/O Ahmed Ali', 'S/O John Doe', 'S/O Jane Smith'];
+      const severities = ['Critical', 'High', 'Medium', 'Low'];
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+      const now = new Date();
+      for (let i = 0; i < 45; i++) {
+        let d = new Date(now.getTime() - (Math.random() * 24 * 3600000));
+        const { hour } = getGSTDateTime(d);
+        let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
+        const sev = severities[Math.floor(Math.random() * severities.length)];
+        
+        allIncidents.push({
+          message_id: 'DCH_SYS_' + (1000 + i),
+          timestamp: d.toISOString(),
+          sender: officers[Math.floor(Math.random() * officers.length)],
+          shift: shift,
+          day_of_week: days[d.getDay()],
+          incident_type: types[Math.floor(Math.random() * types.length)],
+          severity: sev,
+          location_zone: zones[Math.floor(Math.random() * zones.length)],
+          summary: summaries[Math.floor(Math.random() * summaries.length)],
+          action_required: (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
+          immediate_actions: sev === 'Critical' ? 'Contact shift supervisor; Dispatch tactical support team; Log video frame registers' : 'Monitored via secondary array frames.',
+          confidence: (0.75 + Math.random() * 0.24).toFixed(2)
+        });
+      }
+      
+      allIncidents.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+      document.getElementById('status-text').innerText = 'DEMO ARRAY INJECTED';
+      document.getElementById('status-text').style.color = 'var(--accent)';
+      processDataPipeline();
+      hideLoading();
+    }, 600);
   }
 
-  // Demo Environment Mock Data Generator
-  function loadDemoData() {
-    const officers = ['Sgt. Malek Rashid', 'Officer J. Smith', 'Operator F. Al-Mansoori', 'Patrol Guard 04', 'Supervisor Benson'];
-    const types = ['Access_Control_Breach', 'Fire_Alarm_Triage', 'Asset_Damage_Report', 'Maintenance_Security', 'Medical_Emergency', 'Traffic_Congestion'];
-    const severities = ['Critical', 'High', 'Medium', 'Low'];
-    const zones = ['Creek Marina', 'Creek Beach', 'Island Park', 'Central Park', 'Harbour Gate', 'The Grand', 'Address Harbour Point', 'SOC Control Room'];
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const summaries = [
-      'CCTV array flagged localized fire alarm panel trip. Dispatched incident response agent immediately.',
-      'Unauthorized vehicle tailgating observed at primary basement parking gate interface.',
-      'Water utility pipe leakage identified in subterranean B2 service corridor.',
-      'External perimeter access control card scanner failed on mechanical latch parameters.',
-      'Visitor slip and fall reported near marina boardwalk area. First aid kit administered on-site.',
-      'Heavy freight logistic truck blocking specialized service lane junctions.'
-    ];
-
-    allIncidents = [];
-    const { gstDate: currentGst } = getGSTDateTime();
-
-    for (let i = 0; i < 120; i++) {
-      const d = new Date(currentGst.getTime() - Math.random() * 7 * 86400000);
-      const hour = d.getHours();
-      let shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
-      const sev = severities[Math.floor(Math.random() * severities.length)];
-
-      allIncidents.push({
-        message_id: 'DCH_SYS_' + i,
-        timestamp: d.toISOString(),
-        sender: officers[Math.floor(Math.random() * officers.length)],
-        shift: shift,
-        day_of_week: days[d.getDay()],
-        incident_type: types[Math.floor(Math.random() * types.length)],
-        severity: sev,
-        location_zone: zones[Math.floor(Math.random() * zones.length)],
-        summary: summaries[Math.floor(Math.random() * summaries.length)],
-        action_required: (sev === 'Critical' || sev === 'High') ? 'TRUE' : 'FALSE',
-        immediate_actions: sev === 'Critical' ? 'Isolate perimeter zones; Trigger supervisors; Log telemetry stream indices' : '',
-        confidence: (0.75 + Math.random() * 0.24).toFixed(2)
-      });
-    }
-
-    sortIncidentsDescending(allIncidents);
-    document.getElementById('fetch-status').textContent = `DEMO TELEMETRY REGISTRY LOADED · ${allIncidents.length} FLIGHT RECORDS LOADED`;
-    renderAll();
-  }
-
-  // Dashboard Core Rendering Pipeline Filters
   function getFilteredIncidents() {
-    const days = parseInt(document.getElementById('date-range').value);
-    if (days === 999) return allIncidents;
-    const { gstDate } = getGSTDateTime();
-    const targetTime = gstDate.getTime() - (days * 86400000);
-    return allIncidents.filter(i => i.timestamp && new Date(i.timestamp).getTime() >= targetTime);
+    return allIncidents; 
   }
 
-  function renderAll() {
+  function processDataPipeline() {
     const data = getFilteredIncidents();
     renderKPIs(data);
-    renderTimeline(data);
-    renderHeatmap(data);
-    renderFeed(data);
+    renderTimelineChart(data);
+    renderZoneHeatmap(data);
+    renderIncidentFeed(data);
     renderShiftStats(data);
-    renderTypeMetrics(data);
-    renderRecommendations(data);
-    generateHandoverBroadcastPacket(data);
+    renderResponseDirectives(data);
+    generateShiftHandoverText(data);
   }
 
   function renderKPIs(data) {
-    const total = data.length;
-    const crit = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-    const med = data.filter(i => i.severity === 'Medium').length;
-    const low = data.filter(i => i.severity === 'Low').length;
-    const active = data.filter(i => i.action_required === 'TRUE').length;
-
-    document.getElementById('kpi-total').textContent = total || '0';
-    document.getElementById('kpi-critical').textContent = crit || '0';
-    document.getElementById('kpi-medium').textContent = med || '0';
-    document.getElementById('kpi-low').textContent = low || '0';
-    document.getElementById('kpi-active').textContent = active || '0';
+    document.getElementById('kpi-total').innerText = data.length;
+    document.getElementById('kpi-critical').innerText = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
+    document.getElementById('kpi-medium').innerText = data.filter(i => i.severity === 'Medium').length;
+    document.getElementById('kpi-low').innerText = data.filter(i => i.severity === 'Low').length;
+    
+    const orders = data.filter(i => String(i.action_required).toUpperCase() === 'TRUE').length;
+    document.getElementById('kpi-actions').innerText = orders;
   }
 
-  function formatTimeAgo(ts) {
-    const d = new Date(ts);
-    const now = new Date();
-    const diff = now - d;
-    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
-    return d.toLocaleDateString('en-AE', { day: 'numeric', month: 'short' });
-  }
+  function renderTimelineChart(data) {
+    const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0') + ':00');
+    const datasets = { Critical: Array(24).fill(0), High: Array(24).fill(0), Medium: Array(24).fill(0), Low: Array(24).fill(0) };
 
-  function renderTimeline(data) {
-    const daysRange = parseInt(document.getElementById('date-range').value);
-    const buckets = {};
-    const { gstDate: nowGst } = getGSTDateTime();
-
-    const loopDays = Math.min(daysRange, 30);
-    for (let i = loopDays - 1; i >= 0; i--) {
-      const d = new Date(nowGst.getTime() - i * 86400000);
-      const key = d.toLocaleDateString('en-AE', { day: 'numeric', month: 'short' });
-      buckets[key] = { Critical: 0, High: 0, Medium: 0, Low: 0 };
-    }
-
-    data.forEach(inc => {
-      if (inc.timestamp) {
-        const { gstDate } = getGSTDateTime(inc.timestamp);
-        const key = gstDate.toLocaleDateString('en-AE', { day: 'numeric', month: 'short' });
-        if (buckets[key] && inc.severity) {
-          if (buckets[key][inc.severity] !== undefined) buckets[key][inc.severity]++;
-        }
-      }
+    data.forEach(i => {
+      if (!i.timestamp) return;
+      const { hour } = getGSTDateTime(i.timestamp);
+      if (datasets[i.severity]) datasets[i.severity][hour]++;
     });
 
-    const labels = Object.keys(buckets);
-    const makeDS = (label, bg, border) => ({
-      label, data: labels.map(k => buckets[k][label]), backgroundColor: bg, borderColor: border, borderWidth: 1.5, borderRadius: 3, stack: 'stack'
+    const makeDS = (label, color, borderColor) => ({
+      label: label, data: datasets[label], backgroundColor: color, borderColor: borderColor, borderWidth: 1.5, borderRadius: 3, stack: 'stack'
     });
 
     const theme = document.documentElement.getAttribute('data-theme');
-    const tickColor = theme === 'light' ? '#09101d' : '#7a8fa8';
+    const tickColor = theme === 'light' ? '#2b3a51' : '#7a8fa8';
     const gridColor = theme === 'light' ? 'rgba(9,16,29,0.08)' : 'rgba(255,255,255,0.04)';
 
     if (charts.timeline) charts.timeline.destroy();
@@ -1266,7 +894,7 @@
     charts.timeline = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels,
+        labels: hours,
         datasets: [
           makeDS('Critical', 'rgba(184,20,20,0.85)', '#b81414'),
           makeDS('High', 'rgba(208,96,16,0.85)', '#d06010'),
@@ -1275,74 +903,76 @@
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: tickColor, font: { family: "'DM Mono'" } } },
-          y: { stacked: true, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: "'DM Mono'" } } }
+          x: { stacked: true, grid: { display: false }, ticks: { color: tickColor, font: { family: 'DM Mono', size: 9 } } },
+          y: { stacked: true, grid: { color: gridColor }, ticks: { color: tickColor, font: { family: 'DM Mono', size: 9 }, stepSize: 1 } }
         }
       }
     });
   }
 
-  function renderHeatmap(data) {
-    const el = document.getElementById('zone-heatmap');
+  function renderZoneHeatmap(data) {
+    const el = document.getElementById('zone-grid');
     const zones = {};
     data.forEach(i => { if (i.location_zone) zones[i.location_zone] = (zones[i.location_zone] || 0) + 1; });
-    const sorted = Object.entries(zones).sort((a, b) => b[1] - a[1]);
 
-    document.getElementById('heatmap-count').textContent = `${sorted.length} ACTIVE CLUSTERS`;
+    const sorted = Object.entries(zones).sort((a,b) => b[1] - a[1]);
+    el.innerHTML = '';
 
     if (!sorted.length) {
-      el.innerHTML = '<div class="empty-state">No geographical zones mapping inside query ranges</div>';
+      el.innerHTML = '<div style="color:var(--text-dim); padding:20px; font-family:var(--font-mono)">No spatial tracking coordinates mapped.</div>';
       return;
     }
 
     const max = sorted[0][1];
-    const theme = document.documentElement.getAttribute('data-theme');
-    const colors = theme === 'light' ? [
-      ['rgba(184,20,20,0.12)', '#b81414'], ['rgba(208,96,16,0.12)', '#d06010'], ['rgba(176,102,0,0.1)', '#b06600'], ['rgba(15,64,179,0.08)', '#0f40b3']
-    ] : [
-      ['rgba(232,64,64,0.25)', '#e84040'], ['rgba(232,120,32,0.2)', '#e87820'], ['rgba(232,160,32,0.15)', '#e8a020'], ['rgba(58,143,232,0.12)', '#3a8fe8']
-    ];
-
-    el.innerHTML = sorted.map(([zone, count]) => {
-      const intensity = count / max;
-      const ci = Math.min(Math.floor((1 - intensity) * colors.length), colors.length - 1);
-      const [bg, bar] = colors[ci];
-      const cleanZone = zone.replace(/'/g, "\\'");
-      return `
-        <div class="zone-cell" style="background:${bg}; border-color:${bar};" onclick="showZonePanel('${cleanZone}')">
-          <div class="zone-name">${zone}</div>
-          <div class="zone-count" style="color:${bar}">${count}</div>
-          <div class="zone-bar" style="background:${bar}"></div>
-        </div>
+    sorted.forEach(([name, count]) => {
+      const pct = Math.max(15, Math.round((count / max) * 100));
+      const cell = document.createElement('div');
+      cell.className = 'zone-cell';
+      cell.style.background = `linear-gradient(to top, var(--accent-dim) ${pct}%, var(--bg-card) ${pct}%)`;
+      cell.onclick = () => openZonePanel(name);
+      cell.innerHTML = `
+        <div class="zone-name">${name}</div>
+        <div class="zone-count">${count}</div>
+        <div class="zone-bar" style="background:var(--accent)"></div>
       `;
-    }).join('');
+      el.appendChild(cell);
+    });
   }
 
-  function renderFeed(data) {
+  function renderIncidentFeed(data) {
     const el = document.getElementById('feed-list');
-    if (!data.length) {
-      el.innerHTML = '<div class="empty-state">No real-time incidents reported inside temporal constraints</div>';
+    el.innerHTML = '';
+    const slice = data.slice(0, 15);
+
+    if (!slice.length) {
+      el.innerHTML = '<div style="color:var(--text-dim); padding:20px; font-family:var(--font-mono)">No events currently registered on channel.</div>';
       return;
     }
 
-    el.innerHTML = data.slice(0, 40).map(inc => {
-      const s = inc.severity ? inc.severity.toLowerCase() : 'low';
-      const cleanType = inc.incident_type ? inc.incident_type.replace(/_/g, ' ') : 'General Log';
-      const timeStr = inc.timestamp ? formatTimeAgo(inc.timestamp) : '—';
-      return `
-        <div class="feed-item" onclick="showIncidentModal('${inc.message_id}')">
-          <div class="severity-dot ${s}"></div>
-          <div>
-            <div class="feed-type">${cleanType}</div>
-            <div class="feed-meta">${inc.location_zone || 'Unknown Zone'} · ID: ${inc.message_id}</div>
+    slice.forEach(i => {
+      const { gstDate } = getGSTDateTime(i.timestamp);
+      const timeStr = gstDate.toTimeString().split(' ')[0].substring(0,5);
+      const item = document.createElement('div');
+      item.className = 'feed-item';
+      item.onclick = () => openModal(i);
+      item.innerHTML = `
+        <div class="severity-dot ${i.severity ? i.severity.toLowerCase() : 'low'}"></div>
+        <div>
+          <div class="feed-type">${(i.incident_type || 'General Trace').replace(/_/g,' ')}</div>
+          <div class="feed-summary">${i.summary || 'No summary notes documented.'}</div>
+          <div class="feed-meta">
+            <span class="tag zone">${i.location_zone || 'Global'}</span>
+            <span class="tag severity">${i.severity || 'Info'}</span>
           </div>
-          <div class="feed-time">${timeStr}</div>
         </div>
+        <div class="feed-time">${timeStr}</div>
       `;
-    }).join('');
+      el.appendChild(item);
+    });
   }
 
   function setShiftFilter(s) {
@@ -1358,306 +988,199 @@
     const el = document.getElementById('shift-stats');
 
     if (!shiftData.length) {
-      el.innerHTML = '<div class="empty-state" style="padding:20px">No metrics logged inside selected shift framework</div>';
+      el.innerHTML = '<div style="color:var(--text-dim); padding:20px; font-family:var(--font-mono)">No metrics registered inside targeted shift window.</div>';
       return;
     }
 
     const count = sev => shiftData.filter(i => i.severity === sev).length;
-    const zones = {};
-    shiftData.forEach(i => { if (i.location_zone) zones[i.location_zone] = (zones[i.location_zone] || 0) + 1; });
-    const sortedZones = Object.entries(zones).sort((a, b) => b[1] - a[1]);
-    const topZone = sortedZones.length > 0 ? sortedZones[0][0] : 'None';
-
-    const pct = (n, total) => total ? Math.round(n / total * 100) + '%' : '0%';
-    const total = shiftData.length;
+    const crit = count('Critical') + count('High');
+    const med = count('Medium');
+    const low = count('Low');
 
     el.innerHTML = `
-      <div class="shift-row"><span class="shift-row-label">Total logs processed</span><span class="shift-row-val">${total}</span></div>
-      <div class="shift-row"><span class="shift-row-label">Critical / High triage</span><span class="shift-row-val" style="color:var(--red)">${count('Critical') + count('High')} (${pct(count('Critical') + count('High'), total)})</span></div>
-      <div class="shift-row"><span class="shift-row-label">Medium escalated index</span><span class="shift-row-val" style="color:var(--accent)">${count('Medium')}</span></div>
-      <div class="shift-row"><span class="shift-row-label">Peak operational sector</span><span class="shift-row-val" style="color:var(--blue)">${topZone}</span></div>
-    `;
-  }
-
-  function renderTypeMetrics(data) {
-    const el = document.getElementById('type-list');
-    const types = {};
-    data.forEach(i => { if (i.incident_type) types[i.incident_type] = (types[i.incident_type] || 0) + 1; });
-    const sorted = Object.entries(types).sort((a, b) => b[1] - a[1]);
-
-    if (!sorted.length) {
-      el.innerHTML = '<div class="empty-state">No categorized signatures discovered</div>';
-      return;
-    }
-
-    const max = sorted[0][1];
-    el.innerHTML = sorted.map(([t, c]) => {
-      const w = Math.round(c / max * 100) + '%';
-      return `
-        <div class="type-row">
-          <div class="type-name" title="${t}">${t.replace(/_/g, ' ')}</div>
-          <div class="type-bar-track"><div class="type-bar-fill" style="width:${w}"></div></div>
-          <div class="type-count">${c}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function renderRecommendations(data) {
-    const el = document.getElementById('reco-list');
-    if (!data.length) {
-      el.innerHTML = '<div class="reco-item"><div class="reco-num">✓</div><div>Environmental matrices nominal. Execute standard watch loops.</div></div>';
-      return;
-    }
-
-    const recos = [];
-    const zones = {};
-    data.forEach(i => { if (i.location_zone && i.location_zone !== 'Unknown') zones[i.location_zone] = (zones[i.location_zone] || 0) + 1; });
-    const topZones = Object.entries(zones).sort((a, b) => b[1] - a[1]);
-
-    if (topZones.length > 0) {
-      const [z, c] = topZones[0];
-      recos.push(`Concentrate surveillance grids at <strong>${z}</strong> — currently registering peak density metrics with ${c} events.`);
-    }
-
-    const infra = data.filter(i => i.incident_type === 'Maintenance_Security' || i.location_zone === 'SOC Control Room');
-    if (infra.length > 0) {
-      recos.push(`Verify auxiliary infrastructure grids — ${infra.length} technical faults operating inside matrix boundaries.`);
-    }
-
-    const highSev = data.filter(i => i.severity === 'Critical' || i.severity === 'High');
-    if (highSev.length > 0) {
-      recos.push(`Enforce priority containment frameworks — ${highSev.length} critical priority incidents remain open.`);
-    }
-
-    el.innerHTML = recos.slice(0, 3).map((r, i) => `
-      <div class="reco-item">
-        <div class="reco-num">${i + 1}</div>
-        <div>${r}</div>
-      </div>
-    `).join('');
-  }
-
-  // Slide-Over Zone Analytics Modals
-  function showZonePanel(zoneName) {
-    document.getElementById('slide-zone-name').textContent = zoneName.toUpperCase() + ' · FIELD ANALYSIS';
-    const body = document.getElementById('slide-zone-body');
-
-    const filtered = allIncidents.filter(i => i.location_zone === zoneName);
-    const crit = filtered.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-    const total = filtered.length;
-
-    const tMap = {};
-    filtered.forEach(i => { if (i.incident_type) tMap[i.incident_type] = (tMap[i.incident_type] || 0) + 1; });
-    const topTypes = Object.entries(tMap).sort((a, b) => b[1] - a[1]);
-
-    body.innerHTML = `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div class="panel" style="padding:12px; text-align:center;">
-          <div class="kpi-label" style="font-size:9px">Zone Log Total</div>
-          <div class="kpi-value" style="font-size:28px; color:var(--blue)">${total}</div>
-        </div>
-        <div class="panel" style="padding:12px; text-align:center;">
-          <div class="kpi-label" style="font-size:9px">Elevated Priority</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:16px;">
+        <div class="panel" style="padding:12px; text-align:center; border-top:3px solid var(--red)">
+          <div class="kpi-label" style="font-size:9px">Elevated Loaded</div>
           <div class="kpi-value" style="font-size:28px; color:var(--red)">${crit}</div>
         </div>
-      </div>
-      <div class="slide-sub-title">Primary Classification Signatures</div>
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        ${topTypes.map(([t, c]) => `
-          <div style="display:flex; justify-content:space-between; font-size:12px; border-bottom:1px solid var(--border); padding-bottom:4px;">
-            <span style="color:var(--text-sec)">${t.replace(/_/g, ' ')}</span>
-            <span style="font-family:var(--font-mono); font-weight:600;">${c}</span>
-          </div>
-        `).join('')}
-      </div>
-      <div class="slide-sub-title">Recent Historical Logs</div>
-      <div style="display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto;">
-        ${filtered.slice(0, 6).map(i => `
-          <div style="padding:10px; background:var(--bg-panel); border-radius:4px; border-left:3px solid ${sevColor(i.severity)}; cursor:pointer;" onclick="showIncidentModal('${i.message_id}')">
-            <div style="font-weight:600; font-size:12px;">${i.incident_type.replace(/_/g, ' ')}</div>
-            <div style="font-size:11px; color:var(--text-sec); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.summary || 'No text logs provided'}</div>
-          </div>
-        `).join('')}
+        <div class="panel" style="padding:12px; text-align:center; border-top:3px solid var(--accent)">
+          <div class="kpi-label" style="font-size:9px">Medium Urgency</div>
+          <div class="kpi-value" style="font-size:28px; color:var(--accent)">${med}</div>
+        </div>
+        <div class="panel" style="padding:12px; text-align:center; border-top:3px solid var(--green)">
+          <div class="kpi-label" style="font-size:9px">Minor Level</div>
+          <div class="kpi-value" style="font-size:28px; color:var(--green)">${low}</div>
+        </div>
       </div>
     `;
-
-    document.getElementById('slide-backdrop').classList.add('show');
-    document.getElementById('slide-panel').classList.add('show');
   }
 
-  function closeZonePanel(e) {
-    document.getElementById('slide-backdrop').classList.remove('show');
-    document.getElementById('slide-panel').classList.remove('show');
-  }
+  function renderResponseDirectives(data) {
+    const el = document.getElementById('reco-list');
+    el.innerHTML = '';
+    const recos = [];
 
-  // Single Incident Inspection Modals
-  function showIncidentModal(msgId) {
-    const inc = allIncidents.find(i => i.message_id === msgId);
-    if (!inc) return;
-
-    const body = document.getElementById('modal-body');
-    document.getElementById('modal-title').textContent = `INCIDENT REPORT OVERVIEW · REFERENCE ${msgId}`;
-
-    body.innerHTML = `
-      <div class="modal-field"><label>Incident Signature Type</label><p style="font-weight:600; color:var(--accent);">${inc.incident_type.replace(/_/g, ' ')}</p></div>
-      <div class="modal-field"><label>Severity Classification</label><span class="modal-badge" style="background:${sevColor(inc.severity)}; color:#000;">${inc.severity || 'LOW'}</span></div>
-      <div class="modal-field"><label>Geographical Tracking Zone</label><p>${inc.location_zone || 'Unmapped Location'}</p></div>
-      <div class="modal-field"><label>Logged Field Transmitter</label><p>${inc.sender || 'System Automations'}</p></div>
-      <div class="modal-field"><label>Transmitter Timestamp</label><p>${inc.timestamp ? new Date(inc.timestamp).toLocaleString('en-AE') : '—'}</p></div>
-      <div class="modal-field"><label>Shift Classification Segment</label><p>${inc.shift || '—'}</p></div>
-      <div class="modal-field"><label>Incident Log Summary Text</label><p style="color:var(--text-pri); font-size:13px; line-height:1.5;">${inc.summary || 'No log details provided.'}</p></div>
-      <div class="modal-field"><label>Immediate Actions Committed</label><p style="font-family:var(--font-mono); font-size:11px; background:var(--bg-deep); padding:8px; border-radius:4px; color:var(--green);">${inc.immediate_actions || 'No automated action signatures deployed.'}</p></div>
-    `;
-
-    document.getElementById('modal').classList.add('show');
-  }
-
-  function sevColor(s) {
-    return { Critical: 'var(--red)', High: '#d06010', Medium: 'var(--accent)', Low: 'var(--green)' }[s] || 'var(--text-sec)';
-  }
-
-  function closeModal(e) {
-    document.getElementById('modal').classList.remove('show');
-  }
-
-  // Handover Text Aggregation Engine
-  function generateHandoverBroadcastPacket(data) {
-    const box = document.getElementById('handover-box');
-    if (!data.length) {
-      box.textContent = "Awaiting live data metrics to bundle shift handover broadcast sequences...";
-      return;
+    const criticals = data.filter(i => i.severity === 'Critical');
+    if (criticals.length > 0) {
+      recos.push(`<strong>CRITICAL TRIAGE ORDERS</strong> — Execute manual visual tracking loops on the primary incidents in ${criticals[0].location_zone || 'SOC Hub'}.`);
     }
 
-    const { gstDate } = getGSTDateTime();
-    const activeWatch = gstDate.getHours() >= 7 && gstDate.getHours() < 19 ? "MORNING WATCH (07:00 - 19:00)" : "NIGHT WATCH (19:00 - 07:00)";
-    const nextWatch = gstDate.getHours() >= 7 && gstDate.getHours() < 19 ? "NIGHT WATCH OPERATIONS SECURE" : "MORNING WATCH OPERATIONS SECURE";
+    const faults = data.filter(i => i.incident_type === 'System_Fault');
+    if (faults.length > 3) {
+      recos.push(`<strong>TELEMETRY CASCADE FAILURE</strong> — Hardware loops flagged above bounds. Request critical engineering system review.`);
+    }
 
-    const crit = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
-    const actions = data.filter(i => i.action_required === 'TRUE').length;
+    if (recos.length === 0) {
+      recos.push(`<strong>ROUTINE DIRECTIVE MODE</strong> — Telemetry indexes normal. Maintain general community patrol and standard CCTV monitoring sweeps.`);
+    }
 
-    const zMap = {};
-    data.forEach(i => { if (i.location_zone) zMap[i.location_zone] = (zMap[i.location_zone] || 0) + 1; });
-    const topZ = Object.entries(zMap).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([z, c]) => `${z} (${c} logs)`).join(', ');
-
-    box.innerHTML = `[SOC HANDOVER BROADCAST RECORD]
-TIMESTAMP TRANSMISSION: ${gstDate.toLocaleString('en-AE')} GST
-ACTIVE CONTROL WINDOW : ${activeWatch}
-INCOMING ASSIGNMENT   : ${nextWatch}
-========================================================================
-1. QUANTITATIVE METRIC RECORDS
-   · Cumulative Incident Registry Logs : ${data.length} open elements
-   · High-Priority Triage Activations : ${crit} items flagged
-   · Outstanding Action Markers Pending: ${actions} flags under management
-
-2. SPATIAL SECTOR HEATMAP DENSITY CLUSTERS
-   · Key Target Densities: ${topZ || 'None verified within parameter boundaries.'}
-
-3. TACTICAL COMMAND OPERATIONAL MANDATES
-   · Command perimeters to enforce targeted sweeps on high-frequency clusters.
-   · Confirm technical clearance vectors on all tracking maintenance arrays.`;
-  }
-
-  function copyHandoverText() {
-    const text = document.getElementById('handover-box').textContent;
-    navigator.clipboard.writeText(text).then(() => {
-      alert('Handover transmission summary data successfully copied to system clipboard.');
-    }).catch(err => {
-      alert('Unable to copy log stream summary details.');
+    recos.forEach((r, idx) => {
+      const item = document.createElement('div');
+      item.className = 'reco-item';
+      item.innerHTML = `<div class="reco-num">0${idx+1}</div><div>${r}</div>`;
+      el.appendChild(item);
     });
   }
 
-  // ==========================================
-  // HOLIDAY HOMES LOCAL ARCHIVE CONTROLLERS
-  // ==========================================
-  function loadHHData() {
-    const saved = localStorage.getItem('dch_holiday_homes');
-    if (saved) {
-      holidayHomesList = JSON.parse(saved);
+  function generateShiftHandoverText(data) {
+    const box = document.getElementById('handover-box');
+    const { gstDate } = getGSTDateTime();
+    const currentHour = gstDate.getHours();
+
+    let activeShiftName = "Night Watch (19:00 - 07:00)";
+    let nextShiftName = "Day Watch (07:00 - 19:00)";
+    if (currentHour >= 7 && currentHour < 19) {
+      activeShiftName = "Day Watch (07:00 - 19:00)";
+      nextShiftName = "Night Watch (19:00 - 07:00)";
+    }
+
+    const totalEvents = data.length;
+    const critCount = data.filter(i => i.severity === 'Critical' || i.severity === 'High').length;
+    const actionsCount = data.filter(i => String(i.action_required).toUpperCase() === 'TRUE').length;
+
+    let text = `══════════════════════════════════════════════════════════════════════════════════════
+DUBAI CREEK HARBOUR · SECURITY OPERATIONS CENTRE · AUTOMATED SHIFT HANDOVER REGISTRY LOG
+══════════════════════════════════════════════════════════════════════════════════════
+
+[TIMESTEP LOG GAUGE] : ${gstDate.toISOString().replace('T',' ').substring(0,19)} GST
+[OUTGOING SIGN-OFF WATCH] : ${activeShiftName}
+[INCOMING RELIEF WATCH] : ${nextShiftName}
+
+━━━ DISPATCH ANALYSIS (LAST RECORDED WINDOW) ━━━
+Total Logged Events    : ${totalEvents} records
+Critical Triage Load   : ${critCount} elevated alerts
+Action Orders Pending  : ${actionsCount} matrix entries
+
+━━━ LOGGED SPATIAL HOTSPOTS ━━━\n`;
+
+    const zones = {};
+    data.forEach(i => { if (i.location_zone) zones[i.location_zone] = (zones[i.location_zone] || 0) + 1; });
+    const sortedZones = Object.entries(zones).slice(0,3);
+    
+    if (sortedZones.length) {
+      sortedZones.forEach(([z, c]) => {
+        text += `  📍 ${z.padEnd(25)} · LOAD RATIO: ${c} logs mapped\n`;
+      });
     } else {
-      holidayHomesList = [
-        { id: 1, unit: 'Creek Horizon T2-1402', operator: 'Emaar Hospitality', permit: '1092841-HH', end: '2027-12-31', status: 'Active', contact: '+971 4 123 4567', notes: 'Allocated Parking Bay B1-042.' },
-        { id: 2, unit: 'Harbour Views T1-0805', operator: 'Frank Porter HH', permit: '1048292-HH', end: '2026-05-01', status: 'Expired', contact: '+971 50 987 6543', notes: 'Access card disabled. Re-issuance pending DETDT renewal logs.' }
-      ];
-      localStorage.setItem('dch_holiday_homes', JSON.stringify(holidayHomesList));
+      text += `  No spatial parameters tracking data logged in context loops.\n`;
     }
-    renderHHTable();
+
+    text += `\n━━━ RECENT CRITICAL/HIGH PRIORITY LOG ENTRIES ━━━\n`;
+    const highPriority = data.filter(i => i.severity === 'Critical' || i.severity === 'High').slice(0,3);
+    if (highPriority.length) {
+      highPriority.forEach(hp => {
+        text += `  • [${hp.severity}] ${hp.location_zone} - ${hp.incident_type}: ${hp.summary}\n`;
+      });
+    } else {
+      text += `  No elevated urgency events requiring direct relief brief overs.\n`;
+    }
+
+    text += `\n══════════════════════════════════════════════════════════════════════════════════════
+END OF BROADCAST REGISTRY LOG · SIGN-OFF OUTGOING SUPERVISOR · TRANSMITTING TELEMETRY LYNK
+══════════════════════════════════════════════════════════════════════════════════════`;
+
+    box.value = text;
   }
 
-  function renderHHTable() {
-    const tbody = document.getElementById('hh-table-body');
-    const badge = document.getElementById('hh-badge-count');
-    badge.textContent = `${holidayHomesList.length} PROPERTIES`;
+  function openModal(inc) {
+    const body = document.getElementById('modal-body');
+    document.getElementById('modal-title').innerText = `EVENT ID: ${inc.message_id || 'UNKNOWN'}`;
+    
+    const colorMap = { Critical: 'var(--red)', High: '#d06010', Medium: 'var(--accent)', Low: 'var(--green)' };
+    const sevColor = colorMap[inc.severity] || 'var(--text-sec)';
 
-    if (!holidayHomesList.length) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">No active holiday homes configured inside local storage index databases.</div></td></tr>`;
-      return;
+    body.innerHTML = `
+      <div class="modal-field"><label>Incident Signature Type</label><p style="font-weight:600">${(inc.incident_type || '—').replace(/_/g,' ')}</p></div>
+      <div class="modal-field"><label>Timestamp (GST Sync)</label><p>${inc.timestamp ? inc.timestamp.replace('T',' ').substring(0,19) : '—'}</p></div>
+      <div class="modal-field"><label>Reporting Patrol/Source</label><p>${inc.sender || '—'}</p></div>
+      <div class="modal-field"><label>Triage Severity Level</label><p style="color:${sevColor}; font-weight:600;">${inc.severity || '—'}</p></div>
+      <div class="modal-field"><label>Spatial Allocation Zone</label><p>${inc.location_zone || '—'}</p></div>
+      <div class="modal-field"><label>Brief Narrative Summary</label><p>${inc.summary || '—'}</p></div>
+      <div class="modal-field"><label>Action Order Profile Status</label><p>${inc.action_required || 'FALSE'}</p></div>
+      <div class="modal-field"><label>Immediate Defensive Actions Taken</label><p>${inc.immediate_actions || 'None logged.'}</p></div>
+      <div class="modal-field"><label>AI Parser Confidence Index</label><p style="font-family:var(--font-mono);">${inc.confidence ? Math.round(inc.confidence * 100) + '%' : '—'}</p></div>
+    `;
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modal') || e.target.className === 'modal-close') {
+      document.getElementById('modal').classList.remove('show');
     }
+  }
 
-    tbody.innerHTML = holidayHomesList.map(h => {
-      const sCls = h.status.toLowerCase();
-      return `
-        <tr>
-          <td style="font-weight:600; color:var(--text-pri);">${h.unit}</td>
-          <td>${h.operator}</td>
-          <td style="font-family:var(--font-mono); font-size:11px;">${h.permit}</td>
-          <td style="font-family:var(--font-mono);">${h.end}</td>
-          <td><span class="status-pill ${sCls}">${h.status}</span></td>
-          <td style="text-align:center;">
-            <button class="action-icon-btn" onclick="deleteHHItem(${h.id})" title="Purge Record">
-              <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="14" width="14" xmlns="http://www.w3.org/2000/svg">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                <line x1="10" y1="11" x2="10" y2="17"></line>
-                <line x1="14" y1="11" x2="14" y2="17"></line>
-              </svg>
-            </button>
-          </td>
-        </tr>
+  function openZonePanel(zoneName) {
+    const backdrop = document.getElementById('slide-backdrop');
+    document.getElementById('slide-zone-name').innerText = `SPATIAL TRACE: ${zoneName.toUpperCase()}`;
+    
+    const zoneData = allIncidents.filter(i => i.location_zone === zoneName);
+    const body = document.getElementById('slide-zone-body');
+    
+    let listHTML = '';
+    zoneData.forEach(zd => {
+      listHTML += `
+        <div style="padding:10px; border-bottom:1px solid var(--border); font-size:12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong style="color:var(--accent)">${zd.incident_type.replace(/_/g,' ')}</strong>
+            <span style="font-family:var(--font-mono); font-size:10px; color:var(--text-dim)">${zd.severity}</span>
+          </div>
+          <div style="color:var(--text-pri)">${zd.summary}</div>
+        </div>
       `;
-    }).join('');
+    });
+
+    body.innerHTML = `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <div class="panel" style="padding:10px; text-align:center;">
+          <div class="kpi-label" style="font-size:8px">Zone Incidents</div>
+          <div class="kpi-value" style="font-size:24px; color:var(--blue)">${zoneData.length}</div>
+        </div>
+        <div class="panel" style="padding:10px; text-align:center;">
+          <div class="kpi-label" style="font-size:8px">Critical Triages</div>
+          <div class="kpi-value" style="font-size:24px; color:var(--red)">${zoneData.filter(i => i.severity==='Critical' || i.severity==='High').length}</div>
+        </div>
+      </div>
+      <div class="slide-sub-title">Historical Stream Items</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">${listHTML || 'No recorded traces in this sector link.'}</div>
+    `;
+    
+    backdrop.classList.add('show');
   }
 
-  function handleHHSubmit(e) {
-    e.preventDefault();
-    const unit = document.getElementById('hh-unit').value.trim();
-    const operator = document.getElementById('hh-operator').value.trim();
-    const permit = document.getElementById('hh-permit').value.trim();
-    const status = document.getElementById('hh-status').value;
-    const end = document.getElementById('hh-end').value;
-    const contact = document.getElementById('hh-contact').value.trim();
-    const notes = document.getElementById('hh-notes').value.trim();
-
-    const newItem = { id: Date.now(), unit, operator, permit, status, end, contact, notes };
-    holidayHomesList.push(newItem);
-    localStorage.setItem('dch_holiday_homes', JSON.stringify(holidayHomesList));
-
-    renderHHTable();
-    document.getElementById('hh-form').reset();
-  }
-
-  function deleteHHItem(id) {
-    if (confirm('Are you sure you want to delete this property record statement from the system matrix archive?')) {
-      holidayHomesList = holidayHomesList.filter(h => h.id !== id);
-      localStorage.setItem('dch_holiday_homes', JSON.stringify(holidayHomesList));
-      renderHHTable();
+  function closeZonePanel(e) {
+    if (e.target === document.getElementById('slide-backdrop') || e.target.className === 'slide-close') {
+      document.getElementById('slide-backdrop').classList.remove('show');
     }
   }
 
-  // Auto Interval Refresh Configuration Loop Execution
+  // Auto Refresh Interval Loop Sync Engine (Pulls telemetry shifts smoothly if an URL is active)
   setInterval(() => {
-    const currentLink = document.getElementById('sheet-url').value.trim();
-    if (currentLink && allIncidents.length > 0) {
-      fetchData();
+    const url = document.getElementById('sheet-url').value.trim();
+    if (url && allIncidents.length > 0) {
+      fetchSheetData();
     }
-  }, 300000); // Polls and updates background data feeds cleanly every 5 minutes
-
-  // Core Orchestration Execution
-  window.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    startClock();
-    loadHHData();
-  });
+  }, 30000);
 </script>
+
 </body>
 </html>
