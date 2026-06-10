@@ -968,20 +968,34 @@
         if (rec.timestamp || rec.incident_type) records.push(rec);
       }
 
+      const GST_OFFSET_MS = 4 * 60 * 60 * 1000; // UTC+4 Dubai
+
       allIncidents = records.map((r, i) => {
-        const ts   = r.timestamp || new Date().toISOString();
-        const d    = new Date(ts);
-        const hour = d.getHours();
-        const shift = (hour >= 7 && hour < 19) ? 'Morning Shift (07:00-19:00)' : 'Night Shift (19:00-07:00)';
-        let sev = (r.severity || 'Low');
+        const ts  = r.timestamp || new Date().toISOString();
+        const utcMs = new Date(ts).getTime();
+        const gstMs = utcMs + GST_OFFSET_MS;
+        const gstDate = new Date(gstMs);
+        const gstHour = gstDate.getUTCHours(); // use UTC methods on the shifted date
+
+        // Prefer shift value from sheet; fall back to GST-based calculation
+        const shiftRaw = r.shift || '';
+        const shift = shiftRaw
+          ? shiftRaw
+          : (gstHour >= 7 && gstHour < 19)
+            ? 'Morning Shift (07:00-19:00)'
+            : 'Night Shift (19:00-07:00)';
+
+        let sev = (r.severity || 'Low').trim();
         sev = sev.charAt(0).toUpperCase() + sev.slice(1).toLowerCase();
         if (sev === 'Medium') sev = 'High';
+
         return {
           message_id:        r.message_id || 'DCH_' + i,
-          timestamp:         ts,
+          timestamp:         ts,           // keep original UTC ISO string
+          gstMs,                           // pre-computed GST ms for timeline bucketing
           sender:            r.sender || r.officer || 'PATROL',
           shift,
-          day_of_week:       r.day_of_week || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()],
+          day_of_week:       r.day_of_week || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][gstDate.getUTCDay()],
           incident_type:     r.incident_type || 'Unclassified',
           severity:          sev,
           location_zone:     r.location_zone || 'Master Community',
@@ -1105,66 +1119,75 @@
     function renderTimelineChart(data) {
       const ctx = document.getElementById('timelineChart').getContext('2d');
       const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const gridColor   = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+      const gridColor    = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
       const textPriColor = theme === 'dark' ? '#7a8fa8' : '#2b3a51';
 
       if (timelineChartInstance) { timelineChartInstance.destroy(); timelineChartInstance = null; }
       if (!data.length) return;
 
-      // Find the actual latest timestamp in data, then go back selectedHourRange hours from it
-      const timestamps = data.map(x => new Date(x.timestamp).getTime()).filter(t => !isNaN(t));
-      if (!timestamps.length) return;
+      const GST_OFFSET_MS = 4 * 60 * 60 * 1000;
+      const HOUR_MS = 60 * 60 * 1000;
 
-      const latestMs  = Math.max(...timestamps);
-      const windowMs  = selectedHourRange * 60 * 60 * 1000;
+      // Use gstMs if available, otherwise compute it
+      const validMs = data
+        .map(x => x.gstMs || (new Date(x.timestamp).getTime() + GST_OFFSET_MS))
+        .filter(t => !isNaN(t));
+      if (!validMs.length) return;
+
+      const latestMs   = Math.max(...validMs);
+      const windowMs   = selectedHourRange * HOUR_MS;
       const earliestMs = latestMs - windowMs;
 
-      // Build hour-bucket labels from earliestMs → latestMs
-      const hoursArray = [];
-      const datasetMap = {};
+      // Build N unique hour buckets using epoch-based keys (no label collision)
+      const buckets = []; // [{epochMs, label, count}]
       for (let i = selectedHourRange - 1; i >= 0; i--) {
-        const bucketMs = latestMs - (i * 60 * 60 * 1000);
-        const d = new Date(bucketMs);
-        const label = (d.getHours() < 10 ? '0' : '') + d.getHours() + ':00';
-        if (!hoursArray.includes(label)) {
-          hoursArray.push(label);
-          datasetMap[label] = 0;
-        }
+        const bucketStart = latestMs - (i * HOUR_MS);
+        // Snap to hour boundary in GST
+        const gstSnapped = new Date(bucketStart);
+        const snappedMs  = bucketStart - (gstSnapped.getUTCMinutes() * 60000) - (gstSnapped.getUTCSeconds() * 1000);
+        const hh = new Date(snappedMs).getUTCHours();
+        const label = (hh < 10 ? '0' : '') + hh + ':00';
+        buckets.push({ epochMs: snappedMs, label, count: 0 });
       }
 
+      // Count incidents into their correct bucket
       data.forEach(x => {
-        const t = new Date(x.timestamp).getTime();
-        if (isNaN(t) || t < earliestMs || t > latestMs) return;
-        const d = new Date(t);
-        const label = (d.getHours() < 10 ? '0' : '') + d.getHours() + ':00';
-        if (datasetMap[label] !== undefined) datasetMap[label]++;
+        const ms = x.gstMs || (new Date(x.timestamp).getTime() + GST_OFFSET_MS);
+        if (isNaN(ms) || ms < earliestMs || ms > latestMs) return;
+        // Find which bucket this belongs to
+        for (let i = buckets.length - 1; i >= 0; i--) {
+          if (ms >= buckets[i].epochMs) {
+            buckets[i].count++;
+            break;
+          }
+        }
       });
 
       const chartGradient = ctx.createLinearGradient(0, 0, 0, 160);
       if (theme === 'dark') {
-        chartGradient.addColorStop(0, 'rgba(232, 160, 32, 0.25)');
-        chartGradient.addColorStop(1, 'rgba(232, 160, 32, 0.0)');
+        chartGradient.addColorStop(0, 'rgba(232,160,32,0.25)');
+        chartGradient.addColorStop(1, 'rgba(232,160,32,0.0)');
       } else {
-        chartGradient.addColorStop(0, 'rgba(176, 102, 0, 0.2)');
-        chartGradient.addColorStop(1, 'rgba(176, 102, 0, 0.0)');
+        chartGradient.addColorStop(0, 'rgba(176,102,0,0.2)');
+        chartGradient.addColorStop(1, 'rgba(176,102,0,0.0)');
       }
 
       timelineChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: hoursArray,
+          labels: buckets.map(b => b.label),
           datasets: [{
-            label: 'Incident Rate Track',
-            data: hoursArray.map(h => datasetMap[h]),
-            borderColor: theme === 'dark' ? '#e8a020' : '#b06600',
-            backgroundColor: chartGradient,
-            borderWidth: 2.5,
+            label: 'Incident Rate',
+            data:  buckets.map(b => b.count),
+            borderColor:          theme === 'dark' ? '#e8a020' : '#b06600',
+            backgroundColor:      chartGradient,
+            borderWidth:          2.5,
             pointBackgroundColor: theme === 'dark' ? '#e8a020' : '#b06600',
-            pointBorderColor: theme === 'dark' ? '#090d12' : '#ffffff',
+            pointBorderColor:     theme === 'dark' ? '#090d12' : '#ffffff',
             pointBorderWidth: 1.5,
-            pointRadius: 3.5,
+            pointRadius:      3.5,
             pointHoverRadius: 5,
-            fill: true,
+            fill:    true,
             tension: 0.3
           }]
         },
@@ -1231,15 +1254,18 @@
         return;
       }
 
+      const GST_OFFSET_MS = 4 * 60 * 60 * 1000;
       data.forEach(inc => {
         const item = document.createElement('div');
         item.className = 'feed-item';
         item.onclick = () => showIncidentDetails(inc);
         
         let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
-        const d = new Date(inc.timestamp);
-        const timeStr = d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-        const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+        const gstMs  = inc.gstMs || (new Date(inc.timestamp).getTime() + GST_OFFSET_MS);
+        const gstD   = new Date(gstMs);
+        const timeStr = (gstD.getUTCHours()   < 10 ? '0' : '') + gstD.getUTCHours()   + ':' +
+                        (gstD.getUTCMinutes() < 10 ? '0' : '') + gstD.getUTCMinutes();
+        const dateStr = gstD.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: '2-digit' });
 
         item.innerHTML = `
           <div class="severity-dot ${sevClass}"></div>
@@ -1495,7 +1521,9 @@
         row.className = 'feed-item';
         row.onclick = () => showIncidentDetails(inc);
         let sevClass = inc.severity === 'Critical' ? 'critical' : (inc.severity === 'High' ? 'high' : 'low');
-        const timeStr = new Date(inc.timestamp).toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+        const gstMs  = inc.gstMs || (new Date(inc.timestamp).getTime() + 4*3600000);
+        const gd     = new Date(gstMs);
+        const timeStr = (gd.getUTCHours() < 10 ? '0' : '') + gd.getUTCHours() + ':' + (gd.getUTCMinutes() < 10 ? '0' : '') + gd.getUTCMinutes();
 
         row.innerHTML = `
           <div class="severity-dot ${sevClass}"></div>
@@ -1528,7 +1556,7 @@
       const actions = logicalMitigation.split(';');
       
       target.innerHTML = `
-        <div class="modal-field"><label>System Event Registry Timestamp</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date(inc.timestamp).toString()}</p></div>
+        <div class="modal-field"><label>System Event Registry Timestamp (GST / UTC+4)</label><p style="font-family:var(--font-mono); font-weight:500;">${new Date((inc.gstMs || (new Date(inc.timestamp).getTime() + 4*3600000))).toUTCString().replace('GMT','GST')}</p></div>
         
         <div class="modal-field"><label>Parsing Origin Operator Terminal</label><p style="font-weight:600; color:var(--blue);">${inc.shift}</p></div>
         
