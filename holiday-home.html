@@ -1,709 +1,674 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dubai Creek Harbour — Holiday Homes Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>DCH Holiday Homes — Security Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root[data-theme="dark"] {
-    --bg-deep:    #090d12;
-    --bg-panel:   #0e1520;
-    --bg-card:    #131d2b;
-    --bg-hover:   #1a2638;
-    --border:     rgba(255, 255, 255, 0.07);
-    --border-bright: rgba(255, 255, 255, 0.14);
-    --accent:     #e8a020;
-    --accent-dim: rgba(232, 160, 32, 0.15);
-    --red:        #e84040;
-    --red-dim:    rgba(232, 64, 64, 0.15);
-    --green:      #34c77b;
-    --green-dim:  rgba(52, 199, 123, 0.12);
-    --blue:       #3a8fe8;
-    --blue-dim:   rgba(58, 143, 232, 0.12);
-    --text-pri:   #e8edf5;
-    --text-sec:   #7a8fa8;
-    --text-dim:   #3d5068;
-    --scanline:   rgba(0,0,0,0.06);
-    --horse-color: #e8a020;
-  }
+:root {
+  --bg:#08090f;--surface:#0f1117;--surface2:#161923;--surface3:#1c2130;
+  --border:#1e2535;--border2:#252d40;--text:#e2e8f0;--text-dim:#8895aa;--text-faint:#4a5568;
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.15);--red:#ef4444;--red-dim:rgba(239,68,68,0.15);
+  --green:#10b981;--green-dim:rgba(16,185,129,0.12);--blue:#3b82f6;--blue-dim:rgba(59,130,246,0.12);
+  --purple:#8b5cf6;--purple-dim:rgba(139,92,246,0.12);
+}
+[data-theme="light"] {
+  --bg:#f0f2f7;--surface:#ffffff;--surface2:#f8f9fc;--surface3:#eef0f6;
+  --border:#d1d9e8;--border2:#c0cbe0;--text:#0f172a;--text-dim:#475569;--text-faint:#94a3b8;
+  --amber:#d97706;--amber-dim:rgba(217,119,6,0.12);--red:#dc2626;--red-dim:rgba(220,38,38,0.1);
+  --green:#059669;--green-dim:rgba(5,150,105,0.1);--blue:#2563eb;--blue-dim:rgba(37,99,235,0.1);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.5;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:1000;}
+[data-theme="light"] body::before{display:none;}
 
-  :root[data-theme="light"] {
-    --bg-deep:    #f3eedf;         
-    --bg-panel:   #eae3d2;         
-    --bg-card:    #ffffff;         
-    --bg-hover:   #e2d9c3;         
-    --border:     rgba(9,16,29,0.15); 
-    --border-bright: rgba(9,16,29,0.25);
-    --accent:     #b06600;         
-    --accent-dim: rgba(176,102,0,0.1);
-    --red:        #b81414;         
-    --red-dim:    rgba(184,20,20,0.1);
-    --green:      #066b2e;         
-    --green-dim:  rgba(6,107,46,0.1);
-    --blue:       #0f40b3;         
-    --blue-dim:   rgba(15,64,179,0.1);
-    --text-pri:   #09101d;         
-    --text-sec:   #2b3a51;         
-    --text-dim:   #546681;         
-    --scanline:   rgba(255,255,255,0.15);
-    --horse-color: #b06600;
-  }
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.logo-badge{width:36px;height:36px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#fff;letter-spacing:0.5px;}
+.header-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;letter-spacing:1.5px;text-transform:uppercase;}
+.header-subtitle{font-size:11px;color:var(--text-dim);letter-spacing:0.5px;margin-top:1px;}
+.status-badge{display:flex;align-items:center;gap:6px;border:1px solid var(--purple);padding:4px 12px;border-radius:20px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--purple);}
+.status-dot{width:7px;height:7px;background:var(--purple);border-radius:50%;animation:pulse-purple 2s ease-in-out infinite;}
+@keyframes pulse-purple{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(139,92,246,0.5);}50%{opacity:.6;box-shadow:0 0 0 4px rgba(139,92,246,0);}}
+.header-right{display:flex;align-items:center;gap:10px;}
+.clock{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--purple);letter-spacing:1px;}
+.clock-date{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-dim);text-align:right;letter-spacing:0.5px;margin-top:1px;}
+.btn{padding:6px 14px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.btn-dash{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.btn-dash:hover{background:rgba(245,158,11,0.25);}
+.btn-theme{padding:6px 10px;}
 
-  :root {
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-mono:    'DM Mono', monospace;
-    --font-body:    'DM Sans', sans-serif;
-    --r:          6px;
-  }
+/* TOP BAR */
+.top-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 20px;background:var(--surface);border-bottom:1px solid var(--border);}
+.top-bar input{flex:1;min-width:260px;background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;}
+.top-bar input:focus{border-color:var(--purple);}
+.btn-search{background:var(--surface3);border:1px solid var(--purple);color:var(--purple);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.btn-search:hover{background:var(--purple-dim);}
+.btn-export{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.btn-export:hover{border-color:var(--green);color:var(--green);}
+.demo-tag{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-faint);letter-spacing:.5px;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* MAIN */
+.main{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
 
-  body {
-    font-family: var(--font-body);
-    background: var(--bg-deep);
-    color: var(--text-pri);
-    min-height: 100vh;
-    overflow-x: hidden;
-    transition: background 0.2s ease, color 0.2s ease;
-  }
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.kpi{background:var(--surface);border:1px solid var(--border);padding:16px 18px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.purple::before{background:var(--purple);}
+.kpi.amber::before{background:var(--amber);}
+.kpi.red::before{background:var(--red);}
+.kpi.green::before{background:var(--green);}
+.kpi.blue::before{background:var(--blue);}
+.kpi-label{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;}
+.kpi-label.purple{color:var(--purple);}
+.kpi-label.amber{color:var(--amber);}
+.kpi-label.red{color:var(--red);}
+.kpi-label.green{color:var(--green);}
+.kpi-label.blue{color:var(--blue);}
+.kpi-num{font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;line-height:1;margin:6px 0 4px;}
+.kpi.purple .kpi-num{color:var(--purple);}
+.kpi.amber .kpi-num{color:var(--amber);}
+.kpi.red .kpi-num{color:var(--red);}
+.kpi.green .kpi-num{color:var(--green);}
+.kpi.blue .kpi-num{color:var(--blue);}
+.kpi-sub{font-size:10px;color:var(--text-faint);}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      var(--scanline) 2px,
-      var(--scanline) 4px
-    );
-    pointer-events: none;
-    z-index: 9999;
-  }
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);padding:16px;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);}
+.panel-tag{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1px;border:1px solid;padding:2px 8px;}
+.tag-purple{color:var(--purple);border-color:rgba(139,92,246,.3);}
+.tag-amber{color:var(--amber);border-color:rgba(245,158,11,.3);}
+.tag-green{color:var(--green);border-color:rgba(16,185,129,.3);}
+.tag-red{color:var(--red);border-color:rgba(239,68,68,.3);}
 
-  /* ── HEADER ── */
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 32px;
-    border-bottom: 2px solid var(--border);
-    background: var(--bg-panel);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+/* MID ROW */
+.mid-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;}
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
+/* UNIT CARDS */
+.unit-scroll{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.unit-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.unit-item:last-child{border-bottom:none;}
+.unit-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);background:var(--purple-dim);border:1px solid rgba(139,92,246,.2);padding:2px 5px;flex-shrink:0;min-width:36px;text-align:center;}
+.unit-body{flex:1;}
+.unit-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;}
+.unit-addr{font-size:11px;color:var(--text-dim);margin-top:1px;}
+.unit-meta{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
+.utag{font-size:10px;padding:2px 6px;border-radius:2px;}
+.utag-community{background:var(--purple-dim);color:var(--purple);}
+.utag-status{background:var(--green-dim);color:var(--green);}
+.utag-status.alert{background:var(--red-dim);color:var(--red);}
+.utag-status.warning{background:var(--amber-dim);color:var(--amber);}
 
-  .logo-badge {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-display);
-    font-size: 18px;
-    color: #000;
-    letter-spacing: 0.5px;
-    transition: background 0.3s ease;
-  }
+/* OCCUPANCY TABLE */
+.occ-table{width:100%;border-collapse:collapse;}
+.occ-table th{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;padding:0 0 8px;border-bottom:1px solid var(--border);}
+.occ-table td{padding:7px 0;font-size:11px;border-bottom:1px solid var(--border);vertical-align:top;}
+.occ-table tr:last-child td{border-bottom:none;}
+.occ-table td:first-child{color:var(--text-dim);max-width:110px;}
+.occ-table td:nth-child(2){font-family:'JetBrains Mono',monospace;color:var(--amber);text-align:center;font-size:12px;font-weight:500;}
+.occ-bar-cell{padding-right:8px;}
+.occ-bar{height:5px;background:var(--surface3);width:80px;}
+.occ-bar-fill{height:100%;background:var(--purple);}
+.occ-bar-fill.high{background:var(--red);}
+.occ-bar-fill.mid{background:var(--amber);}
+.occ-bar-fill.low{background:var(--green);}
 
-  .header-title {
-    font-family: var(--font-display);
-    font-size: 24px;
-    letter-spacing: 2px;
-    color: var(--text-pri);
-    line-height: 1;
-  }
+/* INCIDENTS PANEL */
+.inc-scroll{max-height:220px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.inc-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.inc-item:last-child{border-bottom:none;}
+.sev-pill{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;flex-shrink:0;height:fit-content;margin-top:2px;}
+.sev-critical{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+.sev-high{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.3);}
+.sev-medium{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+.sev-low{background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,.3);}
+.inc-body{flex:1;}
+.inc-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;}
+.inc-meta{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.inc-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);white-space:nowrap;margin-left:auto;}
 
-  .header-sub {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 3px;
-    font-family: var(--font-mono);
-  }
+/* BOT ROW */
+.bot-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 
-  .header-right {
-    text-align: right;
-  }
+/* GUEST ACTIVITY */
+.activity-list{}
+.act-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.act-item:last-child{border-bottom:none;}
+.act-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--surface3);border:1px solid var(--border2);}
+.act-body{flex:1;}
+.act-label{font-size:12px;color:var(--text);}
+.act-sub{font-size:10px;color:var(--text-dim);margin-top:1px;}
+.act-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);}
 
-  #live-clock {
-    font-family: var(--font-display);
-    font-size: 30px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    line-height: 1;
-  }
+/* PATROL SCHEDULE */
+.patrol-list{}
+.patrol-item{padding:8px 10px;margin-bottom:6px;border-left:2px solid var(--purple);background:var(--purple-dim);}
+.patrol-item:last-child{margin-bottom:0;}
+.patrol-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);font-weight:500;}
+.patrol-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;margin-top:2px;}
+.patrol-sub{font-size:10px;color:var(--text-dim);margin-top:2px;}
 
-  .clock-date {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    letter-spacing: 1px;
-    margin-top: 2px;
-  }
+/* COMPLIANCE PANEL */
+.comp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.comp-row:last-child{border-bottom:none;}
+.comp-label{font-size:11px;color:var(--text-dim);}
+.comp-status{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;}
+.comp-ok{color:var(--green);}
+.comp-warn{color:var(--amber);}
+.comp-fail{color:var(--red);}
 
-  /* ── VECTOR HORSE GRAPHIC ANIMATION ── */
-  @keyframes horseRun {
-    0% { stroke-dashoffset: 24; }
-    50% { opacity: 0.85; }
-    100% { stroke-dashoffset: 0; }
-  }
+/* AI HANDOVER */
+.ai-section{background:var(--surface);border:1px solid var(--border);padding:16px;margin-top:0;}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px;}
+.ai-block{background:var(--surface2);border:1px solid var(--border);padding:14px;}
+.ai-block-label{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.ai-advisory{border-left:2px solid var(--purple);padding:10px 12px;background:var(--purple-dim);font-size:11px;line-height:1.6;color:var(--text);font-style:italic;}
+.ai-list{list-style:none;}
+.ai-list li{padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-dim);display:flex;gap:8px;}
+.ai-list li:last-child{border-bottom:none;}
+.ai-list li::before{content:'›';color:var(--purple);flex-shrink:0;}
+.handover-report{background:var(--surface3);border:1px solid var(--border);padding:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.8;white-space:pre-wrap;max-height:160px;overflow-y:auto;margin-top:10px;}
+.copy-btn{float:right;padding:5px 12px;border:1px solid var(--border2);background:var(--surface3);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.copy-btn:hover{border-color:var(--green);color:var(--green);}
 
-  @keyframes horseGallop {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-1.5px) rotate(1deg); }
-    50% { transform: translateY(0.5px) rotate(-1deg); }
-    75% { transform: translateY(-1px) rotate(0.5deg); }
-  }
+/* UNIT DETAIL MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);padding:24px;width:90%;max-width:520px;position:relative;}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;margin-bottom:16px;color:var(--purple);}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-field{padding:8px 10px;background:var(--surface2);border:1px solid var(--border);}
+.modal-field-label{font-size:10px;color:var(--text-faint);letter-spacing:.5px;font-family:'Rajdhani',sans-serif;font-weight:600;}
+.modal-field-val{font-size:12px;color:var(--text);margin-top:3px;}
 
-  .animated-vector-horse {
-    animation: horseGallop 0.55s infinite ease-in-out;
-  }
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);}
 
-  .animated-vector-horse path {
-    stroke-dasharray: 12;
-    animation: horseRun 0.8s linear infinite;
-  }
-
-  /* ── CONFIG PANEL ── */
-  .config-bar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 10px 32px;
-    background: var(--bg-panel);
-    border-bottom: 2px solid var(--border);
-    font-size: 12px;
-  }
-
-  .config-bar label {
-    color: var(--text-pri);
-    font-family: var(--font-mono);
-    font-weight: 600;
-    letter-spacing: 1px;
-    font-size: 10px;
-    text-transform: uppercase;
-  }
-
-  .config-bar input, .config-bar select {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    color: var(--text-pri);
-    padding: 6px 10px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    outline: none;
-  }
-
-  .config-bar input:focus, .config-bar select:focus {
-    border-color: var(--accent);
-  }
-
-  .config-bar input[type="text"] { width: 320px; max-width: 100%; }
-
-  .btn-fetch {
-    background: var(--text-pri);
-    color: var(--bg-card);
-    border: none;
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-  }
-
-  .btn-fetch:hover { opacity: 0.9; }
-
-  .btn-demo {
-    background: var(--bg-card);
-    color: var(--text-sec);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 18px;
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .btn-demo:hover {
-    color: var(--text-pri);
-    border-color: var(--text-pri);
-  }
-
-  /* ── ACTION BUTTONS WITH GEMINI HOVER EFFECT ── */
-  .btn-theme-toggle, .btn-holiday-homes {
-    background: var(--bg-card);
-    color: var(--text-pri);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 7px 14px;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 11px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    z-index: 1;
-  }
-
-  /* Gemini AI Custom Mouse Hover Gradient Profile */
-  .btn-theme-toggle::before, .btn-holiday-homes::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(66, 133, 244, 0.15), rgba(155, 81, 224, 0.15), rgba(244, 180, 0, 0.15));
-    opacity: 0;
-    z-index: -1;
-    transition: opacity 0.4s ease;
-  }
-
-  .btn-theme-toggle:hover, .btn-holiday-homes:hover {
-    border-color: rgba(155, 81, 224, 0.5);
-    box-shadow: 0 0 10px rgba(155, 81, 224, 0.15);
-    color: var(--text-pri);
-  }
-
-  .btn-theme-toggle:hover::before, .btn-holiday-homes:hover::before {
-    opacity: 1;
-  }
-
-  .btn-theme-toggle svg, .btn-holiday-homes svg {
-    flex-shrink: 0;
-  }
-
-  .fetch-status {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    letter-spacing: 0.5px;
-  }
-
-  /* ── MAIN LAYOUT ── */
-  main {
-    padding: 24px 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  /* ── KPI ROW ── */
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-  }
-
-  .kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-  }
-
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-
-  .kpi-card.checkins::before { background: var(--green); }
-  .kpi-card.checkouts::before { background: var(--blue); }
-  .kpi-card.active-units::before { background: var(--accent); }
-  .kpi-card.pending-clearance::before { background: var(--red); }
-
-  .kpi-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-sec);
-    margin-bottom: 8px;
-  }
-
-  .kpi-value {
-    font-family: var(--font-display);
-    font-size: 46px;
-    line-height: 1;
-    letter-spacing: 1px;
-  }
-
-  .kpi-card.checkins .kpi-value { color: var(--green); }
-  .kpi-card.checkouts .kpi-value { color: var(--blue); }
-  .kpi-card.active-units .kpi-value { color: var(--accent); }
-  .kpi-card.pending-clearance .kpi-value { color: var(--red); }
-
-  .kpi-delta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-dim);
-    margin-top: 4px;
-  }
-
-  /* ── GRID SYSTEM ── */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
-  }
-
-  .panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border-bright);
-    border-radius: var(--r);
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-panel);
-  }
-
-  .panel-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    letter-spacing: 1.5px;
-    color: var(--text-pri);
-  }
-
-  .panel-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 3px;
-    background: var(--bg-deep);
-    color: var(--text-sec);
-    border: 1px solid var(--border);
-  }
-
-  /* ── TABLES / LISTS ── */
-  .table-wrap {
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 13px;
-  }
-
-  th {
-    background: var(--bg-panel);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-sec);
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-pri);
-  }
-
-  tr:hover td {
-    background: var(--bg-panel);
-  }
-
-  .status-tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 3px;
-    text-transform: uppercase;
-  }
-  .status-tag.completed { background: var(--green-dim); color: var(--green); }
-  .status-tag.active { background: var(--accent-dim); color: var(--accent); }
-  .status-tag.pending { background: var(--red-dim); color: var(--red); }
-
-  /* ── LOG LIST ── */
-  .log-list {
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .log-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    font-size: 12px;
-  }
-
-  .log-desc { color: var(--text-pri); line-height: 1.4; }
-  .log-meta { color: var(--text-dim); font-family: var(--font-mono); font-size: 11px; margin-top: 4px; }
-  .log-time { font-family: var(--font-mono); color: var(--text-dim); font-size: 11px; white-space: nowrap; }
-
-  /* ── FOOTER ── */
-  footer {
-    padding: 12px 32px;
-    border-top: 2px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-sec);
-    background: var(--bg-panel);
-    margin-top: auto;
-  }
-  .footer-left-content { display: inline-flex; align-items: center; gap: 4px; }
+/* FOOTER */
+.footer{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:.5px;}
 </style>
 </head>
-<body onload="initTheme(); startClock();">
+<body>
 
-  <header>
-    <div class="header-left">
-      <div class="logo-badge">DCH</div>
-      <div>
-        <h1 class="header-title">HOLIDAY HOMES</h1>
-        <div class="header-sub">Apartment Clearance Tracker</div>
-      </div>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-badge">HH</div>
+    <div>
+      <div class="header-title">Holiday Homes</div>
+      <div class="header-subtitle">Dubai Creek Harbour — Zone D</div>
     </div>
-    <div class="header-right">
-      <div id="live-clock">00:00:00</div>
-      <div class="clock-date" id="live-date">CHRONO SYNC ACTIVE</div>
+  </div>
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    HHO MONITORING
+  </div>
+  <div class="header-right">
+    <a href="index.html" class="btn btn-dash">📡 LIVE DASHBOARD</a>
+    <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
+    <div style="text-align:right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-date" id="clockDate">---</div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <div class="config-bar">
-    <label>Database Sync Engine Link</label>
-    <input type="text" id="sheet-url" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" value="">
-    <button class="btn-fetch" onclick="alert('Syncing live telemetry parameters...')">SYNC PROFILE</button>
-    <span class="fetch-status" id="fetch-status">System Operational · Real-time tracing engine synchronized</span>
+<!-- TOP BAR -->
+<div class="top-bar">
+  <span style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);white-space:nowrap;">HHO UNIT SEARCH:</span>
+  <input type="text" id="searchInput" placeholder="Search by unit number, community, guest name or booking reference…" oninput="filterUnits()">
+  <button class="btn-search" onclick="filterUnits()">SEARCH UNITS</button>
+  <button class="btn-export" onclick="exportReport()">EXPORT REPORT</button>
+  <span class="demo-tag">HHO REGISTRY · <strong id="unitCount">527</strong> REGISTERED UNITS · ZONE D</span>
+</div>
 
-    <div style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
-      <a href="index.html" class="btn-holiday-homes">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="14" rx="2" ry="2"></rect>
-          <line x1="8" y1="21" x2="16" y2="21"></line>
-          <line x1="12" y1="17" x2="12" y2="21"></line>
-        </svg>
-        <span>DASHBOARD</span>
-      </a>
+<!-- MAIN -->
+<div class="main">
 
-      <button class="btn-theme-toggle" id="theme-toggler" onclick="toggleTheme()">
-        <span>🌙</span><span id="theme-text">Dark Mode</span>
-      </button>
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi purple">
+      <div class="kpi-label purple">🏠 Total HHO Units</div>
+      <div class="kpi-num">527</div>
+      <div class="kpi-sub">Registered Zone D</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label green">✅ Active Occupancy</div>
+      <div class="kpi-num" id="kpiOccupied">312</div>
+      <div class="kpi-sub">Currently checked-in</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-label amber">⚡ Pending Check-In</div>
+      <div class="kpi-num" id="kpiPending">48</div>
+      <div class="kpi-sub">Expected today</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label red">🚨 Security Flags</div>
+      <div class="kpi-num" id="kpiFlags">7</div>
+      <div class="kpi-sub">Active alerts</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label blue">📋 Checkouts Today</div>
+      <div class="kpi-num" id="kpiCheckouts">29</div>
+      <div class="kpi-sub">Scheduled departures</div>
     </div>
   </div>
 
-  <main>
-    <div class="kpi-row">
-      <div class="kpi-card checkins">
-        <div class="kpi-label">Scheduled Arrivals</div>
-        <div class="kpi-value">24</div>
-        <div class="kpi-delta">expected check-ins</div>
+  <!-- MID ROW -->
+  <div class="mid-row">
+
+    <!-- UNIT REGISTRY -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">HHO Unit Registry</div>
+        <div class="panel-tag tag-purple">LIVE REGISTRY</div>
       </div>
-      <div class="kpi-card checkouts">
-        <div class="kpi-label">Expected Departures</div>
-        <div class="kpi-value">18</div>
-        <div class="kpi-delta">processing clearance</div>
-      </div>
-      <div class="kpi-card active-units">
-        <div class="kpi-label">Active Permits</div>
-        <div class="kpi-value">142</div>
-        <div class="kpi-delta">registered inside grid</div>
-      </div>
-      <div class="kpi-card pending-clearance">
-        <div class="kpi-label">Security Alerts</div>
-        <div class="kpi-value">2</div>
-        <div class="kpi-delta">unregistered key exchange</div>
-      </div>
+      <div class="unit-scroll" id="unitList"></div>
     </div>
 
-    <div class="main-grid">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">REAL-TIME APARTMENT ACCESS OVERVIEW</div>
-          <span class="panel-badge">LIVE REGISTER</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Unit ID</th>
-                <th>Community Sector</th>
-                <th>Access Authorization Type</th>
-                <th>Key Log Reference</th>
-                <th>Operational Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Unit 1402</strong></td>
-                <td>Creek Horizon — Tower A</td>
-                <td>Short-Term Permit</td>
-                <td>KEY-8821 / Valid</td>
-                <td><span class="status-tag completed">Completed</span></td>
-              </tr>
-              <tr>
-                <td><strong>Unit 0805</strong></td>
-                <td>The Cove — Building 2</td>
-                <td>Guest Access Pass</td>
-                <td>KEY-4920 / Active</td>
-                <td><span class="status-tag active">Active</span></td>
-              </tr>
-              <tr>
-                <td><strong>Unit 2110</strong></td>
-                <td>Harbour Gate — Tower B</td>
-                <td>Maintenance Overhaul</td>
-                <td>KEY-1092 / Expired</td>
-                <td><span class="status-tag pending">Pending Clearance</span></td>
-              </tr>
-              <tr>
-                <td><strong>Unit 0314</strong></td>
-                <td>Marina Promenade</td>
-                <td>Short-Term Permit</td>
-                <td>KEY-3311 / Valid</td>
-                <td><span class="status-tag completed">Completed</span></td>
-              </tr>
-              <tr>
-                <td><strong>Unit 1908</strong></td>
-                <td>Creek Horizon — Tower B</td>
-                <td>Resident Escort Log</td>
-                <td>KEY-9905 / Active</td>
-                <td><span class="status-tag active">Active</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <!-- OCCUPANCY BY COMMUNITY -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Occupancy by Community</div>
+        <div class="panel-tag tag-amber">DCH ZONES</div>
       </div>
+      <table class="occ-table" id="occTable">
+        <thead><tr>
+          <th>Community</th>
+          <th>Units</th>
+          <th>Rate</th>
+          <th style="text-align:left">Capacity</th>
+        </tr></thead>
+        <tbody id="occBody"></tbody>
+      </table>
+    </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">AUDIT ACTIVITY FOOTPRINT</div>
-          <span class="panel-badge">TELEMETRY STREAM</span>
-        </div>
-        <div class="log-list">
-          <div class="log-item">
-            <div>
-              <div class="log-desc">Unit 1402 key token returned to main desk terminal</div>
-              <div class="log-meta">Sector: Creek Horizon · Operator: Supv_Bridges</div>
-            </div>
-            <div class="log-time">3m ago</div>
-          </div>
-          <div class="log-item">
-            <div>
-              <div class="log-desc">New Holiday Home permit registered for Unit 0805</div>
-              <div class="log-meta">Sector: The Cove · Verified DTCM License Matrix</div>
-            </div>
-            <div class="log-time">14m ago</div>
-          </div>
-          <div class="log-item">
-            <div>
-              <div class="log-desc">Access flag raised: Unit 2110 expired key token match</div>
-              <div class="log-meta">Sector: Harbour Gate · CCTV validation requested</div>
-            </div>
-            <div class="log-time">42m ago</div>
-          </div>
-          <div class="log-item">
-            <div>
-              <div class="log-desc">Unit 0314 pre-arrival structural security clearance OK</div>
-              <div class="log-meta">Sector: Marina Promenade · Patrol Unit 3</div>
-            </div>
-            <div class="log-time">1h ago</div>
-          </div>
-        </div>
+    <!-- SECURITY INCIDENTS (HHO) -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">HHO Security Incidents</div>
+        <div class="panel-tag tag-red">ACTIVE FLAGS</div>
+      </div>
+      <div class="inc-scroll" id="incList"></div>
+    </div>
+  </div>
+
+  <!-- BOT ROW -->
+  <div class="bot-row">
+
+    <!-- GUEST ACTIVITY -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Guest Activity Log</div>
+        <div class="panel-tag tag-green">REAL-TIME</div>
+      </div>
+      <div class="activity-list" id="activityList"></div>
+    </div>
+
+    <!-- PATROL SCHEDULE -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">HHO Patrol Schedule</div>
+        <div class="panel-tag tag-purple">TODAY</div>
+      </div>
+      <div class="patrol-list" id="patrolList"></div>
+    </div>
+
+    <!-- COMPLIANCE -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">HHO Compliance Checklist</div>
+        <div class="panel-tag tag-amber">SHIFT STATUS</div>
+      </div>
+      <div id="compList"></div>
+    </div>
+  </div>
+
+  <!-- AI HANDOVER SECTION -->
+  <div class="ai-section">
+    <div class="panel-header">
+      <div class="panel-title">AI HHO Shift Handover Summary</div>
+      <button class="copy-btn" onclick="copyHandover()">COPY TO SYSTEM CLIPBOARD</button>
+    </div>
+    <div class="ai-grid">
+      <div class="ai-block">
+        <div class="ai-block-label" style="color:var(--purple);">🤖 AI Occupancy Advisory</div>
+        <div class="ai-advisory" id="aiAdvisory">Peak occupancy window active. Instruct lobby security teams at Creek Gate and Harbour Gate to maintain single-file guest access. Verify all HHO units with pending check-ins have valid booking references before granting access.</div>
+      </div>
+      <div class="ai-block">
+        <div class="ai-block-label" style="color:var(--red);">🚨 Active Security Directives</div>
+        <ul class="ai-list" id="aiDirectives"></ul>
+      </div>
+      <div class="ai-block">
+        <div class="ai-block-label" style="color:var(--green);">✅ Handover Checklist</div>
+        <ul class="ai-list" id="aiChecklist"></ul>
       </div>
     </div>
-  </main>
-
-  <footer>
-    <div class="footer-left-content">
-      <span>
-        <svg class="animated-vector-horse" width="18" height="18" viewBox="0 0 24 24" fill="none" style="vertical-align: middle;">
-          <path d="M2 11 L5 8 L10 8 L12 5 L16 4 L19 2 L20 4 L18 6 L22 8 L20 10 L16 10 L13 13 L14 15 M10 8 L8 13 L6 15 M12 5 L10 2 M16 10 L17 14" stroke="var(--horse-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </span>
-      <span>HOLIDAY HOME SYSTEM PARAMETERS ACTIVE</span>
+    <div style="margin-top:14px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:10px;color:var(--text-faint);letter-spacing:1px;margin-bottom:6px;">HHO HANDOVER REPORT OUTPUT</div>
+      <div class="handover-report" id="handoverReport"></div>
     </div>
-    <span id="last-refresh">LAST PROFILE UPDATE: NOMINAL</span>
-  </footer>
+  </div>
 
-  <script>
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeTogglerUI(savedTheme);
-    }
+</div><!-- /main -->
 
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeTogglerUI(newTheme);
-    }
+<!-- UNIT DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">✕</button>
+    <div class="modal-title" id="modalTitle">Unit Details</div>
+    <div class="modal-grid" id="modalGrid"></div>
+  </div>
+</div>
 
-    function updateThemeTogglerUI(theme) {
-      const toggler = document.getElementById('theme-toggler');
-      const txt = document.getElementById('theme-text');
-      if (theme === 'dark') {
-        toggler.querySelector('span:first-child').textContent = '🌙';
-        txt.textContent = 'Dark Mode';
-      } else {
-        toggler.querySelector('span:first-child').textContent = '☀️';
-        txt.textContent = 'Light Mode';
-      }
-    }
+<footer class="footer">
+  <div>Powered By: <strong style="color:var(--purple);">DCH</strong> Security Intelligence Platform</div>
+  <div>© 2026 Dubai Creek Harbour Command Center. All rights reserved.</div>
+</footer>
 
-    function startClock() {
-      setInterval(() => {
-        let d = new Date();
-        let utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-        let gstDate = new Date(utc + (3600000 * 4)); 
-        document.getElementById('live-clock').textContent = gstDate.toLocaleTimeString('en-AE', { hour12: false });
-        const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        document.getElementById('live-date').textContent = 'GST SYNC · ' + gstDate.toLocaleDateString('en-AE', options).toUpperCase();
-      }, 1000);
-    }
-  </script>
+<script>
+// ─── THEME ───────────────────────────────────────────────────────
+function toggleTheme(){
+  const h=document.documentElement;
+  const t=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',t);
+  document.querySelector('.btn-theme').textContent=t==='dark'?'☀':'🌙';
+  localStorage.setItem('dch-theme',t);
+}
+(function(){
+  const s=localStorage.getItem('dch-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',s);
+  document.querySelector('.btn-theme').textContent=s==='dark'?'☀':'🌙';
+})();
+
+// ─── CLOCK ───────────────────────────────────────────────────────
+function updateClock(){
+  const n=new Date();const pad=x=>String(x).padStart(2,'0');
+  document.getElementById('clock').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('clockDate').textContent=`${days[n.getDay()]}, ${months[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`;
+}
+setInterval(updateClock,1000);updateClock();
+
+// ─── DATA ────────────────────────────────────────────────────────
+const communities=[
+  {name:'The COVE',units:62,occupied:48,rate:77},
+  {name:'North Residence',units:44,occupied:31,rate:70},
+  {name:'South Residence',units:38,occupied:22,rate:58},
+  {name:'The Grand',units:71,occupied:65,rate:92},
+  {name:'Creek Edge',units:29,occupied:20,rate:69},
+  {name:'Creek Crescent',units:35,occupied:28,rate:80},
+  {name:'17 Icon Bay',units:52,occupied:50,rate:96},
+  {name:'Creek Gate',units:41,occupied:14,rate:34},
+  {name:'Harbour Gate',units:48,occupied:38,rate:79},
+  {name:'Creek Rise',units:33,occupied:0,rate:0},
+  {name:'Harbour Views',units:36,occupied:0,rate:0},
+];
+
+const units=[
+  {id:'HH-0041',name:'The Grand — Apt 2204',community:'The Grand',guest:'Mr. Khalid Al Rashidi',booking:'DCH-2026-44821',checkin:'10 JUN',checkout:'14 JUN',status:'Occupied',floor:'22',type:'2BR'},
+  {id:'HH-0178',name:'17 Icon Bay — Apt 1101',community:'17 Icon Bay',guest:'Ms. Sophie Laurent',booking:'DCH-2026-51003',checkin:'09 JUN',checkout:'12 JUN',status:'Occupied',floor:'11',type:'Studio'},
+  {id:'HH-0093',name:'Creek Crescent — Apt 304',community:'Creek Crescent',guest:'Mr. Arjun Sharma',booking:'DCH-2026-48720',checkin:'10 JUN',checkout:'17 JUN',status:'Occupied',floor:'3',type:'1BR'},
+  {id:'HH-0215',name:'Harbour Gate — Apt 801',community:'Harbour Gate',guest:'Ms. Fatima Al Nouri',booking:'DCH-2026-52114',checkin:'10 JUN',checkout:'13 JUN',status:'Pending Check-In',floor:'8',type:'2BR'},
+  {id:'HH-0302',name:'The COVE — Apt 1502',community:'The COVE',guest:'Mr. James Wilson',booking:'DCH-2026-47899',checkin:'08 JUN',checkout:'11 JUN',status:'Checkout Today',floor:'15',type:'3BR'},
+  {id:'HH-0087',name:'Creek Gate — Apt 602',community:'Creek Gate',guest:'—',booking:'—',checkin:'—',checkout:'—',status:'Vacant',floor:'6',type:'1BR'},
+  {id:'HH-0449',name:'Creek Edge — Apt 2001',community:'Creek Edge',guest:'Mr. Ravi Menon',booking:'DCH-2026-50321',checkin:'07 JUN',checkout:'12 JUN',status:'Flagged',floor:'20',type:'2BR'},
+  {id:'HH-0311',name:'North Residence — Apt 1204',community:'North Residence',guest:'Ms. Anna Petrova',booking:'DCH-2026-53001',checkin:'11 JUN',checkout:'15 JUN',status:'Pending Check-In',floor:'12',type:'1BR'},
+  {id:'HH-0066',name:'South Residence — Apt 701',community:'South Residence',guest:'Mr. Hassan Al Zaabi',booking:'DCH-2026-46500',checkin:'05 JUN',checkout:'11 JUN',status:'Checkout Today',floor:'7',type:'2BR'},
+  {id:'HH-0512',name:'The Grand — Apt 3101',community:'The Grand',guest:'Mr. David Chen',booking:'DCH-2026-54420',checkin:'10 JUN',checkout:'20 JUN',status:'Occupied',floor:'31',type:'3BR'},
+];
+
+const incidents=[
+  {severity:'Critical',title:'Unauthorized Access Attempt — Creek Edge 2001',meta:'HH-0449 · 10 JUN 21:44',time:'21:44'},
+  {severity:'High',title:'Noise Complaint — The Grand 2204',meta:'HH-0041 · 10 JUN 23:10',time:'23:10'},
+  {severity:'High',title:'Unregistered Guest Entry — 17 Icon Bay',meta:'HH-0178 · 10 JUN 22:32',time:'22:32'},
+  {severity:'Medium',title:'Lost Access Card Reported — Creek Crescent 304',meta:'HH-0093 · 10 JUN 20:15',time:'20:15'},
+  {severity:'Medium',title:'Overstay Warning — The COVE 1502',meta:'HH-0302 · 11 JUN 08:00',time:'08:00'},
+  {severity:'Low',title:'Maintenance Access Logged — Harbour Gate 801',meta:'HH-0215 · 10 JUN 18:30',time:'18:30'},
+  {severity:'Low',title:'Parking Violation — South Residence B1',meta:'HH-0066 · 10 JUN 19:55',time:'19:55'},
+];
+
+const activities=[
+  {icon:'🔑',label:'Check-in Completed — The Grand 2204',sub:'Mr. Khalid Al Rashidi · DCH-2026-44821',time:'20:03'},
+  {icon:'🚪',label:'Check-out Initiated — The COVE 1502',sub:'Mr. James Wilson · Early Departure Request',time:'19:58'},
+  {icon:'🔔',label:'Concierge Request — 17 Icon Bay 1101',sub:'Ms. Sophie Laurent · Extra Towels',time:'19:44'},
+  {icon:'🚗',label:'Visitor Vehicle Access — Creek Crescent',sub:'Plate: DXB-A-44821 · 2 Visitors Logged',time:'19:31'},
+  {icon:'⚠️',label:'Security Check — Creek Edge 2001',sub:'Officer dispatched following alert trigger',time:'19:22'},
+  {icon:'📦',label:'Delivery Received — North Residence 1204',sub:'Parcel held at lobby · Guest notified',time:'19:10'},
+];
+
+const patrols=[
+  {time:'19:00',title:'Zone D HHO Sweep — Round 1',sub:'Officer Malik Jabir · All Communities'},
+  {time:'21:00',title:'Creek Gate & Harbour Gate Focus',sub:'Officer Al Mansoori · Access Control Check'},
+  {time:'23:00',title:'Zone D HHO Sweep — Round 2',sub:'Officer Chen Wei · Noise & Visitor Monitoring'},
+  {time:'01:00',title:'CCTV Audit — HHO Floors',sub:'CCTV Room Supervisor · 16 Control Rooms'},
+  {time:'04:00',title:'Pre-Dawn Patrol — Checkout Prep',sub:'Officer Malik Jabir · High Departure Zones'},
+];
+
+const compliance=[
+  {label:'Check-in Verification Protocol Active','status':'ok',text:'COMPLIANT'},
+  {label:'HHO Guest ID Logged — All Units','status':'ok',text:'COMPLIANT'},
+  {label:'Noise Curfew Enforcement (22:00–07:00)','status':'warn',text:'2 WARNINGS ISSUED'},
+  {label:'Visitor Pass System Operational','status':'ok',text:'COMPLIANT'},
+  {label:'Emergency Evacuation Plan Posted','status':'ok',text:'COMPLIANT'},
+  {label:'CCTV Coverage — HHO Floors','status':'warn',text:'1 BLIND SPOT LOGGED'},
+  {label:'Overstay Follow-up Actions','status':'fail',text:'1 PENDING'},
+  {label:'Parking Enforcement — HHO Zones','status':'ok',text:'COMPLIANT'},
+];
+
+const aiDirectives=[
+  'Flag HH-0449 Creek Edge: Unauthorized access — do not allow re-entry without supervisor clearance',
+  'Dispatch noise response to HH-0041 The Grand if complaint repeats after 00:00',
+  'Verify guest identity for all HH-0178 Icon Bay visitors before lobby access',
+  'Issue overstay notice to HH-0302 COVE — checkout was 11 JUN 12:00',
+  'Complete CCTV blind spot repair order — B2 level before morning shift',
+];
+
+const aiChecklist=[
+  '312 active occupants verified — guest register updated',
+  '48 pending check-ins briefed to lobby teams',
+  '29 checkouts scheduled — keys collected for 21 units',
+  'Security incident log submitted to DCH Central Command',
+  'Patrol rounds 1 & 2 completed — reports filed',
+  'HHO compliance report dispatched to WeOne supervisor',
+];
+
+// ─── RENDER ───────────────────────────────────────────────────────
+let filteredUnits=[...units];
+
+function getStatusClass(s){
+  if(s==='Flagged'||s==='Checkout Today')return 'alert';
+  if(s==='Pending Check-In')return 'warning';
+  return '';
+}
+
+function renderUnits(){
+  const el=document.getElementById('unitList');
+  el.innerHTML=filteredUnits.map((u,i)=>`
+    <div class="unit-item" style="cursor:pointer" onclick="openModal(${units.indexOf(u)})">
+      <div class="unit-num">${u.id}</div>
+      <div class="unit-body">
+        <div class="unit-name">${u.name}</div>
+        <div class="unit-addr">${u.guest!=='—'?u.guest:'Vacant Unit'} · ${u.type}</div>
+        <div class="unit-meta">
+          <span class="utag utag-community">${u.community}</span>
+          <span class="utag utag-status ${getStatusClass(u.status)}">${u.status}</span>
+          ${u.booking!=='—'?`<span class="utag" style="background:var(--surface3);color:var(--text-faint)">${u.booking}</span>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderOccupancy(){
+  const tbody=document.getElementById('occBody');
+  tbody.innerHTML=communities.map(c=>{
+    const cls=c.rate>=90?'high':c.rate>=60?'mid':'low';
+    return `<tr>
+      <td>${c.name}</td>
+      <td>${c.occupied}/${c.units}</td>
+      <td class="occ-bar-cell"><div class="occ-bar"><div class="occ-bar-fill ${cls}" style="width:${c.rate}%"></div></div></td>
+      <td style="color:var(--text-dim);font-size:10px">${c.rate}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderIncidents(){
+  const el=document.getElementById('incList');
+  el.innerHTML=incidents.map(inc=>`
+    <div class="inc-item">
+      <span class="sev-pill sev-${inc.severity.toLowerCase()}">${inc.severity}</span>
+      <div class="inc-body">
+        <div class="inc-title">${inc.title}</div>
+        <div class="inc-meta">${inc.meta}</div>
+      </div>
+      <span class="inc-time">${inc.time}</span>
+    </div>`).join('');
+}
+
+function renderActivity(){
+  const el=document.getElementById('activityList');
+  el.innerHTML=activities.map(a=>`
+    <div class="act-item">
+      <div class="act-icon">${a.icon}</div>
+      <div class="act-body">
+        <div class="act-label">${a.label}</div>
+        <div class="act-sub">${a.sub}</div>
+      </div>
+      <span class="act-time">${a.time}</span>
+    </div>`).join('');
+}
+
+function renderPatrols(){
+  const el=document.getElementById('patrolList');
+  el.innerHTML=patrols.map(p=>`
+    <div class="patrol-item">
+      <div class="patrol-time">${p.time} GST</div>
+      <div class="patrol-title">${p.title}</div>
+      <div class="patrol-sub">${p.sub}</div>
+    </div>`).join('');
+}
+
+function renderCompliance(){
+  const el=document.getElementById('compList');
+  el.innerHTML=compliance.map(c=>`
+    <div class="comp-row">
+      <span class="comp-label">${c.label}</span>
+      <span class="comp-status comp-${c.status}">${c.text}</span>
+    </div>`).join('');
+}
+
+function renderAI(){
+  document.getElementById('aiDirectives').innerHTML=aiDirectives.map(d=>`<li>${d}</li>`).join('');
+  document.getElementById('aiChecklist').innerHTML=aiChecklist.map(c=>`<li>${c}</li>`).join('');
+  const now=new Date();
+  const pad=x=>String(x).padStart(2,'0');
+  const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('handoverReport').textContent=
+`*DUBAI CREEK HARBOUR — HHO SECURITY HANDOVER REPORT*
+*DATE:* ${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${pad(now.getHours())}:${pad(now.getMinutes())} GST
+*ZONE:* D — HOLIDAY HOME OPERATIONS (527 UNITS)
+--------------------------------------------
+
+*🏠 OCCUPANCY STATUS*
+• Active Occupants: 312 / 527 units (59.2% occupancy)
+• Pending Check-Ins: 48 units (expected today)
+• Checkouts Today: 29 units scheduled
+• Security Flags Active: 7 (1 Critical, 2 High, 2 Medium, 2 Low)
+
+*🚨 SECURITY DIRECTIVES*
+• HH-0449 Creek Edge Flagged — Unauthorized access attempt 21:44
+• Noise complaint active — The Grand 2204, monitoring ongoing
+• Unregistered guest entry flagged — 17 Icon Bay, identity verification pending
+
+*✅ COMPLIANCE SUMMARY*
+• Check-in verification protocol active and compliant
+• 2 noise curfew warnings issued (The Grand, North Residence)
+• 1 overstay case pending resolution — The COVE 1502
+• CCTV blind spot logged — maintenance order raised
+
+*👮 PATROL STATUS*
+• Round 1 complete (19:00) — All communities cleared
+• Round 2 scheduled (23:00) — Focus: noise & visitor monitoring
+• CCTV audit (01:00) — 16 control rooms`;
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────
+function openModal(i){
+  const u=units[i];
+  document.getElementById('modalTitle').textContent=`${u.id} — ${u.name}`;
+  const fields=[
+    ['Community',u.community],['Unit Type',u.type],['Floor',u.floor],
+    ['Guest Name',u.guest],['Booking Ref',u.booking],['Status',u.status],
+    ['Check-In',u.checkin],['Check-Out',u.checkout]
+  ];
+  document.getElementById('modalGrid').innerHTML=fields.map(f=>`
+    <div class="modal-field">
+      <div class="modal-field-label">${f[0]}</div>
+      <div class="modal-field-val">${f[1]}</div>
+    </div>`).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('modalOverlay'))
+    document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ─── FILTER ───────────────────────────────────────────────────────
+function filterUnits(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  filteredUnits=q?units.filter(u=>
+    u.id.toLowerCase().includes(q)||u.name.toLowerCase().includes(q)||
+    u.community.toLowerCase().includes(q)||u.guest.toLowerCase().includes(q)||
+    u.booking.toLowerCase().includes(q)||u.status.toLowerCase().includes(q)
+  ):[...units];
+  renderUnits();
+}
+
+// ─── EXPORT ───────────────────────────────────────────────────────
+function exportReport(){
+  const text=document.getElementById('handoverReport').textContent;
+  const blob=new Blob([text],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='DCH_HHO_Handover_Report.txt';
+  a.click();
+}
+
+function copyHandover(){
+  const text=document.getElementById('handoverReport').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='COPIED ✓';btn.style.color='var(--green)';
+    setTimeout(()=>{btn.textContent='COPY TO SYSTEM CLIPBOARD';btn.style.color='';},2000);
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  renderUnits();
+  renderOccupancy();
+  renderIncidents();
+  renderActivity();
+  renderPatrols();
+  renderCompliance();
+  renderAI();
+});
+</script>
 </body>
 </html>
