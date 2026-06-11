@@ -702,6 +702,8 @@ async function connectTarget(){
   const url=document.getElementById('csvUrl').value.trim();
   if(!url){alert('Please enter a Google Sheets published CSV URL.');return;}
 
+  // Persist URL so it survives page navigation
+  localStorage.setItem('dch-sheet-url', url);
   showLoading('FETCHING GOOGLE SHEETS DATA...');
   document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
 
@@ -763,13 +765,34 @@ function parseCSV(text){
       obj.day_of_week=days[gst.getDay()];
     }
 
-    // Extract time_of_incident from raw_message if column is empty
-    if(!obj.time_of_incident&&obj.raw_message){
-      obj.time_of_incident=extractTimeFromRaw(obj.raw_message);
-    }
+    // Extract time_of_incident from raw_message if column is empty or looks like ISO
+    const rawToi = obj.time_of_incident;
+    const cleanedToi = normaliseTimeOfIncident(rawToi) || extractTimeFromRaw(obj.raw_message);
+    obj.time_of_incident = cleanedToi || null;
 
     return obj;
-  }).filter(r=>r.timestamp||r.incident_type);
+  }).filter(r=>{
+    // Skip rows that have no real incident content (blank type, empty summary, or placeholder dashes)
+    const hasType = r.incident_type && r.incident_type.trim() !== '' && r.incident_type !== '—' && r.incident_type !== '-';
+    const hasSummary = r.summary && r.summary.trim().length > 4;
+    const hasTimestamp = r.timestamp && r.timestamp.trim() !== '';
+    return hasType && hasSummary && hasTimestamp;
+  });
+}
+
+// Normalise time_of_incident: if it looks like a full ISO/datetime string, extract HH:MM only
+function normaliseTimeOfIncident(val) {
+  if (!val || val.trim() === '' || val === '—') return null;
+  const v = val.trim();
+  // Already a clean HH:MM
+  if (/^\d{1,2}:\d{2}$/.test(v)) return v;
+  // ISO datetime e.g. 2026-04-11T09:40:00.000Z  →  extract 09:40
+  const isoMatch = v.match(/T(\d{2}):(\d{2})/);
+  if (isoMatch) return isoMatch[1] + ':' + isoMatch[2];
+  // Date+time string e.g. "11/04/2026 09:40"
+  const dtMatch = v.match(/(\d{1,2}:\d{2})/);
+  if (dtMatch) return dtMatch[1];
+  return null;
 }
 
 function parseCSVLine(line){
@@ -1474,6 +1497,15 @@ window.addEventListener('DOMContentLoaded',()=>{
   drawRadar(24);
   updateTrafficBlock();
   fetchWeather();
+
+  // ── Restore saved sheet URL from localStorage ──────────────────
+  const savedUrl = localStorage.getItem('dch-sheet-url');
+  if (savedUrl) {
+    document.getElementById('csvUrl').value = savedUrl;
+    // Auto-fetch silently on page load so returning from holiday-home page works
+    connectTarget();
+  }
+  // ──────────────────────────────────────────────────────────────
 
   // refresh traffic advisory every minute
   setInterval(()=>{updateTrafficBlock();if(allIncidents.length)renderHandover(getFilteredIncidents());},60000);
