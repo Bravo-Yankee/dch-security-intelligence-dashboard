@@ -143,6 +143,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .compliance-banner .cb-title{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--red);text-transform:uppercase;margin-bottom:3px;}
 .compliance-banner .cb-text{font-size:12px;color:var(--text);font-family:'Inter',sans-serif;}
 .community-card .cc-alert{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:2px;z-index:2;animation:alertPulse 1.6s ease-in-out infinite;}
+
+/* ── HHO SHEET CONNECTION BAR ── */
+.top-bar{display:flex;align-items:center;gap:10px;padding:8px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.top-bar input{flex:1;min-width:260px;background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;}
+.btn-connect{background:var(--surface3);border:1px solid #3b82f6;color:#3b82f6;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.btn-connect:hover{background:var(--blue-dim);}
+.btn-telemetry{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.btn-telemetry:hover{border-color:var(--text-dim);color:var(--text);}
+.demo-tag{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-faint);letter-spacing:.5px;white-space:nowrap;}
 .ci-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);flex-shrink:0;padding-top:2px;}
 .occ-table{width:100%;border-collapse:collapse;}
 .occ-table th{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);text-align:left;padding:0 4px 8px;border-bottom:1px solid var(--border);}
@@ -240,6 +249,15 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div class="tab" onclick="switchTab('guests',this)">Active Guests <span class="tab-badge badge-amber" id="b-g">—</span></div>
   <div class="tab" onclick="switchTab('reps',this)">HHO Operators</div>
   <div class="tab" onclick="switchTab('workflow',this)">n8n Workflow</div>
+</div>
+
+<!-- TOP BAR — HHO GOOGLE SHEETS CONNECTION -->
+<div class="top-bar">
+  <span style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);white-space:nowrap;">HHO SHEET CSV URL:</span>
+  <input type="text" id="hhoCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?gid=XXXXXXXXX&single=true&output=csv">
+  <button class="btn-connect" onclick="connectHHO()">CONNECT TARGET</button>
+  <button class="btn-telemetry" onclick="loadDemoHHO()">LOAD TELEMETRY PROFILE</button>
+  <span class="demo-tag" id="hhoDemoTag">NOT CONNECTED — showing demo data</span>
 </div>
 
 <div class="main">
@@ -515,13 +533,13 @@ function switchTabByName(id){
 // ── STATE ──
 let HHO=[];
 
-// ── FETCH from Google Sheets (same pattern as index1.html) ──
-async function fetchHHO(){
-  const saved=localStorage.getItem('dch-sheet-url');
-  const url=saved||'https://docs.google.com/spreadsheets/d/1NttaG2YASd9Q2pIZWlaBs5w0AWNFrAzlb6-2A2FF5X0/pub?gid=0&single=true&output=csv';
-  let csvUrl=url;
-  if(url.includes('/edit'))csvUrl=url.replace('/edit','/pub')+'?output=csv';
-  else if(!url.includes('output=csv'))csvUrl=url+(url.includes('?')?'&':'?')+'output=csv';
+// ── FETCH from Google Sheets — HHO tab (dedicated URL, separate from the main Incidents sheet) ──
+async function fetchHHO(url){
+  const target=url||localStorage.getItem('dch-hho-sheet-url');
+  if(!target)return null;
+  let csvUrl=target;
+  if(target.includes('/edit'))csvUrl=target.replace('/edit','/pub')+'?output=csv';
+  else if(!target.includes('output=csv'))csvUrl=target+(target.includes('?')?'&':'?')+'output=csv';
   const proxies=[csvUrl,'https://api.allorigins.win/raw?url='+encodeURIComponent(csvUrl),'https://corsproxy.io/?'+encodeURIComponent(csvUrl)];
   for(const p of proxies){
     try{
@@ -533,6 +551,30 @@ async function fetchHHO(){
     }catch(e){continue;}
   }
   return null;
+}
+
+// ── CONNECT TARGET — called from the top-bar "CONNECT TARGET" button ──
+async function connectHHO(){
+  const url=document.getElementById('hhoCsvUrl').value.trim();
+  if(!url){alert('Please paste the published CSV URL for the HHO sheet tab.\n\nIn Google Sheets: File → Share → Publish to web → select the "HHO" sheet → CSV → Publish, then copy the link here.');return;}
+  localStorage.setItem('dch-hho-sheet-url',url);
+  document.getElementById('hhoDemoTag').textContent='CONNECTING TO HHO SHEET...';
+  const records=await fetchHHO(url);
+  if(records&&records.length){
+    HHO=records;
+    document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
+    renderAll();
+  }else{
+    document.getElementById('hhoDemoTag').textContent='CONNECTION FAILED — check the URL, or use LOAD TELEMETRY PROFILE';
+    alert('Could not load the HHO sheet. Make sure the "HHO" tab is published to the web (CSV) and the URL is correct.');
+  }
+}
+
+// ── LOAD DEMO — called from the top-bar "LOAD TELEMETRY PROFILE" button ──
+function loadDemoHHO(){
+  HHO=buildDemo();
+  document.getElementById('hhoDemoTag').textContent='DEMO DATA · '+HHO.length+' SAMPLE RECORDS';
+  renderAll();
 }
 
 function parseHHOCSV(text){
@@ -1059,18 +1101,34 @@ function renderAll(){
 window.addEventListener('DOMContentLoaded',async()=>{
   setInterval(updateClock,1000);updateClock();
   (function(){const s=localStorage.getItem('dch-theme')||'dark';const b=document.querySelector('.btn-theme');if(b)b.textContent=s==='dark'?'☀':'🌙';})();
-  // Try real Google Sheet first (same URL saved from index1)
-  const records=await fetchHHO();
+
+  // Restore any previously saved HHO sheet URL into the top-bar input
+  const savedUrl=localStorage.getItem('dch-hho-sheet-url');
+  if(savedUrl)document.getElementById('hhoCsvUrl').value=savedUrl;
+
+  // Try the saved HHO sheet first; fall back to demo data if not configured / unreachable
+  const records=savedUrl?await fetchHHO(savedUrl):null;
   if(records&&records.length){
     HHO=records;
+    document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
   } else {
     HHO=buildDemo();
+    document.getElementById('hhoDemoTag').textContent=savedUrl
+      ? 'CONNECTION FAILED — showing demo data (check URL or use CONNECT TARGET)'
+      : 'NOT CONNECTED — showing demo data';
   }
   renderAll();
-  // Auto-refresh every 5 minutes
+
+  // Auto-refresh every 5 minutes (only if a sheet URL is configured)
   setInterval(async()=>{
-    const r=await fetchHHO();
-    if(r&&r.length){HHO=r;renderAll();}
+    const u=localStorage.getItem('dch-hho-sheet-url');
+    if(!u)return;
+    const r=await fetchHHO(u);
+    if(r&&r.length){
+      HHO=r;
+      document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
+      renderAll();
+    }
   },5*60*1000);
 });
 </script>
