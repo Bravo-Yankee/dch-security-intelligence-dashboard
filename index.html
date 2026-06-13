@@ -452,7 +452,7 @@ body::before{
 <!-- TOP BAR -->
 <div class="top-bar">
   <span style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);white-space:nowrap;">GOOGLE SHEETS CSV URL:</span>
-  <input type="text" id="csvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?gid=0&single=true&output=csv" value="https://docs.google.com/spreadsheets/d/1NttaG2YASd9Q2pIZWlaBs5w0AWNFrAzlb6-2A2FF5X0/pub?gid=0&single=true&output=csv">
+  <input type="text" id="csvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?gid=1090631214&single=true&output=csv" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRG95N3O5UELiCl_D9bVtbfssN7wohUvxJeTH2EBm8JaLvpzU8lAB2O114myIHlDMMdpK1ZWLRF2T62/pub?gid=1090631214&single=true&output=csv">
   <label style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);white-space:nowrap;">RANGE</label>
   <select id="dateRange">
     <option value="1">Today</option>
@@ -476,7 +476,7 @@ body::before{
       <div class="kpi-sub">Immediate deployment</div>
     </div>
     <div class="kpi high" onclick="openKpiModal('high')">
-      <div class="kpi-label high">⚡ High / Medium</div>
+      <div class="kpi-label high">🟠 High / Medium</div>
       <div class="kpi-num" id="kpiHigh">—</div>
       <div class="kpi-sub">Escalated items</div>
     </div>
@@ -828,6 +828,14 @@ function extractTimeFromRaw(raw){
   return null;
 }
 
+// Returns an inline style string coloring a severity tag per spec:
+// High/Medium -> Orange (🟠), Low -> Green (🟢), Critical -> Red
+function sevTagStyle(sev){
+  if(sev==='Critical')return'background:var(--red-dim);color:var(--red);';
+  if(sev==='Low')return'background:var(--green-dim);color:var(--green);';
+  return'background:var(--amber-dim);color:var(--amber);'; // High & Medium
+}
+
 function sortIncidentsDesc(arr){
   arr.sort((a,b)=>{
     // Primary: timestamp descending (newest on top)
@@ -959,7 +967,7 @@ function openKpiModal(type){
   if(!filtered.length){body.innerHTML='<div class="empty-state">No incidents in this category.</div>';document.getElementById('kpiModal').classList.add('show');return;}
   body.innerHTML=filtered.slice(0,40).map(inc=>{
     const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
-    const dotClass=inc.severity==='Critical'?'red':inc.severity==='High'?'amber':'green';
+    const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
     return `<div class="feed-item" onclick="document.getElementById('kpiModal').classList.remove('show');showIncidentModal(${idx})">
       <div class="feed-dot ${dotClass}"></div>
       <div class="feed-body" style="flex:1">
@@ -967,7 +975,7 @@ function openKpiModal(type){
         <div class="feed-desc">${inc.summary||'—'}</div>
         <div class="feed-meta">
           <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
-          <span class="feed-tag tag-type">${inc.severity}</span>
+          <span class="feed-tag tag-type" style="${sevTagStyle(inc.severity)}">${inc.severity}</span>
           ${inc.time_of_incident?`<span class="feed-tag tag-time-of-inc">⏱ ${inc.time_of_incident}</span>`:''}
         </div>
       </div>
@@ -991,7 +999,7 @@ function renderLiveFeed(data){
   // Already sorted descending by timestamp — newest first
   el.innerHTML=data.slice(0,50).map((inc,i)=>{
     const idx=allIncidents.findIndex(item=>item.message_id===inc.message_id);
-    const dotClass=inc.severity==='Critical'?'red':inc.severity==='High'?'amber':'green';
+    const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
     const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||null;
 
     return `<div class="feed-item ${i<3?'new-flash':''}" onclick="showIncidentModal(${idx})">
@@ -1001,7 +1009,7 @@ function renderLiveFeed(data){
         <div class="feed-desc">${(inc.summary||'').substring(0,90)}${inc.summary&&inc.summary.length>90?'…':''}</div>
         <div class="feed-meta">
           <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
-          <span class="feed-tag tag-type">${inc.severity}</span>
+          <span class="feed-tag tag-type" style="${sevTagStyle(inc.severity)}">${inc.severity}</span>
           ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
           <span class="feed-tag tag-sup">${inc.sender||'—'}</span>
         </div>
@@ -1102,7 +1110,7 @@ function showZonePanel(zoneName){
         ${zoneIncs.slice(0,8).map(inc=>{
           const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
           const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||null;
-          const dotClass=inc.severity==='Critical'?'red':inc.severity==='High'?'amber':'green';
+          const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
           return `<div class="feed-item" style="padding:8px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
             <div class="feed-dot ${dotClass}"></div>
             <div class="feed-body" style="flex:1">
@@ -1110,7 +1118,7 @@ function showZonePanel(zoneName){
               <div class="feed-desc" style="font-size:11px">${(inc.summary||'').substring(0,70)}…</div>
               <div class="feed-meta">
                 ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
-                <span class="feed-tag tag-type" style="font-size:9px">${inc.severity}</span>
+                <span class="feed-tag tag-type" style="font-size:9px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
               </div>
             </div>
             <div class="feed-time">${formatTime(inc.timestamp)}</div>
@@ -1134,7 +1142,7 @@ function showIncidentModal(idx){
   document.getElementById('modalTitle').textContent=inc.incident_type.replace(/_/g,' ');
   const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||'—';
   const actions=inc.immediate_actions?inc.immediate_actions.split(';').filter(Boolean):[];
-  const sevColors={Critical:'var(--red)',High:'var(--amber)',Medium:'#eab308',Low:'var(--green)'};
+  const sevColors={Critical:'var(--red)',High:'var(--amber)',Medium:'var(--amber)',Low:'var(--green)'};
   document.getElementById('modalBody').innerHTML=`
     <div class="modal-field"><label>Severity</label><p style="color:${sevColors[inc.severity]||'var(--text)'};font-weight:700;font-size:14px;">${inc.severity}</p></div>
     <div class="modal-field"><label>Location Zone</label><p>${inc.location_zone||'—'}</p></div>
