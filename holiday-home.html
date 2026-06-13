@@ -254,7 +254,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <!-- TOP BAR — HHO GOOGLE SHEETS CONNECTION -->
 <div class="top-bar">
   <span style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);white-space:nowrap;">HHO SHEET CSV URL:</span>
-  <input type="text" id="hhoCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?gid=XXXXXXXXX&single=true&output=csv">
+  <input type="text" id="hhoCsvUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?gid=XXXXXXXXX&single=true&output=csv" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRG95N3O5UELiCl_D9bVtbfssN7wohUvxJeTH2EBm8JaLvpzU8lAB2O114myIHlDMMdpK1ZWLRF2T62/pub?gid=13831705&single=true&output=csv">
   <button class="btn-connect" onclick="connectHHO()">CONNECT TARGET</button>
   <button class="btn-telemetry" onclick="loadDemoHHO()">LOAD TELEMETRY PROFILE</button>
   <span class="demo-tag" id="hhoDemoTag">NOT CONNECTED — showing demo data</span>
@@ -1102,14 +1102,16 @@ window.addEventListener('DOMContentLoaded',async()=>{
   setInterval(updateClock,1000);updateClock();
   (function(){const s=localStorage.getItem('dch-theme')||'dark';const b=document.querySelector('.btn-theme');if(b)b.textContent=s==='dark'?'☀':'🌙';})();
 
-  // Restore any previously saved HHO sheet URL into the top-bar input
-  const savedUrl=localStorage.getItem('dch-hho-sheet-url');
+  // Restore any previously saved HHO sheet URL into the top-bar input,
+  // otherwise fall back to the pre-filled default value in the input itself
+  const savedUrl=localStorage.getItem('dch-hho-sheet-url')||document.getElementById('hhoCsvUrl').value.trim();
   if(savedUrl)document.getElementById('hhoCsvUrl').value=savedUrl;
 
   // Try the saved HHO sheet first; fall back to demo data if not configured / unreachable
   const records=savedUrl?await fetchHHO(savedUrl):null;
   if(records&&records.length){
     HHO=records;
+    localStorage.setItem('dch-hho-sheet-url',savedUrl);
     document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
   } else {
     HHO=buildDemo();
