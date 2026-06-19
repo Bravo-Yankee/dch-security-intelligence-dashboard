@@ -352,6 +352,12 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <input class="search-input" id="ciSearch" placeholder="Search guest, apt, community…" oninput="renderCheckins()">
         <select class="filter-sel" id="ciCom" onchange="renderCheckins()"><option value="">All Communities</option></select>
+        <select class="filter-sel" id="ciSortDir" onchange="renderCheckins()">
+          <option value="desc">↓ Newest First</option>
+          <option value="asc">↑ Oldest First</option>
+        </select>
+        <select class="filter-sel" id="ciMonth" onchange="renderCheckins()"><option value="">All Months</option></select>
+        <select class="filter-sel" id="ciYear" onchange="renderCheckins()"><option value="">All Years</option></select>
         <label style="display:flex;align-items:center;gap:5px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1px;color:var(--red);cursor:pointer;text-transform:uppercase;">
           <input type="checkbox" id="ciAlertOnly" onchange="renderCheckins()" style="accent-color:var(--red);"> 🚨 Alerts Only
         </label>
@@ -369,6 +375,12 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="panel-title">HHO Check-Out Log</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <input class="search-input" id="coSearch" placeholder="Search…" oninput="renderCheckouts()">
+        <select class="filter-sel" id="coSortDir" onchange="renderCheckouts()">
+          <option value="desc">↓ Newest First</option>
+          <option value="asc">↑ Oldest First</option>
+        </select>
+        <select class="filter-sel" id="coMonth" onchange="renderCheckouts()"><option value="">All Months</option></select>
+        <select class="filter-sel" id="coYear" onchange="renderCheckouts()"><option value="">All Years</option></select>
         <div class="ptag ptag-red" id="coCount">0 RECORDS</div>
       </div>
     </div>
@@ -675,6 +687,32 @@ function fmtTime(ts){
   if(diff<86400000)return Math.floor(diff/3600000)+'h ago';
   return d.toLocaleDateString('en-AE',{day:'numeric',month:'short'});
 }
+// Parses DD/MM/YYYY (the format used in checkin_date/checkout_date) into a Date.
+// Returns null for missing/invalid values (e.g. "N/A").
+function parseDMY(str){
+  if(!str)return null;
+  const m=String(str).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m)return null;
+  const d=new Date(parseInt(m[3]),parseInt(m[2])-1,parseInt(m[1]));
+  return isNaN(d.getTime())?null:d;
+}
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+// Populates a Month <select> and Year <select> from the date values found in `data` (using `field`).
+function populateMonthYear(monthSelId,yearSelId,data,field){
+  const monthSel=document.getElementById(monthSelId);
+  const yearSel=document.getElementById(yearSelId);
+  if(!monthSel||!yearSel)return;
+  const curMonth=monthSel.value,curYear=yearSel.value;
+  const years=new Set();
+  data.forEach(r=>{const d=parseDMY(r[field]);if(d)years.add(d.getFullYear());});
+  const sortedYears=[...years].sort((a,b)=>b-a);
+  if(monthSel.options.length<=1){
+    monthSel.innerHTML='<option value="">All Months</option>'+MONTH_NAMES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  }
+  yearSel.innerHTML='<option value="">All Years</option>'+sortedYears.map(y=>`<option value="${y}">${y}</option>`).join('');
+  monthSel.value=curMonth||'';
+  yearSel.value=sortedYears.includes(parseInt(curYear))?curYear:'';
+}
 
 // ── DEMO DATA ──
 function buildDemo(){
@@ -728,19 +766,23 @@ function renderCommunityGrid(){
   });
   const sorted=Object.entries(map).sort((a,b)=>b[1].in-a[1].in);
   if(!sorted.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1">No community data</div>';return;}
+  const iIcon=sorted.findIndex(([n])=>n==='17 Icon Bay');
+  const iUnk=sorted.findIndex(([n])=>n==='Unknown');
+  if(iIcon!==-1&&iUnk!==-1){const tmp=sorted[iIcon];sorted[iIcon]=sorted[iUnk];sorted[iUnk]=tmp;}
   el.innerHTML=sorted.map(([name,d],idx)=>{
     const img=getImg(name);
     const cls=d.in>=4?'cc-hot':d.in>0?'cc-active':'cc-idle';
     const lbl=d.in>=4?'HOT':'ACTIVE';
     const cname=name.replace(/'/g, "'");
+    const displayName=name==='Unknown'?'Quick Review':name;
     const gradCls='cc-grad-'+(idx%5);
     return `<div class="community-card ${gradCls}" onclick="filterByCommunity('${cname}')">
-      ${img?`<img src="${img}" alt="${name}" loading="lazy" onerror="this.classList.add('cc-img-failed')">`:''}
+      ${img?`<img src="${img}" alt="${displayName}" loading="lazy" onerror="this.classList.add('cc-img-failed')">`:''}
       <div class="cc-overlay"></div>
       ${d.alert?'<span class="cc-alert">🚨 ALERT</span>':''}
       <span class="cc-badge ${cls}">${lbl}</span>
       <div class="cc-body">
-        <div class="cc-name">${name}</div>
+        <div class="cc-name">${displayName}</div>
         <div class="cc-stats">
           ${d.in?`<span class="cc-s cc-in">↑ ${d.in} IN</span>`:''}
           ${d.out?`<span class="cc-s cc-out">↓ ${d.out} OUT</span>`:''}
@@ -808,10 +850,23 @@ function renderCheckins(){
   const q=(document.getElementById('ciSearch')||{}).value||'';
   const com=(document.getElementById('ciCom')||{}).value||'';
   const alertOnly=(document.getElementById('ciAlertOnly')||{}).checked;
+  const sortDir=(document.getElementById('ciSortDir')||{}).value||'desc';
+  const monthFilter=(document.getElementById('ciMonth')||{}).value||'';
+  const yearFilter=(document.getElementById('ciYear')||{}).value||'';
   let data=HHO.filter(r=>getET(r)==='in');
+  populateMonthYear('ciMonth','ciYear',data,'checkin_date');
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
   if(com)data=data.filter(r=>r.community===com);
   if(alertOnly)data=data.filter(isFlagged);
+  if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getMonth()===parseInt(monthFilter);});
+  if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getFullYear()===parseInt(yearFilter);});
+  data=data.slice().sort((a,b)=>{
+    const da=parseDMY(a.checkin_date),db=parseDMY(b.checkin_date);
+    if(!da&&!db)return 0;
+    if(!da)return 1;
+    if(!db)return-1;
+    return sortDir==='asc'?da-db:db-da;
+  });
   document.getElementById('ciCount').textContent=data.length+' RECORDS'+(alertOnly?' · 🚨 ALERTS ONLY':'');
   document.getElementById('ciList').innerHTML=renderList(data);
 }
@@ -819,8 +874,21 @@ function renderCheckins(){
 // ── CHECKOUTS TAB ──
 function renderCheckouts(){
   const q=(document.getElementById('coSearch')||{}).value||'';
+  const sortDir=(document.getElementById('coSortDir')||{}).value||'desc';
+  const monthFilter=(document.getElementById('coMonth')||{}).value||'';
+  const yearFilter=(document.getElementById('coYear')||{}).value||'';
   let data=HHO.filter(r=>getET(r)==='out');
+  populateMonthYear('coMonth','coYear',data,'checkout_date');
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
+  if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getMonth()===parseInt(monthFilter);});
+  if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getFullYear()===parseInt(yearFilter);});
+  data=data.slice().sort((a,b)=>{
+    const da=parseDMY(a.checkout_date),db=parseDMY(b.checkout_date);
+    if(!da&&!db)return 0;
+    if(!da)return 1;
+    if(!db)return-1;
+    return sortDir==='asc'?da-db:db-da;
+  });
   document.getElementById('coCount').textContent=data.length+' RECORDS';
   document.getElementById('coList').innerHTML=renderList(data);
 }
