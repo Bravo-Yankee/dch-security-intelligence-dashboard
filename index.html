@@ -412,7 +412,7 @@ border-radius:20px;}
   font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:.5px;
 }
 .footer-anim{display:flex;justify-content:center;align-items:center;padding:4px 0 12px;}
-.footer-anim dotlottie-player{width:56px;height:56px;opacity:.9;}
+.footer-anim canvas{width:56px;height:56px;opacity:.9;}
 
 /* SCROLLBAR GLOBAL */
 ::-webkit-scrollbar{width:4px;height:4px;}
@@ -615,9 +615,18 @@ border-radius:20px;}
   <div>© 2026 Dubai Creek Harbour Command Center</div>
 </footer>
 <div class="footer-anim">
-  <dotlottie-player src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" background="transparent" speed="0.5" loop autoplay></dotlottie-player>
+  <canvas id="footerBrainAnim" width="56" height="56"></canvas>
 </div>
-<script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+<script type="module">
+  import { DotLottie } from "https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web/+esm";
+  new DotLottie({
+    autoplay: true,
+    loop: true,
+    canvas: document.getElementById("footerBrainAnim"),
+    src: "https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie",
+    speed: 0.5
+  });
+</script>
 
 <!-- ZONE DETAIL SLIDE PANEL -->
 <div class="slide-backdrop" id="slideBackdrop" onclick="closeZonePanel(event)">
