@@ -638,17 +638,66 @@ function loadDemoHHO(){
   renderAll();
 }
 
+// Tokenizes the FULL csv text in one pass, correctly handling quoted fields
+// that contain embedded commas, escaped quotes (""), and literal newlines
+// (e.g. raw_message often contains real \n line breaks). Returns an array
+// of rows, each row an array of field strings.
+function parseCSVFull(text){
+  const rows=[];
+  let row=[];
+  let field='';
+  let inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQuotes){
+      if(ch==='"'){
+        if(text[i+1]==='"'){field+='"';i++;}
+        else{inQuotes=false;}
+      }else{
+        field+=ch;
+      }
+    }else{
+      if(ch==='"'){
+        inQuotes=true;
+      }else if(ch===','){
+        row.push(field);field='';
+      }else if(ch==='\r'){
+        // skip — handled by \n below (covers \r\n line endings)
+      }else if(ch==='\n'){
+        row.push(field);field='';
+        rows.push(row);row=[];
+      }else{
+        field+=ch;
+      }
+    }
+  }
+  // flush trailing field/row (file may not end with a newline)
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.some(f=>f.trim()!==''));
+}
+
 function parseHHOCSV(text){
-  const lines=text.trim().split('\n');
-  const hdrs=parseCSVLine(lines[0]).map(h=>h.replace(/"/g,'').trim());
-  const rows=lines.slice(1).map(line=>{
-    const vals=parseCSVLine(line);
+  const allRows=parseCSVFull(text.trim());
+  if(!allRows.length)return[];
+  const hdrs=allRows[0].map(h=>h.replace(/^"|"$/g,'').trim());
+  const rows=allRows.slice(1).map(vals=>{
     const obj={};
     hdrs.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
-  }).filter(r=>r.timestamp||r.raw_message||r.guest_name||r.event_type);
+  }).filter(isValidHHORecord);
   rows.sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0));
   return rows;
+}
+
+// A record only counts as a real HHO guest event if it has an actual guest
+// name, community, and timestamp — this filters out CSV parsing fragments
+// and genuinely blank/malformed sheet rows so they never surface as
+// "Unknown Guest" / "Unknown" community anywhere on the dashboard.
+function isValidHHORecord(r){
+  const hasGuest=r.guest_name&&r.guest_name.trim()&&r.guest_name.trim().toLowerCase()!=='unknown guest';
+  const hasCommunity=r.community&&r.community.trim()&&r.community.trim().toLowerCase()!=='unknown';
+  const hasTimestamp=r.timestamp&&!isNaN(new Date(r.timestamp).getTime());
+  return hasGuest&&hasCommunity&&hasTimestamp;
 }
 
 function parseCSVLine(line){
@@ -839,7 +888,9 @@ function renderOcc(){
 
 // ── RECENT FEED ──
 function renderRecent(){
-  document.getElementById('recentFeed').innerHTML=HHO.slice(0,20).map((r,i)=>{
+  const sorted=HHO.slice().sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0));
+  document.getElementById('recentFeed').innerHTML=sorted.slice(0,20).map((r)=>{
+    const i=HHO.indexOf(r);
     const flagged=isFlagged(r);
     return `
     <div class="ci-item${flagged?' flagged':''}" onclick="showModal(${i})">
