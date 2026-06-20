@@ -224,7 +224,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 ::-webkit-scrollbar-thumb{background:var(--border2);}
 .footer{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:.5px;flex-wrap:wrap;gap:6px;}
 .footer-anim{display:flex;justify-content:center;align-items:center;padding:4px 0 12px;}
-.footer-anim dotlottie-player{width:56px;height:56px;opacity:.9;}
+.footer-anim canvas{width:56px;height:56px;opacity:.9;}
 .empty-state{padding:30px;text-align:center;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;}
 .mid-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:12px;}
 @media(max-width:900px){.mid-grid{grid-template-columns:1fr;}}
@@ -511,9 +511,18 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <div>© 2026 Dubai Creek Harbour</div>
 </footer>
 <div class="footer-anim">
-  <dotlottie-player src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" background="transparent" speed="0.5" loop autoplay></dotlottie-player>
+  <canvas id="footerBrainAnim" width="56" height="56"></canvas>
 </div>
-<script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+<script type="module">
+  import { DotLottie } from "https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-web/+esm";
+  new DotLottie({
+    autoplay: true,
+    loop: true,
+    canvas: document.getElementById("footerBrainAnim"),
+    src: "https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie",
+    speed: 0.5
+  });
+</script>
 
 <script>
 const IMGS={
