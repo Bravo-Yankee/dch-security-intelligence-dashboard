@@ -388,19 +388,25 @@ border-radius:20px;}
   background:var(--surface2);border:1px solid var(--border);
 }
 
-/* LOADING OVERLAY */
-.loading-overlay{
-  position:fixed;inset:0;background:rgba(8,9,15,0.92);
-  display:none;flex-direction:column;align-items:center;justify-content:center;z-index:4000;
+/* SYNC PULSE INDICATOR — replaces full-screen overlay */
+.loading-overlay{display:none;}/* kept in DOM for compat, never shown */
+.sync-bar{
+  position:fixed;bottom:18px;right:18px;z-index:4000;
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  padding:7px 13px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--text-dim);
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
 }
-.loading-overlay.show{display:flex;}
-.loading-spinner{
-  width:36px;height:36px;border:2px solid var(--border2);
-  border-top-color:var(--amber);border-radius:50%;
-  animation:spin .7s linear infinite;margin-bottom:14px;
+.sync-bar.show{opacity:1;}
+.sync-bar.error{border-color:var(--red);color:var(--red);}
+.sync-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;
+  animation:syncpulse .8s ease-in-out infinite;
 }
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-text{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;color:var(--text-dim);}
+.sync-bar.error .sync-dot{background:var(--red);animation:none;}
+@keyframes syncpulse{0%,100%{opacity:.3;}50%{opacity:1;}}
 
 /* EMPTY STATE */
 .empty-state{padding:30px;text-align:center;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;}
@@ -661,10 +667,13 @@ border-radius:20px;}
   </div>
 </div>
 
-<!-- LOADING OVERLAY -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text" id="loadingText">STREAMING TARGET TELEMETRY...</div>
+<!-- LOADING OVERLAY (inert stub kept for JS compat) -->
+<div class="loading-overlay" id="loadingOverlay" style="display:none"></div>
+
+<!-- SYNC PULSE BAR -->
+<div class="sync-bar" id="syncBar">
+  <div class="sync-dot"></div>
+  <span id="syncText">SYNCING...</span>
 </div>
 
 <script>
@@ -713,50 +722,114 @@ let radarHours=24;
 // ═══════════════════════════════════════════════════════════════════
 //  GOOGLE SHEETS FETCH  (cloned from index2.html)
 // ═══════════════════════════════════════════════════════════════════
-async function connectTarget(){
-  const url=document.getElementById('csvUrl').value.trim();
-  if(!url){alert('Please enter a Google Sheets published CSV URL.');return;}
+// ═══════════════════════════════════════════════════════════════════
+//  SYNC BAR HELPERS (replaces showLoading/hideLoading)
+// ═══════════════════════════════════════════════════════════════════
+let syncBarTimer=null;
+function showSyncing(msg){
+  const bar=document.getElementById('syncBar');
+  bar.classList.remove('error');
+  document.getElementById('syncText').textContent=msg||'SYNCING...';
+  bar.classList.add('show');
+}
+function hideSyncing(isError){
+  const bar=document.getElementById('syncBar');
+  if(isError){
+    bar.classList.add('error');
+    document.getElementById('syncText').textContent='SYNC FAILED';
+    clearTimeout(syncBarTimer);
+    syncBarTimer=setTimeout(()=>bar.classList.remove('show'),3500);
+  } else {
+    clearTimeout(syncBarTimer);
+    syncBarTimer=setTimeout(()=>bar.classList.remove('show'),1800);
+  }
+}
+// Kept for any legacy callers — now completely silent
+function showLoading(){}
+function hideLoading(){}
 
-  // Persist URL so it survives page navigation
-  localStorage.setItem('dch-sheet-url', url);
-  showLoading('FETCHING GOOGLE SHEETS DATA...');
-  document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
-
+// ═══════════════════════════════════════════════════════════════════
+//  FETCH HELPERS
+// ═══════════════════════════════════════════════════════════════════
+async function doFetch(url){
   let csvUrl=url;
   if(url.includes('/edit'))        csvUrl=url.replace('/edit','/pub')+'?output=csv';
   else if(!url.includes('output=csv')) csvUrl=url+(url.includes('?')?'&':'?')+'output=csv';
-
   const proxies=[
     csvUrl,
     'https://api.allorigins.win/raw?url='+encodeURIComponent(csvUrl),
     'https://corsproxy.io/?'+encodeURIComponent(csvUrl)
   ];
-
   for(const attempt of proxies){
     try{
       const resp=await fetch(attempt,{cache:'no-store'});
       if(!resp.ok) continue;
       const text=await resp.text();
       if(!text||text.trim().length<10) continue;
-
-      allIncidents=parseCSV(text);
-      sortIncidentsDesc(allIncidents);
-
-      const gst=getGSTNow();
-      const timeStr=gst.toLocaleTimeString('en-AE');
-      document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
-      document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
-      document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
-      hideLoading();
-      renderAll();
-      scheduleAutoRefresh();
-      return;
+      return text;
     }catch(e){continue;}
   }
+  return null;
+}
 
-  hideLoading();
-  document.getElementById('demoTag').textContent='CONNECTION FAILED — try LOAD TELEMETRY PROFILE';
-  alert('Could not fetch sheet. Check URL or use LOAD TELEMETRY PROFILE to test with demo data.');
+// ═══════════════════════════════════════════════════════════════════
+//  GOOGLE SHEETS FETCH
+// ═══════════════════════════════════════════════════════════════════
+async function connectTarget(){
+  const url=document.getElementById('csvUrl').value.trim();
+  if(!url){alert('Please enter a Google Sheets published CSV URL.');return;}
+  localStorage.setItem('dch-sheet-url', url);
+
+  showSyncing('CONNECTING...');
+  document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
+
+  const text=await doFetch(url);
+  if(text){
+    allIncidents=parseCSV(text);
+    sortIncidentsDesc(allIncidents);
+    const gst=getGSTNow();
+    const timeStr=gst.toLocaleTimeString('en-AE');
+    document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
+    document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
+    document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
+    hideSyncing(false);
+    renderAll();
+    scheduleAutoRefresh();
+  } else {
+    hideSyncing(true);
+    document.getElementById('demoTag').textContent='CONNECTION FAILED — try LOAD TELEMETRY PROFILE';
+    alert('Could not fetch sheet. Check URL or use LOAD TELEMETRY PROFILE to test with demo data.');
+  }
+}
+
+// Silent background refresh — no visual interruption, just a tiny pulse
+async function silentRefresh(){
+  const url=document.getElementById('csvUrl').value.trim();
+  if(!url) return;
+  showSyncing('SYNCING...');
+  const text=await doFetch(url);
+  if(text){
+    allIncidents=parseCSV(text);
+    sortIncidentsDesc(allIncidents);
+    const gst=getGSTNow();
+    const timeStr=gst.toLocaleTimeString('en-AE');
+    document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
+    document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
+    document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
+    hideSyncing(false);
+    renderAll();
+  } else {
+    hideSyncing(true);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  AUTO-REFRESH (every 5 minutes, always silent)
+// ═══════════════════════════════════════════════════════════════════
+let autoRefreshTimer=null;
+function scheduleAutoRefresh(){
+  if(autoRefreshTimer)clearInterval(autoRefreshTimer);
+  autoRefreshTimer=setInterval(silentRefresh, 5*60*1000);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1492,27 +1565,6 @@ function copyHandover(){
 }
 
 // ═══════════════════════════════════════════════════════════════════
-//  AUTO-REFRESH (every 5 minutes if URL is set)
-// ═══════════════════════════════════════════════════════════════════
-let autoRefreshTimer=null;
-function scheduleAutoRefresh(){
-  if(autoRefreshTimer)clearInterval(autoRefreshTimer);
-  autoRefreshTimer=setInterval(()=>{
-    const url=document.getElementById('csvUrl').value.trim();
-    if(url&&allIncidents.length)connectTarget();
-  },5*60*1000);
-}
-
-// ═══════════════════════════════════════════════════════════════════
-//  LOADING HELPERS
-// ═══════════════════════════════════════════════════════════════════
-function showLoading(msg){
-  document.getElementById('loadingText').textContent=msg||'LOADING...';
-  document.getElementById('loadingOverlay').classList.add('show');
-}
-function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
-
-// ═══════════════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded',()=>{
@@ -1525,10 +1577,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   const savedUrl = localStorage.getItem('dch-sheet-url');
   if (savedUrl) {
     document.getElementById('csvUrl').value = savedUrl;
-    // Auto-fetch silently on page load so returning from holiday-home page works
-    connectTarget();
+    silentRefresh(); // background fetch — no overlay, no interruption
+    scheduleAutoRefresh();
   }
-  // ──────────────────────────────────────────────────────────────
 
   // refresh traffic advisory every minute
   setInterval(()=>{updateTrafficBlock();if(allIncidents.length)renderHandover(getFilteredIncidents());},60000);
