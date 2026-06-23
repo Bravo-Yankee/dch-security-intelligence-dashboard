@@ -158,6 +158,13 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .btn-connect:hover{background:var(--blue-dim);}
 .btn-telemetry{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;}
 .btn-telemetry:hover{border-color:var(--text-dim);color:var(--text);}
+/* SYNC PULSE INDICATOR */
+.sync-bar{position:fixed;bottom:18px;right:18px;z-index:4000;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);padding:7px 13px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--text-dim);opacity:0;pointer-events:none;transition:opacity .3s ease;}
+.sync-bar.show{opacity:1;}
+.sync-bar.error{border-color:var(--red);color:var(--red);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:syncpulse .8s ease-in-out infinite;}
+.sync-bar.error .sync-dot{background:var(--red);animation:none;}
+@keyframes syncpulse{0%,100%{opacity:.3;}50%{opacity:1;}}
 .demo-tag{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-faint);letter-spacing:.5px;white-space:nowrap;}
 .ci-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);flex-shrink:0;padding-top:2px;}
 .occ-table{width:100%;border-collapse:collapse;}
@@ -594,7 +601,28 @@ function switchTabByName(id){
 // ── STATE ──
 let HHO=[];
 
-// ── FETCH from Google Sheets — HHO tab (dedicated URL, separate from the main Incidents sheet) ──
+// ── SYNC BAR HELPERS ──
+let _syncTimer=null;
+function showSyncing(msg){
+  const bar=document.getElementById('syncBar');
+  bar.classList.remove('error');
+  document.getElementById('syncText').textContent=msg||'SYNCING...';
+  bar.classList.add('show');
+}
+function hideSyncing(isError){
+  const bar=document.getElementById('syncBar');
+  if(isError){
+    bar.classList.add('error');
+    document.getElementById('syncText').textContent='SYNC FAILED';
+    clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(()=>bar.classList.remove('show'),3500);
+  } else {
+    clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(()=>bar.classList.remove('show'),1800);
+  }
+}
+
+// ── FETCH from Google Sheets — HHO tab ──
 async function fetchHHO(url){
   const target=url||localStorage.getItem('dch-hho-sheet-url');
   if(!target)return null;
@@ -614,18 +642,37 @@ async function fetchHHO(url){
   return null;
 }
 
-// ── CONNECT TARGET — called from the top-bar "CONNECT TARGET" button ──
-async function connectHHO(){
-  const url=document.getElementById('hhoCsvUrl').value.trim();
-  if(!url){alert('Please paste the published CSV URL for the HHO sheet tab.\n\nIn Google Sheets: File → Share → Publish to web → select the "HHO" sheet → CSV → Publish, then copy the link here.');return;}
-  localStorage.setItem('dch-hho-sheet-url',url);
-  document.getElementById('hhoDemoTag').textContent='CONNECTING TO HHO SHEET...';
+// ── SILENT REFRESH — used by page-load and auto-refresh ──
+async function silentRefreshHHO(){
+  const url=localStorage.getItem('dch-hho-sheet-url')||document.getElementById('hhoCsvUrl').value.trim();
+  if(!url)return;
+  showSyncing('SYNCING...');
   const records=await fetchHHO(url);
   if(records&&records.length){
     HHO=records;
     document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
     renderAll();
-  }else{
+    hideSyncing(false);
+  } else {
+    hideSyncing(true);
+  }
+}
+
+// ── CONNECT TARGET — called from the top-bar "CONNECT TARGET" button ──
+async function connectHHO(){
+  const url=document.getElementById('hhoCsvUrl').value.trim();
+  if(!url){alert('Please paste the published CSV URL for the HHO sheet tab.\n\nIn Google Sheets: File → Share → Publish to web → select the "HHO" sheet → CSV → Publish, then copy the link here.');return;}
+  localStorage.setItem('dch-hho-sheet-url',url);
+  showSyncing('CONNECTING...');
+  document.getElementById('hhoDemoTag').textContent='CONNECTING TO HHO SHEET...';
+  const records=await fetchHHO(url);
+  if(records&&records.length){
+    HHO=records;
+    document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
+    hideSyncing(false);
+    renderAll();
+  } else {
+    hideSyncing(true);
     document.getElementById('hhoDemoTag').textContent='CONNECTION FAILED — check the URL, or use LOAD TELEMETRY PROFILE';
     alert('Could not load the HHO sheet. Make sure the "HHO" tab is published to the web (CSV) and the URL is correct.');
   }
@@ -1267,41 +1314,33 @@ function renderAll(){
 }
 
 // ── INIT ──
-window.addEventListener('DOMContentLoaded',async()=>{
+window.addEventListener('DOMContentLoaded',()=>{
   setInterval(updateClock,1000);updateClock();
   (function(){const s=localStorage.getItem('dch-theme')||'dark';const b=document.querySelector('.btn-theme');if(b)b.textContent=s==='dark'?'☀':'🌙';})();
 
-  // Restore any previously saved HHO sheet URL into the top-bar input,
-  // otherwise fall back to the pre-filled default value in the input itself
+  // Restore saved URL into the top-bar input
   const savedUrl=localStorage.getItem('dch-hho-sheet-url')||document.getElementById('hhoCsvUrl').value.trim();
   if(savedUrl)document.getElementById('hhoCsvUrl').value=savedUrl;
 
-  // Try the saved HHO sheet first; fall back to demo data if not configured / unreachable
-  const records=savedUrl?await fetchHHO(savedUrl):null;
-  if(records&&records.length){
-    HHO=records;
-    localStorage.setItem('dch-hho-sheet-url',savedUrl);
-    document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
-  } else {
-    HHO=buildDemo();
-    document.getElementById('hhoDemoTag').textContent=savedUrl
-      ? 'CONNECTION FAILED — showing demo data (check URL or use CONNECT TARGET)'
-      : 'NOT CONNECTED — showing demo data';
-  }
+  // Render immediately with demo data so the UI is instantly usable
+  HHO=buildDemo();
+  document.getElementById('hhoDemoTag').textContent=savedUrl?'LOADING...':'NOT CONNECTED — showing demo data';
   renderAll();
 
-  // Auto-refresh every 5 minutes (only if a sheet URL is configured)
-  setInterval(async()=>{
+  // Then silently fetch real data in the background
+  if(savedUrl){
+    localStorage.setItem('dch-hho-sheet-url',savedUrl);
+    silentRefreshHHO();
+  }
+
+  // Auto-refresh every 5 minutes (always silent)
+  setInterval(()=>{
     const u=localStorage.getItem('dch-hho-sheet-url');
-    if(!u)return;
-    const r=await fetchHHO(u);
-    if(r&&r.length){
-      HHO=r;
-      document.getElementById('hhoDemoTag').textContent=`LIVE · ${HHO.length} HHO RECORDS LOADED`;
-      renderAll();
-    }
+    if(u)silentRefreshHHO();
   },5*60*1000);
 });
 </script>
+<!-- SYNC PULSE BAR -->
+<div class="sync-bar" id="syncBar"><div class="sync-dot"></div><span id="syncText">SYNCING...</span></div>
 </body>
 </html>
