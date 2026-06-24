@@ -347,6 +347,30 @@ border-radius:20px;}
 .slide-stat-row:last-child{border-bottom:none;}
 .slide-stat-key{font-size:11px;color:var(--text-dim);}
 .slide-stat-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--text);}
+/* Zone panel tabs */
+.zp-tabs{display:flex;gap:4px;padding:12px 20px 0;background:var(--surface2);border-bottom:1px solid var(--border);}
+.zp-tab{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:3px 3px 0 0;cursor:pointer;color:var(--text-dim);border:1px solid transparent;border-bottom:none;margin-bottom:-1px;background:transparent;transition:all .15s;}
+.zp-tab.active{color:var(--amber);background:var(--surface);border-color:var(--border);border-bottom-color:var(--surface);}
+.zp-tab:hover:not(.active){color:var(--text);}
+/* Shift performance bar rows */
+.sp-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--border);}
+.sp-row:last-child{border-bottom:none;}
+.sp-rank{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);width:14px;flex-shrink:0;}
+.sp-label{font-size:11px;color:var(--text-dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-bar-wrap{flex:1.4;background:var(--surface3);height:4px;border-radius:2px;overflow:hidden;}
+.sp-bar{height:100%;border-radius:2px;transition:width .4s ease;}
+.sp-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);width:26px;text-align:right;flex-shrink:0;}
+.sp-delta{font-size:9px;font-family:'JetBrains Mono',monospace;width:32px;text-align:right;flex-shrink:0;}
+/* Sort pill row */
+.zp-sort-row{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.zp-sort-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;}
+.zp-pill{font-size:9px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-dim);transition:all .12s;}
+.zp-pill.active{background:var(--amber);color:#000;border-color:var(--amber);}
+/* Shift badge */
+.shift-badge{display:inline-block;font-size:9px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.8px;padding:2px 7px;border-radius:10px;text-transform:uppercase;}
+.shift-badge.am{background:#06b6d420;color:#06b6d4;border:1px solid #06b6d440;}
+.shift-badge.pm{background:#f59e0b20;color:#f59e0b;border:1px solid #f59e0b40;}
+.shift-badge.both{background:#8b5cf620;color:#8b5cf6;border:1px solid #8b5cf640;}
 
 /* INCIDENT DETAIL MODAL */
 .modal-backdrop{
@@ -388,25 +412,19 @@ border-radius:20px;}
   background:var(--surface2);border:1px solid var(--border);
 }
 
-/* SYNC PULSE INDICATOR — replaces full-screen overlay */
-.loading-overlay{display:none;}/* kept in DOM for compat, never shown */
-.sync-bar{
-  position:fixed;bottom:18px;right:18px;z-index:4000;
-  display:flex;align-items:center;gap:8px;
-  background:var(--surface2);border:1px solid var(--border);
-  padding:7px 13px;border-radius:20px;
-  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--text-dim);
-  opacity:0;pointer-events:none;
-  transition:opacity .3s ease;
+/* LOADING OVERLAY */
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(8,9,15,0.92);
+  display:none;flex-direction:column;align-items:center;justify-content:center;z-index:4000;
 }
-.sync-bar.show{opacity:1;}
-.sync-bar.error{border-color:var(--red);color:var(--red);}
-.sync-dot{
-  width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;
-  animation:syncpulse .8s ease-in-out infinite;
+.loading-overlay.show{display:flex;}
+.loading-spinner{
+  width:36px;height:36px;border:2px solid var(--border2);
+  border-top-color:var(--amber);border-radius:50%;
+  animation:spin .7s linear infinite;margin-bottom:14px;
 }
-.sync-bar.error .sync-dot{background:var(--red);animation:none;}
-@keyframes syncpulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;color:var(--text-dim);}
 
 /* EMPTY STATE */
 .empty-state{padding:30px;text-align:center;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;}
@@ -641,6 +659,11 @@ border-radius:20px;}
       <div class="slide-title" id="slideZoneName">ZONE DETAIL</div>
       <button class="slide-close" onclick="hideZonePanel()">✕</button>
     </div>
+    <div class="zp-tabs" id="zpTabs">
+      <button class="zp-tab active" onclick="zpSwitchTab('overview')">Overview</button>
+      <button class="zp-tab" onclick="zpSwitchTab('shifts')">Shift Performance</button>
+      <button class="zp-tab" onclick="zpSwitchTab('sort')">Sort & Filter</button>
+    </div>
     <div class="slide-body" id="slideZoneBody"></div>
   </div>
 </div>
@@ -667,13 +690,10 @@ border-radius:20px;}
   </div>
 </div>
 
-<!-- LOADING OVERLAY (inert stub kept for JS compat) -->
-<div class="loading-overlay" id="loadingOverlay" style="display:none"></div>
-
-<!-- SYNC PULSE BAR -->
-<div class="sync-bar" id="syncBar">
-  <div class="sync-dot"></div>
-  <span id="syncText">SYNCING...</span>
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">STREAMING TARGET TELEMETRY...</div>
 </div>
 
 <script>
@@ -722,114 +742,50 @@ let radarHours=24;
 // ═══════════════════════════════════════════════════════════════════
 //  GOOGLE SHEETS FETCH  (cloned from index2.html)
 // ═══════════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════════
-//  SYNC BAR HELPERS (replaces showLoading/hideLoading)
-// ═══════════════════════════════════════════════════════════════════
-let syncBarTimer=null;
-function showSyncing(msg){
-  const bar=document.getElementById('syncBar');
-  bar.classList.remove('error');
-  document.getElementById('syncText').textContent=msg||'SYNCING...';
-  bar.classList.add('show');
-}
-function hideSyncing(isError){
-  const bar=document.getElementById('syncBar');
-  if(isError){
-    bar.classList.add('error');
-    document.getElementById('syncText').textContent='SYNC FAILED';
-    clearTimeout(syncBarTimer);
-    syncBarTimer=setTimeout(()=>bar.classList.remove('show'),3500);
-  } else {
-    clearTimeout(syncBarTimer);
-    syncBarTimer=setTimeout(()=>bar.classList.remove('show'),1800);
-  }
-}
-// Kept for any legacy callers — now completely silent
-function showLoading(){}
-function hideLoading(){}
+async function connectTarget(){
+  const url=document.getElementById('csvUrl').value.trim();
+  if(!url){alert('Please enter a Google Sheets published CSV URL.');return;}
 
-// ═══════════════════════════════════════════════════════════════════
-//  FETCH HELPERS
-// ═══════════════════════════════════════════════════════════════════
-async function doFetch(url){
+  // Persist URL so it survives page navigation
+  localStorage.setItem('dch-sheet-url', url);
+  showLoading('FETCHING GOOGLE SHEETS DATA...');
+  document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
+
   let csvUrl=url;
   if(url.includes('/edit'))        csvUrl=url.replace('/edit','/pub')+'?output=csv';
   else if(!url.includes('output=csv')) csvUrl=url+(url.includes('?')?'&':'?')+'output=csv';
+
   const proxies=[
     csvUrl,
     'https://api.allorigins.win/raw?url='+encodeURIComponent(csvUrl),
     'https://corsproxy.io/?'+encodeURIComponent(csvUrl)
   ];
+
   for(const attempt of proxies){
     try{
       const resp=await fetch(attempt,{cache:'no-store'});
       if(!resp.ok) continue;
       const text=await resp.text();
       if(!text||text.trim().length<10) continue;
-      return text;
+
+      allIncidents=parseCSV(text);
+      sortIncidentsDesc(allIncidents);
+
+      const gst=getGSTNow();
+      const timeStr=gst.toLocaleTimeString('en-AE');
+      document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
+      document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
+      document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
+      hideLoading();
+      renderAll();
+      scheduleAutoRefresh();
+      return;
     }catch(e){continue;}
   }
-  return null;
-}
 
-// ═══════════════════════════════════════════════════════════════════
-//  GOOGLE SHEETS FETCH
-// ═══════════════════════════════════════════════════════════════════
-async function connectTarget(){
-  const url=document.getElementById('csvUrl').value.trim();
-  if(!url){alert('Please enter a Google Sheets published CSV URL.');return;}
-  localStorage.setItem('dch-sheet-url', url);
-
-  showSyncing('CONNECTING...');
-  document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
-
-  const text=await doFetch(url);
-  if(text){
-    allIncidents=parseCSV(text);
-    sortIncidentsDesc(allIncidents);
-    const gst=getGSTNow();
-    const timeStr=gst.toLocaleTimeString('en-AE');
-    document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
-    document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
-    document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
-    hideSyncing(false);
-    renderAll();
-    scheduleAutoRefresh();
-  } else {
-    hideSyncing(true);
-    document.getElementById('demoTag').textContent='CONNECTION FAILED — try LOAD TELEMETRY PROFILE';
-    alert('Could not fetch sheet. Check URL or use LOAD TELEMETRY PROFILE to test with demo data.');
-  }
-}
-
-// Silent background refresh — no visual interruption, just a tiny pulse
-async function silentRefresh(){
-  const url=document.getElementById('csvUrl').value.trim();
-  if(!url) return;
-  showSyncing('SYNCING...');
-  const text=await doFetch(url);
-  if(text){
-    allIncidents=parseCSV(text);
-    sortIncidentsDesc(allIncidents);
-    const gst=getGSTNow();
-    const timeStr=gst.toLocaleTimeString('en-AE');
-    document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
-    document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
-    document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
-    hideSyncing(false);
-    renderAll();
-  } else {
-    hideSyncing(true);
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════
-//  AUTO-REFRESH (every 5 minutes, always silent)
-// ═══════════════════════════════════════════════════════════════════
-let autoRefreshTimer=null;
-function scheduleAutoRefresh(){
-  if(autoRefreshTimer)clearInterval(autoRefreshTimer);
-  autoRefreshTimer=setInterval(silentRefresh, 5*60*1000);
+  hideLoading();
+  document.getElementById('demoTag').textContent='CONNECTION FAILED — try LOAD TELEMETRY PROFILE';
+  alert('Could not fetch sheet. Check URL or use LOAD TELEMETRY PROFILE to test with demo data.');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1161,61 +1117,314 @@ function renderZoneHeatmap(data){
 // ═══════════════════════════════════════════════════════════════════
 //  ZONE SLIDE PANEL
 // ═══════════════════════════════════════════════════════════════════
+// ── Zone panel state ──
+let _zpZone='', _zpTab='overview', _zpSortBy='count', _zpSortShift='both', _zpSortSev='all', _zpSortType='all';
+
+function zpSwitchTab(tab){
+  _zpTab=tab;
+  document.querySelectorAll('.zp-tab').forEach((b,i)=>{
+    b.classList.toggle('active',['overview','shifts','sort'][i]===tab);
+  });
+  _renderZpBody();
+}
+
 function showZonePanel(zoneName){
+  _zpZone=zoneName;
+  _zpTab='overview';
+  document.querySelectorAll('.zp-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('slideZoneName').textContent=zoneName.toUpperCase()+' — ZONE PROFILE';
-  const data=getFilteredIncidents();
-  const zoneIncs=data.filter(i=>i.location_zone===zoneName);
-  sortIncidentsDesc(zoneIncs);
+  document.getElementById('slideBackdrop').classList.add('show');
+  _renderZpBody();
+}
+
+function _getZoneIncs(){
+  return getFilteredIncidents().filter(i=>i.location_zone===_zpZone);
+}
+
+function _renderZpBody(){
   const body=document.getElementById('slideZoneBody');
+  const zoneIncs=_getZoneIncs();
+  if(!zoneIncs.length){
+    body.innerHTML='<div class="empty-state">No incidents found in this zone.</div>';
+    return;
+  }
+  if(_zpTab==='overview') _renderZpOverview(body,zoneIncs);
+  else if(_zpTab==='shifts') _renderZpShifts(body,zoneIncs);
+  else _renderZpSort(body,zoneIncs);
+}
 
-  if(!zoneIncs.length){body.innerHTML='<div class="empty-state">No incidents found in this zone.</div>';}
-  else{
-    const total=zoneIncs.length;
-    const crit=zoneIncs.filter(i=>i.severity==='Critical'||i.severity==='High').length;
-    const open=zoneIncs.filter(i=>i.action_required==='TRUE').length;
-    const types={};
-    zoneIncs.forEach(i=>{types[i.incident_type]=(types[i.incident_type]||0)+1;});
-    const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,4);
+function _renderZpOverview(body,zoneIncs){
+  sortIncidentsDesc(zoneIncs);
+  const total=zoneIncs.length;
+  const crit=zoneIncs.filter(i=>i.severity==='Critical'||i.severity==='High').length;
+  const open=zoneIncs.filter(i=>i.action_required==='TRUE').length;
+  const amIncs=zoneIncs.filter(i=>i.shift&&i.shift.startsWith('Morning'));
+  const pmIncs=zoneIncs.filter(i=>i.shift&&i.shift.startsWith('Night'));
+  const types={};
+  zoneIncs.forEach(i=>{types[i.incident_type]=(types[i.incident_type]||0)+1;});
+  const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxT=topTypes[0]?.[1]||1;
 
-    body.innerHTML=`
-      <div>
-        <div class="slide-section-title">Zone Vector Overview</div>
-        <div class="slide-stat-row"><span class="slide-stat-key">Total Incidents</span><span class="slide-stat-val">${total}</span></div>
-        <div class="slide-stat-row"><span class="slide-stat-key">Elevated / Critical</span><span class="slide-stat-val" style="color:var(--red)">${crit}</span></div>
-        <div class="slide-stat-row"><span class="slide-stat-key">Open Action Items</span><span class="slide-stat-val" style="color:var(--amber)">${open}</span></div>
-      </div>
-      <div>
-        <div class="slide-section-title">Primary Incident Types</div>
-        ${topTypes.map(([t,c])=>`
-          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--border);">
-            <div style="flex:1;font-size:11px;color:var(--text-dim);">${t.replace(/_/g,' ')}</div>
-            <div style="flex:1.5;background:var(--surface3);height:5px;"><div style="height:100%;background:var(--amber);width:${Math.round(c/total*100)}%"></div></div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text)">${c}</div>
-          </div>`).join('')}
-      </div>
-      <div>
-        <div class="slide-section-title">Recent Incidents (${Math.min(zoneIncs.length,8)} of ${total})</div>
-        ${zoneIncs.slice(0,8).map(inc=>{
-          const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
-          const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||null;
-          const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
-          return `<div class="feed-item" style="padding:8px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
-            <div class="feed-dot ${dotClass}"></div>
-            <div class="feed-body" style="flex:1">
-              <div class="feed-title" style="font-size:12px">${inc.incident_type.replace(/_/g,' ')}</div>
-              <div class="feed-desc" style="font-size:11px">${(inc.summary||'').substring(0,70)}…</div>
-              <div class="feed-meta">
-                ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
-                <span class="feed-tag tag-type" style="font-size:9px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
-              </div>
+  body.innerHTML=`
+    <div>
+      <div class="slide-section-title">Zone Vector Overview</div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Total Incidents</span><span class="slide-stat-val">${total}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Elevated / Critical</span><span class="slide-stat-val" style="color:var(--red)">${crit}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Open Action Items</span><span class="slide-stat-val" style="color:var(--amber)">${open}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Morning Shift (07:00-19:00)</span><span class="slide-stat-val" style="color:#06b6d4">${amIncs.length}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Night Shift (19:00-07:00)</span><span class="slide-stat-val" style="color:#f59e0b">${pmIncs.length}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Dominant Shift</span><span class="slide-stat-val">${amIncs.length>=pmIncs.length?'<span class="shift-badge am">AM</span>':'<span class="shift-badge pm">NIGHT</span>'}</span></div>
+    </div>
+    <div>
+      <div class="slide-section-title">Primary Incident Types</div>
+      ${topTypes.map(([t,c])=>`
+        <div class="sp-row">
+          <div class="sp-label">${t.replace(/_/g,' ')}</div>
+          <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/maxT*100)}%;background:var(--amber)"></div></div>
+          <div class="sp-count">${c}</div>
+        </div>`).join('')}
+    </div>
+    <div>
+      <div class="slide-section-title">Recent Incidents (${Math.min(zoneIncs.length,8)} of ${total})</div>
+      ${zoneIncs.slice(0,8).map(inc=>{
+        const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
+        const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||null;
+        const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
+        return `<div class="feed-item" style="padding:8px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
+          <div class="feed-dot ${dotClass}"></div>
+          <div class="feed-body" style="flex:1">
+            <div class="feed-title" style="font-size:12px">${inc.incident_type.replace(/_/g,' ')}</div>
+            <div class="feed-desc" style="font-size:11px">${(inc.summary||'').substring(0,70)}…</div>
+            <div class="feed-meta">
+              ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
+              <span class="feed-tag tag-type" style="font-size:9px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
             </div>
-            <div class="feed-time">${formatTime(inc.timestamp)}</div>
-          </div>`;
+          </div>
+          <div class="feed-time">${formatTime(inc.timestamp)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function _renderZpShifts(body,zoneIncs){
+  const am=zoneIncs.filter(i=>i.shift&&i.shift.startsWith('Morning'));
+  const pm=zoneIncs.filter(i=>i.shift&&i.shift.startsWith('Night'));
+
+  // Severity breakdown per shift
+  function sevBreak(arr){
+    const s={Critical:0,High:0,Medium:0,Low:0};
+    arr.forEach(i=>{if(s[i.severity]!==undefined)s[i.severity]++;});
+    return s;
+  }
+  const amS=sevBreak(am), pmS=sevBreak(pm);
+
+  // Top incident types per shift
+  function topTypesFor(arr,n=5){
+    const t={};arr.forEach(i=>{t[i.incident_type]=(t[i.incident_type]||0)+1;});
+    return Object.entries(t).sort((a,b)=>b[1]-a[1]).slice(0,n);
+  }
+  const amTypes=topTypesFor(am), pmTypes=topTypesFor(pm);
+  const amMax=amTypes[0]?.[1]||1, pmMax=pmTypes[0]?.[1]||1;
+
+  // Peak hour breakdown
+  function hourBuckets(arr){
+    const h={}; arr.forEach(i=>{if(i.timestamp){const hr=new Date(i.timestamp).getHours();h[hr]=(h[hr]||0)+1;}});
+    return h;
+  }
+  function peakHour(arr){
+    const h=hourBuckets(arr);
+    if(!Object.keys(h).length) return '—';
+    const pk=Object.entries(h).sort((a,b)=>b[1]-a[1])[0];
+    return `${String(pk[0]).padStart(2,'0')}:00 (${pk[1]} inc.)`;
+  }
+
+  // AM vs Night comparison ratio
+  const total=zoneIncs.length||1;
+  const amPct=Math.round(am.length/total*100);
+  const pmPct=100-amPct;
+
+  body.innerHTML=`
+    <div>
+      <div class="slide-section-title">Shift Load Distribution</div>
+      <div style="display:flex;align-items:center;gap:0;border-radius:4px;overflow:hidden;height:20px;margin:4px 0 10px;">
+        <div style="width:${amPct}%;background:#06b6d4;height:100%;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${amPct}%</span>
+        </div>
+        <div style="width:${pmPct}%;background:#f59e0b;height:100%;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${pmPct}%</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:4px;">
+        <span class="shift-badge am">AM ${am.length}</span>
+        <span class="shift-badge pm">Night ${pm.length}</span>
+        <span style="font-size:10px;color:var(--text-faint);margin-left:auto;">of ${total} total</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="slide-section-title">🌅 Morning Severity</div>
+        ${['Critical','High','Medium','Low'].map(s=>`
+          <div class="slide-stat-row" style="padding:4px 0;">
+            <span class="slide-stat-key" style="font-size:10px">${s}</span>
+            <span class="slide-stat-val" style="font-size:11px;color:${s==='Critical'?'var(--red)':s==='High'?'#f97316':s==='Medium'?'var(--amber)':'var(--green)'}">${amS[s]}</span>
+          </div>`).join('')}
+        <div class="slide-stat-row" style="padding:4px 0;">
+          <span class="slide-stat-key" style="font-size:10px">Peak Hour</span>
+          <span class="slide-stat-val" style="font-size:10px;color:#06b6d4">${peakHour(am)}</span>
+        </div>
+      </div>
+      <div>
+        <div class="slide-section-title">🌙 Night Severity</div>
+        ${['Critical','High','Medium','Low'].map(s=>`
+          <div class="slide-stat-row" style="padding:4px 0;">
+            <span class="slide-stat-key" style="font-size:10px">${s}</span>
+            <span class="slide-stat-val" style="font-size:11px;color:${s==='Critical'?'var(--red)':s==='High'?'#f97316':s==='Medium'?'var(--amber)':'var(--green)'}">${pmS[s]}</span>
+          </div>`).join('')}
+        <div class="slide-stat-row" style="padding:4px 0;">
+          <span class="slide-stat-key" style="font-size:10px">Peak Hour</span>
+          <span class="slide-stat-val" style="font-size:10px;color:#f59e0b">${peakHour(pm)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="slide-section-title">🌅 AM Top Types</div>
+        ${amTypes.length?amTypes.map(([t,c],i)=>`
+          <div class="sp-row">
+            <span class="sp-rank">${i+1}</span>
+            <div class="sp-label">${t.replace(/_/g,' ')}</div>
+            <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/amMax*100)}%;background:#06b6d4"></div></div>
+            <div class="sp-count">${c}</div>
+          </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
+      </div>
+      <div>
+        <div class="slide-section-title">🌙 Night Top Types</div>
+        ${pmTypes.length?pmTypes.map(([t,c],i)=>`
+          <div class="sp-row">
+            <span class="sp-rank">${i+1}</span>
+            <div class="sp-label">${t.replace(/_/g,' ')}</div>
+            <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/pmMax*100)}%;background:#f59e0b"></div></div>
+            <div class="sp-count">${c}</div>
+          </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
+      </div>
+    </div>
+
+    <div>
+      <div class="slide-section-title">Hourly Activity Heatmap</div>
+      <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:4px;">
+        ${Array.from({length:24},(_, hr)=>{
+          const amH=hourBuckets(am)[hr]||0, pmH=hourBuckets(pm)[hr]||0;
+          const count=amH+pmH;
+          const maxHr=Math.max(...Array.from({length:24},(_,h)=>(hourBuckets(am)[h]||0)+(hourBuckets(pm)[h]||0)),1);
+          const intensity=Math.round(count/maxHr*100);
+          const isAm=hr>=7&&hr<19;
+          const bg=count===0?'var(--surface3)':isAm?`#06b6d4${Math.round(intensity*2.55).toString(16).padStart(2,'0')}`:`#f59e0b${Math.round(intensity*2.55).toString(16).padStart(2,'0')}`;
+          return `<div title="${String(hr).padStart(2,'0')}:00 — ${count} incidents" style="height:16px;border-radius:2px;background:${bg};cursor:default;"></div>`;
         }).join('')}
       </div>
-    `;
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;">
+        <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:6px;">
+        <span style="font-size:9px;color:#06b6d4">■ Morning shift</span>
+        <span style="font-size:9px;color:#f59e0b">■ Night shift</span>
+      </div>
+    </div>`;
+}
+
+function _renderZpSort(body,zoneIncs){
+  // Apply current sort/filter state
+  let filtered=[...zoneIncs];
+  if(_zpSortShift==='am') filtered=filtered.filter(i=>i.shift&&i.shift.startsWith('Morning'));
+  if(_zpSortShift==='pm') filtered=filtered.filter(i=>i.shift&&i.shift.startsWith('Night'));
+  if(_zpSortSev!=='all') filtered=filtered.filter(i=>i.severity===_zpSortSev);
+  if(_zpSortType!=='all') filtered=filtered.filter(i=>i.incident_type===_zpSortType);
+
+  // Sort
+  if(_zpSortBy==='count') sortIncidentsDesc(filtered);
+  else if(_zpSortBy==='severity'){
+    const sOrd={Critical:0,High:1,Medium:2,Low:3};
+    filtered.sort((a,b)=>(sOrd[a.severity]??4)-(sOrd[b.severity]??4));
+  } else if(_zpSortBy==='type'){
+    filtered.sort((a,b)=>a.incident_type.localeCompare(b.incident_type));
+  } else if(_zpSortBy==='oldest'){
+    filtered.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
   }
-  document.getElementById('slideBackdrop').classList.add('show');
+
+  // Unique types for filter dropdown
+  const allTypes=[...new Set(zoneIncs.map(i=>i.incident_type))].sort();
+
+  const pill=(label,key,val,cur)=>`<button class="zp-pill${cur===val?' active':''}" onclick="_zpSet('${key}','${val}')">${label}</button>`;
+
+  body.innerHTML=`
+    <div>
+      <div class="slide-section-title">Sort By</div>
+      <div class="zp-sort-row">
+        ${pill('Newest','_zpSortBy','count',_zpSortBy)}
+        ${pill('Oldest','_zpSortBy','oldest',_zpSortBy)}
+        ${pill('Severity','_zpSortBy','severity',_zpSortBy)}
+        ${pill('Type A-Z','_zpSortBy','type',_zpSortBy)}
+      </div>
+    </div>
+    <div>
+      <div class="slide-section-title">Filter by Shift</div>
+      <div class="zp-sort-row">
+        ${pill('All Shifts','_zpSortShift','both',_zpSortShift)}
+        ${pill('Morning','_zpSortShift','am',_zpSortShift)}
+        ${pill('Night','_zpSortShift','pm',_zpSortShift)}
+      </div>
+    </div>
+    <div>
+      <div class="slide-section-title">Filter by Severity</div>
+      <div class="zp-sort-row" style="flex-wrap:wrap;">
+        ${pill('All','_zpSortSev','all',_zpSortSev)}
+        ${pill('Critical','_zpSortSev','Critical',_zpSortSev)}
+        ${pill('High','_zpSortSev','High',_zpSortSev)}
+        ${pill('Medium','_zpSortSev','Medium',_zpSortSev)}
+        ${pill('Low','_zpSortSev','Low',_zpSortSev)}
+      </div>
+    </div>
+    <div>
+      <div class="slide-section-title">Filter by Type</div>
+      <div class="zp-sort-row" style="flex-wrap:wrap;">
+        ${pill('All Types','_zpSortType','all',_zpSortType)}
+        ${allTypes.map(t=>pill(t.replace(/_/g,' '),'_zpSortType',t,_zpSortType)).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="slide-section-title">Results (${filtered.length} incidents)</div>
+      ${filtered.length===0?'<div class="empty-state">No results match current filters.</div>':
+        filtered.slice(0,20).map(inc=>{
+          const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
+          const isAm=inc.shift&&inc.shift.startsWith('Morning');
+          const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
+          return `<div class="feed-item" style="padding:7px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
+            <div class="feed-dot ${dotClass}"></div>
+            <div class="feed-body" style="flex:1">
+              <div class="feed-title" style="font-size:11px">${inc.incident_type.replace(/_/g,' ')}
+                <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:4px;">${isAm?'AM':'PM'}</span>
+              </div>
+              <div class="feed-desc" style="font-size:10px">${(inc.summary||'').substring(0,65)}…</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="feed-time" style="font-size:9px">${formatTime(inc.timestamp)}</div>
+              <span style="font-size:9px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      ${filtered.length>20?`<div style="font-size:10px;color:var(--text-faint);text-align:center;padding:8px 0;">+${filtered.length-20} more — use date range filter to narrow down</div>`:''}
+    </div>`;
+}
+
+// Called by pill buttons to update sort/filter state and re-render
+function _zpSet(key,val){
+  if(key==='_zpSortBy') _zpSortBy=val;
+  else if(key==='_zpSortShift') _zpSortShift=val;
+  else if(key==='_zpSortSev') _zpSortSev=val;
+  else if(key==='_zpSortType') _zpSortType=val;
+  _renderZpSort(document.getElementById('slideZoneBody'),_getZoneIncs());
 }
 
 function hideZonePanel(){document.getElementById('slideBackdrop').classList.remove('show');}
@@ -1565,6 +1774,27 @@ function copyHandover(){
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  AUTO-REFRESH (every 5 minutes if URL is set)
+// ═══════════════════════════════════════════════════════════════════
+let autoRefreshTimer=null;
+function scheduleAutoRefresh(){
+  if(autoRefreshTimer)clearInterval(autoRefreshTimer);
+  autoRefreshTimer=setInterval(()=>{
+    const url=document.getElementById('csvUrl').value.trim();
+    if(url&&allIncidents.length)connectTarget();
+  },5*60*1000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  LOADING HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function showLoading(msg){
+  document.getElementById('loadingText').textContent=msg||'LOADING...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+
+// ═══════════════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded',()=>{
@@ -1577,9 +1807,10 @@ window.addEventListener('DOMContentLoaded',()=>{
   const savedUrl = localStorage.getItem('dch-sheet-url');
   if (savedUrl) {
     document.getElementById('csvUrl').value = savedUrl;
-    silentRefresh(); // background fetch — no overlay, no interruption
-    scheduleAutoRefresh();
+    // Auto-fetch silently on page load so returning from holiday-home page works
+    connectTarget();
   }
+  // ──────────────────────────────────────────────────────────────
 
   // refresh traffic advisory every minute
   setInterval(()=>{updateTrafficBlock();if(allIncidents.length)renderHandover(getFilteredIncidents());},60000);
