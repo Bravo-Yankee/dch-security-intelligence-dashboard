@@ -413,18 +413,13 @@ border-radius:20px;}
 }
 
 /* LOADING OVERLAY */
-.loading-overlay{
-  position:fixed;inset:0;background:rgba(8,9,15,0.92);
-  display:none;flex-direction:column;align-items:center;justify-content:center;z-index:4000;
-}
-.loading-overlay.show{display:flex;}
-.loading-spinner{
-  width:36px;height:36px;border:2px solid var(--border2);
-  border-top-color:var(--amber);border-radius:50%;
-  animation:spin .7s linear infinite;margin-bottom:14px;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-text{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;color:var(--text-dim);}
+/* SYNC PULSE INDICATOR (replaces full-screen loading overlay) */
+.sync-bar{position:fixed;bottom:18px;right:18px;z-index:4000;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);padding:7px 13px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--text-dim);opacity:0;pointer-events:none;transition:opacity .3s ease;}
+.sync-bar.show{opacity:1;}
+.sync-bar.error{border-color:var(--red);color:var(--red);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:syncpulse .8s ease-in-out infinite;}
+.sync-bar.error .sync-dot{background:var(--red);animation:none;}
+@keyframes syncpulse{0%,100%{opacity:.3;}50%{opacity:1;}}
 
 /* EMPTY STATE */
 .empty-state{padding:30px;text-align:center;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;}
@@ -690,11 +685,8 @@ border-radius:20px;}
   </div>
 </div>
 
-<!-- LOADING OVERLAY -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text" id="loadingText">STREAMING TARGET TELEMETRY...</div>
-</div>
+<!-- SYNC PULSE BAR -->
+<div class="sync-bar" id="loadingOverlay"><div class="sync-dot" id="syncDot"></div><span id="loadingText">SYNCING...</span></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
@@ -748,7 +740,7 @@ async function connectTarget(){
 
   // Persist URL so it survives page navigation
   localStorage.setItem('dch-sheet-url', url);
-  showLoading('FETCHING GOOGLE SHEETS DATA...');
+  showLoading('SYNCING...');
   document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
 
   let csvUrl=url;
@@ -776,14 +768,14 @@ async function connectTarget(){
       document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allIncidents.length} INCIDENTS LOADED</strong> · ${timeStr}`;
       document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
       document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
-      hideLoading();
+      hideLoading(false);
       renderAll();
       scheduleAutoRefresh();
       return;
     }catch(e){continue;}
   }
 
-  hideLoading();
+  hideLoading(true);
   document.getElementById('demoTag').textContent='CONNECTION FAILED — try LOAD TELEMETRY PROFILE';
   alert('Could not fetch sheet. Check URL or use LOAD TELEMETRY PROFILE to test with demo data.');
 }
@@ -1788,11 +1780,31 @@ function scheduleAutoRefresh(){
 // ═══════════════════════════════════════════════════════════════════
 //  LOADING HELPERS
 // ═══════════════════════════════════════════════════════════════════
+let _syncTimer=null;
 function showLoading(msg){
-  document.getElementById('loadingText').textContent=msg||'LOADING...';
-  document.getElementById('loadingOverlay').classList.add('show');
+  const bar=document.getElementById('loadingOverlay');
+  const dot=document.getElementById('syncDot');
+  bar.classList.remove('error');
+  dot.style.animation='syncpulse .8s ease-in-out infinite';
+  document.getElementById('loadingText').textContent=msg||'SYNCING...';
+  bar.classList.add('show');
+  clearTimeout(_syncTimer);
 }
-function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+function hideLoading(isError){
+  const bar=document.getElementById('loadingOverlay');
+  if(isError){
+    bar.classList.add('error');
+    document.getElementById('syncDot').style.animation='none';
+    document.getElementById('loadingText').textContent='SYNC FAILED';
+    clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(()=>bar.classList.remove('show'),3500);
+  } else {
+    bar.classList.remove('error');
+    document.getElementById('loadingText').textContent='SYNCED ✓';
+    clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(()=>bar.classList.remove('show'),1800);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════
 //  INIT
