@@ -1483,9 +1483,18 @@ window.addEventListener('DOMContentLoaded',()=>{
   setInterval(updateClock,1000);updateClock();
   (function(){const s=localStorage.getItem('dch-theme')||'dark';const b=document.querySelector('.btn-theme');if(b)b.textContent=s==='dark'?'☀':'🌙';})();
 
-  // Restore saved URL into the top-bar input
-  const savedUrl=localStorage.getItem('dch-hho-sheet-url')||document.getElementById('hhoCsvUrl').value.trim();
-  if(savedUrl)document.getElementById('hhoCsvUrl').value=savedUrl;
+  // ── Auto-connect on every page load ──────────────────────────
+  // Priority: 1) user-saved URL in localStorage
+  //           2) hardcoded default already in the input field
+  // Whichever wins gets saved so future restarts work without
+  // any manual copy-paste.
+  const inputEl = document.getElementById('hhoCsvUrl');
+  const savedUrl = localStorage.getItem('dch-hho-sheet-url') || inputEl.value.trim();
+  if (savedUrl) {
+    inputEl.value = savedUrl;
+    localStorage.setItem('dch-hho-sheet-url', savedUrl);
+  }
+  // ─────────────────────────────────────────────────────────────
 
   // Render immediately with demo data so the UI is instantly usable
   HHO=buildDemo();
@@ -1494,15 +1503,15 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   // Then silently fetch real data in the background
   if(savedUrl){
-    localStorage.setItem('dch-hho-sheet-url',savedUrl);
     silentRefreshHHO();
   }
 
-  // Auto-refresh every 5 minutes (always silent)
+  // Auto-refresh every 5 minutes — always uses latest saved URL or hardcoded fallback
   setInterval(()=>{
-    const u=localStorage.getItem('dch-hho-sheet-url');
+    const u=localStorage.getItem('dch-hho-sheet-url')||document.getElementById('hhoCsvUrl').value.trim();
     if(u)silentRefreshHHO();
   },5*60*1000);
+
 });
 </script>
 <!-- SYNC PULSE BAR -->
