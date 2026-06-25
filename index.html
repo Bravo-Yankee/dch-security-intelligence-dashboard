@@ -1816,11 +1816,16 @@ window.addEventListener('DOMContentLoaded',()=>{
   updateTrafficBlock();
   fetchWeather();
 
-  // ── Restore saved sheet URL from localStorage ──────────────────
-  const savedUrl = localStorage.getItem('dch-sheet-url');
+  // ── Auto-connect on every page load ────────────────────────────
+  // Priority: 1) user-saved URL in localStorage
+  //           2) hardcoded default already in the input field
+  // Whichever wins gets saved to localStorage so future restarts
+  // also work without any manual copy-paste.
+  const inputEl = document.getElementById('csvUrl');
+  const savedUrl = localStorage.getItem('dch-sheet-url') || inputEl.value.trim();
   if (savedUrl) {
-    document.getElementById('csvUrl').value = savedUrl;
-    // Auto-fetch silently on page load so returning from holiday-home page works
+    inputEl.value = savedUrl;
+    localStorage.setItem('dch-sheet-url', savedUrl);
     connectTarget();
   }
   // ──────────────────────────────────────────────────────────────
