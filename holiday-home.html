@@ -1011,14 +1011,14 @@ function renderRecent(){
 function applySortBy(data, sortBy, sortDir) {
   return data.slice().sort((a, b) => {
     if (sortBy === 'nationality') {
-      const na = (a.guest_nationality || '').toLowerCase();
-      const nb = (b.guest_nationality || '').toLowerCase();
+      const na = normalizeNationality(a.guest_nationality).toLowerCase();
+      const nb = normalizeNationality(b.guest_nationality).toLowerCase();
       const cmp = na.localeCompare(nb);
       return sortBy === 'nationality_desc' ? -cmp : cmp;
     }
     if (sortBy === 'nationality_desc') {
-      const na = (a.guest_nationality || '').toLowerCase();
-      const nb = (b.guest_nationality || '').toLowerCase();
+      const na = normalizeNationality(a.guest_nationality).toLowerCase();
+      const nb = normalizeNationality(b.guest_nationality).toLowerCase();
       return nb.localeCompare(na);
     }
     if (sortBy === 'guests_desc') return parseInt(b.guest_count||1) - parseInt(a.guest_count||1);
@@ -1038,7 +1038,7 @@ function renderGroupedList(data, groupBy) {
   const groups = {};
   data.forEach(r => {
     let key = '';
-    if (groupBy === 'nationality') key = r.guest_nationality || 'Unknown';
+    if (groupBy === 'nationality') key = normalizeNationality(r.guest_nationality) || 'Unknown';
     else if (groupBy === 'community') key = r.community || 'Unknown';
     else if (groupBy === 'shift') key = r.shift || 'Unknown Shift';
     if (!groups[key]) groups[key] = [];
@@ -1066,9 +1066,99 @@ function populateNatDropdown(selId, data) {
   const sel = document.getElementById(selId);
   if (!sel) return;
   const cur = sel.value;
-  const nats = [...new Set(data.map(r => r.guest_nationality).filter(Boolean))].sort();
+  const nats = [...new Set(data.map(r => normalizeNationality(r.guest_nationality)).filter(n=>n&&n!=='Unknown'))].sort();
   sel.innerHTML = '<option value="">All Nationalities</option>' + nats.map(n => `<option value="${n}">${n}</option>`).join('');
   if (nats.includes(cur)) sel.value = cur;
+}
+
+// ── NATIONALITY NORMALISATION ─────────────────────────────────────
+// Maps every known abbreviation, variant, alternate spelling, and
+// long-form official name → a single canonical display name.
+// Applied before any rendering so duplicates never surface in the UI.
+const NAT_NORM = {
+  // United Kingdom variants
+  'uk':'United Kingdom','u.k':'United Kingdom','u.k.':'United Kingdom',
+  'britain':'United Kingdom','great britain':'United Kingdom',
+  'british':'United Kingdom',
+  'united kingdom of great britain and northern ireland':'United Kingdom',
+  'united kingdom of great britain & northern ireland':'United Kingdom',
+  'england':'United Kingdom','scotland':'United Kingdom','wales':'United Kingdom',
+  'northern ireland':'United Kingdom',
+  // United States variants
+  'us':'United States','u.s':'United States','u.s.':'United States',
+  'usa':'United States','u.s.a':'United States','u.s.a.':'United States',
+  'united states of america':'United States','american':'United States',
+  // Germany variants
+  'germany':'Germany','deutschland':'Germany','deutsch':'Germany',
+  'german':'Germany','de':'Germany',
+  // UAE variants
+  'uae':'United Arab Emirates','u.a.e':'United Arab Emirates',
+  'u.a.e.':'United Arab Emirates','emirati':'United Arab Emirates',
+  'united arab emirate':'United Arab Emirates',
+  // Russia variants
+  'russia':'Russia','russian':'Russia','russian federation':'Russia',
+  'rossiya':'Russia','rf':'Russia',
+  // China variants
+  'china':'China','chinese':'China','prc':'China',
+  "people's republic of china":'China','p.r.c':'China',
+  // France variants
+  'france':'France','french':'France','fr':'France',
+  // Saudi Arabia variants
+  'saudi arabia':'Saudi Arabia','saudi':'Saudi Arabia','ksa':'Saudi Arabia',
+  'kingdom of saudi arabia':'Saudi Arabia',
+  // Pakistan variants
+  'pakistan':'Pakistan','pakistani':'Pakistan','pk':'Pakistan',
+  // India variants
+  'india':'India','indian':'India','bharat':'India',
+  // Philippines variants
+  'philippines':'Philippines','filipino':'Philippines','pilipinas':'Philippines',
+  'philippine':'Philippines',
+  // Iran variants
+  'iran':'Iran','iranian':'Iran','persia':'Iran','persian':'Iran',
+  'islamic republic of iran':'Iran',
+  // Lebanon variants
+  'lebanon':'Lebanon','lebanese':'Lebanon','liban':'Lebanon',
+  // Turkey variants
+  'turkey':'Turkey','turkiye':'Turkey','türkiye':'Turkey','turkish':'Turkey',
+  // Australia variants
+  'australia':'Australia','australian':'Australia','aus':'Australia',
+  // Spain variants
+  'spain':'Spain','spanish':'Spain','españa':'Spain','espana':'Spain',
+  // Italy variants
+  'italy':'Italy','italian':'Italy','italia':'Italy',
+  // Jordan variants
+  'jordan':'Jordan','jordanian':'Jordan','hashemite kingdom of jordan':'Jordan',
+  // Egypt variants
+  'egypt':'Egypt','egyptian':'Egypt','misr':'Egypt',
+  // Uzbekistan variants
+  'uzbekistan':'Uzbekistan','uzbek':'Uzbekistan',
+  // Palestinian territories
+  'palestine':'Palestine','palestinian':'Palestine',
+  'state of palestine':'Palestine','west bank':'Palestine','gaza':'Palestine',
+  // Sudan variants
+  'sudan':'Sudan','sudanese':'Sudan',
+  // Syria variants
+  'syria':'Syria','syrian':'Syria','syrian arab republic':'Syria',
+  // Yemen variants
+  'yemen':'Yemen','yemeni':'Yemen','republic of yemen':'Yemen',
+  // Israel variants
+  'israel':'Israel','israeli':'Israel','il':'Israel',
+  // Dominican Republic variants
+  'dominican':'Dominican Republic','dominican republic':'Dominican Republic',
+  'republic dominican':'Dominican Republic',
+  // Generic clean-ups
+  'n/a':'Unknown','na':'Unknown','unknown':'Unknown','':'Unknown',
+};
+
+function normalizeNationality(raw) {
+  if (!raw) return 'Unknown';
+  const cleaned = raw.trim()
+    .replace(/\s+/g,' ')           // collapse whitespace
+    .replace(/[–—]/g,'-')          // normalise dashes
+    .toLowerCase();
+  return NAT_NORM[cleaned] || raw.trim()
+    // Title-case anything not in the map as a fallback
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // ── NATIONALITY BREAKDOWN PANEL ──
@@ -1079,7 +1169,8 @@ function renderNatBreakdown(data) {
   if (!panel || !grid) return;
   const map = {};
   data.forEach(r => {
-    const nat = r.guest_nationality || 'Unknown';
+    const raw = r.guest_nationality || 'Unknown';
+    const nat = normalizeNationality(raw);
     if (!map[nat]) map[nat] = { count: 0, guests: 0, flagged: false };
     map[nat].count++;
     map[nat].guests += parseInt(r.guest_count || 1);
@@ -1131,7 +1222,7 @@ function renderCheckins(){
   populateNatDropdown('ciNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
   if(com)data=data.filter(r=>r.community===com);
-  if(nat)data=data.filter(r=>r.guest_nationality===nat);
+  if(nat)data=data.filter(r=>normalizeNationality(r.guest_nationality)===nat);
   if(alertOnly)data=data.filter(isFlagged);
   if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getMonth()===parseInt(monthFilter);});
   if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getFullYear()===parseInt(yearFilter);});
@@ -1155,7 +1246,7 @@ function renderCheckouts(){
   populateMonthYear('coMonth','coYear',data,'checkout_date');
   populateNatDropdown('coNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
-  if(nat)data=data.filter(r=>r.guest_nationality===nat);
+  if(nat)data=data.filter(r=>normalizeNationality(r.guest_nationality)===nat);
   if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getMonth()===parseInt(monthFilter);});
   if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getFullYear()===parseInt(yearFilter);});
   data=applySortBy(data, sortBy, sortDir);
@@ -1173,7 +1264,7 @@ function renderActiveGuests(){
   let data=HHO.filter(r=>getET(r)==='in');
   populateNatDropdown('agNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
-  if(nat)data=data.filter(r=>r.guest_nationality===nat);
+  if(nat)data=data.filter(r=>normalizeNationality(r.guest_nationality)===nat);
   data=applySortBy(data, sortBy, 'asc');
   const suffix = nat ? ` · 🌍 ${nat}` : '';
   document.getElementById('agCount').textContent=data.length+' RECORDS'+suffix;
