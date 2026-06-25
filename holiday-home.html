@@ -360,9 +360,24 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <input class="search-input" id="ciSearch" placeholder="Search guest, apt, community…" oninput="renderCheckins()">
         <select class="filter-sel" id="ciCom" onchange="renderCheckins()"><option value="">All Communities</option></select>
+        <select class="filter-sel" id="ciNat" onchange="renderCheckins()"><option value="">All Nationalities</option></select>
+        <select class="filter-sel" id="ciSortBy" onchange="renderCheckins()">
+          <option value="date">Sort: Date</option>
+          <option value="nationality">Sort: Nationality A–Z</option>
+          <option value="nationality_desc">Sort: Nationality Z–A</option>
+          <option value="guests_desc">Sort: Most Guests</option>
+          <option value="guests_asc">Sort: Fewest Guests</option>
+          <option value="community">Sort: Community A–Z</option>
+        </select>
         <select class="filter-sel" id="ciSortDir" onchange="renderCheckins()">
           <option value="desc">↓ Newest First</option>
           <option value="asc">↑ Oldest First</option>
+        </select>
+        <select class="filter-sel" id="ciGroupBy" onchange="renderCheckins()">
+          <option value="">No Grouping</option>
+          <option value="nationality">Group by Nationality</option>
+          <option value="community">Group by Community</option>
+          <option value="shift">Group by Shift</option>
         </select>
         <select class="filter-sel" id="ciMonth" onchange="renderCheckins()"><option value="">All Months</option></select>
         <select class="filter-sel" id="ciYear" onchange="renderCheckins()"><option value="">All Years</option></select>
@@ -374,6 +389,13 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
     </div>
     <div class="scroll-box" style="max-height:560px;" id="ciList"></div>
   </div>
+  <div class="panel" id="natBreakdownPanel" style="display:none;">
+    <div class="panel-header">
+      <div class="panel-title">Nationality Distribution — Check-Ins</div>
+      <div class="ptag ptag-blue" id="natBreakdownCount">0 NATIONALITIES</div>
+    </div>
+    <div id="natBreakdownGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;"></div>
+  </div>
 </div>
 
 <!-- ══════════════ CHECK-OUTS ══════════════ -->
@@ -383,9 +405,22 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="panel-title">HHO Check-Out Log</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <input class="search-input" id="coSearch" placeholder="Search…" oninput="renderCheckouts()">
+        <select class="filter-sel" id="coNat" onchange="renderCheckouts()"><option value="">All Nationalities</option></select>
+        <select class="filter-sel" id="coSortBy" onchange="renderCheckouts()">
+          <option value="date">Sort: Date</option>
+          <option value="nationality">Sort: Nationality A–Z</option>
+          <option value="nationality_desc">Sort: Nationality Z–A</option>
+          <option value="guests_desc">Sort: Most Guests</option>
+          <option value="community">Sort: Community A–Z</option>
+        </select>
         <select class="filter-sel" id="coSortDir" onchange="renderCheckouts()">
           <option value="desc">↓ Newest First</option>
           <option value="asc">↑ Oldest First</option>
+        </select>
+        <select class="filter-sel" id="coGroupBy" onchange="renderCheckouts()">
+          <option value="">No Grouping</option>
+          <option value="nationality">Group by Nationality</option>
+          <option value="community">Group by Community</option>
         </select>
         <select class="filter-sel" id="coMonth" onchange="renderCheckouts()"><option value="">All Months</option></select>
         <select class="filter-sel" id="coYear" onchange="renderCheckouts()"><option value="">All Years</option></select>
@@ -403,6 +438,19 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="panel-title">Active HHO Guests — Currently in Community</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <input class="search-input" id="agSearch" placeholder="Search…" oninput="renderActiveGuests()">
+        <select class="filter-sel" id="agNat" onchange="renderActiveGuests()"><option value="">All Nationalities</option></select>
+        <select class="filter-sel" id="agSortBy" onchange="renderActiveGuests()">
+          <option value="date">Sort: Date</option>
+          <option value="nationality">Sort: Nationality A–Z</option>
+          <option value="nationality_desc">Sort: Nationality Z–A</option>
+          <option value="guests_desc">Sort: Most Guests</option>
+          <option value="community">Sort: Community A–Z</option>
+        </select>
+        <select class="filter-sel" id="agGroupBy" onchange="renderActiveGuests()">
+          <option value="">No Grouping</option>
+          <option value="nationality">Group by Nationality</option>
+          <option value="community">Group by Community</option>
+        </select>
         <div class="ptag ptag-amber" id="agCount">0 RECORDS</div>
       </div>
     </div>
@@ -958,61 +1006,177 @@ function renderRecent(){
   }).join('')||'<div class="empty-state">No recent activity</div>';
 }
 
+// ── SORT HELPER ──
+function applySortBy(data, sortBy, sortDir) {
+  return data.slice().sort((a, b) => {
+    if (sortBy === 'nationality') {
+      const na = (a.guest_nationality || '').toLowerCase();
+      const nb = (b.guest_nationality || '').toLowerCase();
+      const cmp = na.localeCompare(nb);
+      return sortBy === 'nationality_desc' ? -cmp : cmp;
+    }
+    if (sortBy === 'nationality_desc') {
+      const na = (a.guest_nationality || '').toLowerCase();
+      const nb = (b.guest_nationality || '').toLowerCase();
+      return nb.localeCompare(na);
+    }
+    if (sortBy === 'guests_desc') return parseInt(b.guest_count||1) - parseInt(a.guest_count||1);
+    if (sortBy === 'guests_asc')  return parseInt(a.guest_count||1) - parseInt(b.guest_count||1);
+    if (sortBy === 'community') return (a.community||'').localeCompare(b.community||'');
+    // default: date sort
+    const dateField = getET(a) === 'in' ? 'checkin_date' : 'checkout_date';
+    const da = parseDMY(a[dateField]), db = parseDMY(b[dateField]);
+    if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+    return sortDir === 'asc' ? da - db : db - da;
+  });
+}
+
+// ── GROUPED LIST RENDERER ──
+function renderGroupedList(data, groupBy) {
+  if (!groupBy) return renderList(data);
+  const groups = {};
+  data.forEach(r => {
+    let key = '';
+    if (groupBy === 'nationality') key = r.guest_nationality || 'Unknown';
+    else if (groupBy === 'community') key = r.community || 'Unknown';
+    else if (groupBy === 'shift') key = r.shift || 'Unknown Shift';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  });
+  const sorted = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+  return sorted.map(([key, rows]) => {
+    const flagCount = rows.filter(isFlagged).length;
+    const guestTotal = rows.reduce((s, r) => s + parseInt(r.guest_count || 1), 0);
+    return `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface3);border:1px solid var(--border2);border-left:3px solid var(--purple);margin-bottom:4px;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;color:var(--purple);flex:1;">${key.toUpperCase()}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${rows.length} record${rows.length!==1?'s':''}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--blue);">👥 ${guestTotal}</span>
+        ${flagCount?`<span style="font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:var(--red);letter-spacing:.5px;">🚨 ${flagCount} ALERT${flagCount>1?'S':''}</span>`:''}
+      </div>
+      ${renderList(rows)}
+    </div>`;
+  }).join('') || '<div class="empty-state">No records found</div>';
+}
+
+// ── NATIONALITY DROPDOWN POPULATORS ──
+function populateNatDropdown(selId, data) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const cur = sel.value;
+  const nats = [...new Set(data.map(r => r.guest_nationality).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">All Nationalities</option>' + nats.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (nats.includes(cur)) sel.value = cur;
+}
+
+// ── NATIONALITY BREAKDOWN PANEL ──
+function renderNatBreakdown(data) {
+  const panel = document.getElementById('natBreakdownPanel');
+  const grid = document.getElementById('natBreakdownGrid');
+  const countEl = document.getElementById('natBreakdownCount');
+  if (!panel || !grid) return;
+  const map = {};
+  data.forEach(r => {
+    const nat = r.guest_nationality || 'Unknown';
+    if (!map[nat]) map[nat] = { count: 0, guests: 0, flagged: false };
+    map[nat].count++;
+    map[nat].guests += parseInt(r.guest_count || 1);
+    if (isFlagged(r)) map[nat].flagged = true;
+  });
+  const sorted = Object.entries(map).sort((a, b) => b[1].count - a[1].count);
+  panel.style.display = sorted.length ? '' : 'none';
+  countEl.textContent = sorted.length + ' NATIONALITIES';
+  const max = sorted[0]?.[1].count || 1;
+  grid.innerHTML = sorted.map(([nat, d]) => {
+    const pct = Math.round(d.count / max * 100);
+    return `<div onclick="filterByNationality('${nat.replace(/'/g,"\\'")}','ci')" style="background:var(--surface2);border:1px solid ${d.flagged?'rgba(239,68,68,.45)':'var(--border)'};padding:10px 12px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='${d.flagged?'rgba(239,68,68,.45)':'var(--border)'}'">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;color:${d.flagged?'var(--red)':'var(--text)'};letter-spacing:.3px;">${nat}</span>
+        ${d.flagged?'<span style="font-size:9px;color:var(--red);font-weight:700;">🚨</span>':''}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--purple);">${d.count}</span>
+        <span style="font-size:10px;color:var(--text-faint);">check-in${d.count!==1?'s':''} · 👥${d.guests}</span>
+      </div>
+      <div style="background:var(--surface3);height:3px;"><div style="height:100%;width:${pct}%;background:${d.flagged?'var(--red)':'var(--purple)'};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function filterByNationality(nat, tab) {
+  const selMap = { ci: 'ciNat', co: 'coNat', ag: 'agNat' };
+  const renderMap = { ci: renderCheckins, co: renderCheckouts, ag: renderActiveGuests };
+  const tabMap = { ci: 'checkins', co: 'checkouts', ag: 'guests' };
+  const sel = document.getElementById(selMap[tab]);
+  if (sel) { sel.value = nat; }
+  if (tabMap[tab]) switchTabByName(tabMap[tab]);
+  if (renderMap[tab]) renderMap[tab]();
+}
+
 // ── CHECKINS TAB ──
 function renderCheckins(){
   const q=(document.getElementById('ciSearch')||{}).value||'';
   const com=(document.getElementById('ciCom')||{}).value||'';
+  const nat=(document.getElementById('ciNat')||{}).value||'';
   const alertOnly=(document.getElementById('ciAlertOnly')||{}).checked;
+  const sortBy=(document.getElementById('ciSortBy')||{}).value||'date';
   const sortDir=(document.getElementById('ciSortDir')||{}).value||'desc';
+  const groupBy=(document.getElementById('ciGroupBy')||{}).value||'';
   const monthFilter=(document.getElementById('ciMonth')||{}).value||'';
   const yearFilter=(document.getElementById('ciYear')||{}).value||'';
   let data=HHO.filter(r=>getET(r)==='in');
   populateMonthYear('ciMonth','ciYear',data,'checkin_date');
+  populateNatDropdown('ciNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
   if(com)data=data.filter(r=>r.community===com);
+  if(nat)data=data.filter(r=>r.guest_nationality===nat);
   if(alertOnly)data=data.filter(isFlagged);
   if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getMonth()===parseInt(monthFilter);});
   if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getFullYear()===parseInt(yearFilter);});
-  data=data.slice().sort((a,b)=>{
-    const da=parseDMY(a.checkin_date),db=parseDMY(b.checkin_date);
-    if(!da&&!db)return 0;
-    if(!da)return 1;
-    if(!db)return-1;
-    return sortDir==='asc'?da-db:db-da;
-  });
-  document.getElementById('ciCount').textContent=data.length+' RECORDS'+(alertOnly?' · 🚨 ALERTS ONLY':'');
-  document.getElementById('ciList').innerHTML=renderList(data);
+  data=applySortBy(data, sortBy, sortDir);
+  const suffix=(alertOnly?' · 🚨 ALERTS ONLY':'')+(nat?` · 🌍 ${nat}`:'');
+  document.getElementById('ciCount').textContent=data.length+' RECORDS'+suffix;
+  document.getElementById('ciList').innerHTML = groupBy ? renderGroupedList(data, groupBy) : renderList(data);
+  renderNatBreakdown(data);
 }
 
 // ── CHECKOUTS TAB ──
 function renderCheckouts(){
   const q=(document.getElementById('coSearch')||{}).value||'';
+  const nat=(document.getElementById('coNat')||{}).value||'';
+  const sortBy=(document.getElementById('coSortBy')||{}).value||'date';
   const sortDir=(document.getElementById('coSortDir')||{}).value||'desc';
+  const groupBy=(document.getElementById('coGroupBy')||{}).value||'';
   const monthFilter=(document.getElementById('coMonth')||{}).value||'';
   const yearFilter=(document.getElementById('coYear')||{}).value||'';
   let data=HHO.filter(r=>getET(r)==='out');
   populateMonthYear('coMonth','coYear',data,'checkout_date');
+  populateNatDropdown('coNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
+  if(nat)data=data.filter(r=>r.guest_nationality===nat);
   if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getMonth()===parseInt(monthFilter);});
   if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getFullYear()===parseInt(yearFilter);});
-  data=data.slice().sort((a,b)=>{
-    const da=parseDMY(a.checkout_date),db=parseDMY(b.checkout_date);
-    if(!da&&!db)return 0;
-    if(!da)return 1;
-    if(!db)return-1;
-    return sortDir==='asc'?da-db:db-da;
-  });
-  document.getElementById('coCount').textContent=data.length+' RECORDS';
-  document.getElementById('coList').innerHTML=renderList(data);
+  data=applySortBy(data, sortBy, sortDir);
+  const suffix = nat ? ` · 🌍 ${nat}` : '';
+  document.getElementById('coCount').textContent=data.length+' RECORDS'+suffix;
+  document.getElementById('coList').innerHTML = groupBy ? renderGroupedList(data, groupBy) : renderList(data);
 }
 
 // ── ACTIVE GUESTS TAB ──
 function renderActiveGuests(){
   const q=(document.getElementById('agSearch')||{}).value||'';
+  const nat=(document.getElementById('agNat')||{}).value||'';
+  const sortBy=(document.getElementById('agSortBy')||{}).value||'date';
+  const groupBy=(document.getElementById('agGroupBy')||{}).value||'';
   let data=HHO.filter(r=>getET(r)==='in');
+  populateNatDropdown('agNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
-  document.getElementById('agCount').textContent=data.length+' RECORDS';
-  document.getElementById('agList').innerHTML=renderList(data);
+  if(nat)data=data.filter(r=>r.guest_nationality===nat);
+  data=applySortBy(data, sortBy, 'asc');
+  const suffix = nat ? ` · 🌍 ${nat}` : '';
+  document.getElementById('agCount').textContent=data.length+' RECORDS'+suffix;
+  document.getElementById('agList').innerHTML = groupBy ? renderGroupedList(data, groupBy) : renderList(data);
 }
 
 // ── SHARED LIST RENDERER ──
