@@ -2,8 +2,8 @@
   "name": "DCH Holiday Homes Tracker",
   "short_name": "DCH HHO",
   "description": "Live holiday home guest monitoring for Dubai Creek Harbour Zone D",
-  "start_url": "/holiday-home.html",
-  "scope": "/",
+  "start_url": "/dch-security-intelligence-dashboard/holiday-home.html",
+  "scope": "/dch-security-intelligence-dashboard/",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#0a0b0f",
@@ -40,7 +40,7 @@
       "name": "Security Dashboard",
       "short_name": "OPS",
       "description": "Open Security Operations Dashboard",
-      "url": "/security-ops.html",
+      "url": "/dch-security-intelligence-dashboard/security-ops.html",
       "icons": [
         {
           "src": "icons/icon-192.png",
