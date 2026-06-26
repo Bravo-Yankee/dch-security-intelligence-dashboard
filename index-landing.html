@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>DCH Security Intelligence Platform</title>
+<meta name="description" content="Live security operations and holiday home monitoring for Dubai Creek Harbour Zone D — WeOne Security">
+<meta name="theme-color" content="#0a0b0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DCH Platform">
+<link rel="manifest" href="manifest-landing.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0a0b0f;
+    --surface:  #0f1117;
+    --surface2: #13151e;
+    --border:   rgba(255,255,255,0.07);
+    --amber:    #f59e0b;
+    --purple:   #8b5cf6;
+    --cyan:     #06b6d4;
+    --red:      #ef4444;
+    --green:    #10b981;
+    --text:     #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-faint:#475569;
+  }
+
+  html { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; min-height: 100dvh; }
+  body { min-height: 100dvh; overflow-x: hidden; }
+
+  /* ── GRID PULSE BG ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    background: rgba(10,11,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .hdr-brand { display: flex; align-items: center; gap: 10px; }
+  .hdr-badge {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--amber), #d97706);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #000;
+  }
+  .hdr-name { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+  .hdr-sub  { font-size: 9px; letter-spacing: 1px; color: var(--text-faint); text-transform: uppercase; }
+  .live-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 20px;
+    border: 1px solid rgba(16,185,129,0.3); color: var(--green);
+    background: rgba(16,185,129,0.08);
+  }
+  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 1.5s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:.4;} 50%{opacity:1;} }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 1;
+    padding: 72px 24px 56px;
+    text-align: center;
+    max-width: 720px; margin: 0 auto;
+  }
+  .hero-eyebrow {
+    font-size: 9px; letter-spacing: 3px; font-weight: 700; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 16px;
+  }
+  .hero-title {
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--text) 0%, var(--text-dim) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero-title span { -webkit-text-fill-color: var(--amber); background: none; }
+  .hero-desc {
+    font-size: 14px; line-height: 1.7; color: var(--text-dim);
+    max-width: 520px; margin: 0 auto 32px;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-faint); letter-spacing: .5px;
+    margin-top: 32px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .hero-stat-val { font-size: 20px; font-weight: 600; color: var(--text); display: block; margin-bottom: 2px; }
+  .hero-stat-val.amber { color: var(--amber); }
+  .hero-stat-val.purple { color: var(--purple); }
+  .hero-stat-val.cyan   { color: var(--cyan); }
+
+  /* ── DASHBOARD CARDS ── */
+  .cards {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px; max-width: 900px; margin: 0 auto; padding: 0 20px 56px;
+  }
+  .card {
+    position: relative; overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 0;
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+    cursor: pointer;
+  }
+  .card::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: 12px; opacity: 0;
+    transition: opacity .25s;
+  }
+  .card.ops::before  { background: radial-gradient(ellipse at top left, rgba(245,158,11,.06), transparent 60%); }
+  .card.hho::before  { background: radial-gradient(ellipse at top left, rgba(139,92,246,.07), transparent 60%); }
+  .card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.14); box-shadow: 0 12px 32px rgba(0,0,0,.4); }
+  .card:hover::before { opacity: 1; }
+
+  .card-accent { width: 36px; height: 3px; border-radius: 2px; margin-bottom: 18px; }
+  .card.ops .card-accent { background: var(--amber); }
+  .card.hho .card-accent { background: var(--purple); }
+  .card-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .card.ops .card-label { color: var(--amber); }
+  .card.hho .card-label { color: var(--purple); }
+  .card-title { font-size: 20px; font-weight: 700; letter-spacing: .3px; margin-bottom: 10px; }
+  .card-desc  { font-size: 12px; line-height: 1.6; color: var(--text-dim); margin-bottom: 20px; flex: 1; }
+  .card-features { display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; }
+  .card-feat {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 10px; letter-spacing: .3px; color: var(--text-faint);
+  }
+  .card-feat::before { content: '—'; color: var(--border); flex-shrink: 0; }
+  .card-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: 7px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    transition: opacity .15s;
+  }
+  .card:hover .card-btn { opacity: .85; }
+  .card.ops .card-btn { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
+  .card.hho .card-btn { background: rgba(139,92,246,.12); color: var(--purple); border: 1px solid rgba(139,92,246,.2); }
+
+  /* ── FEATURE GRID ── */
+  .section {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto; padding: 0 20px 64px;
+  }
+  .section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .feat-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .feat-icon { font-size: 18px; margin-bottom: 7px; }
+  .feat-name { font-size: 11px; font-weight: 700; letter-spacing: .5px; margin-bottom: 3px; }
+  .feat-desc { font-size: 10px; color: var(--text-faint); line-height: 1.5; }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; margin-top: 0;
+    overflow-x: auto;
+  }
+  .pipe-step {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 9px; font-weight: 700; letter-spacing: .5px; text-align: center;
+    text-transform: uppercase; color: var(--text-dim);
+    min-width: 72px; flex-shrink: 0;
+  }
+  .pipe-icon { font-size: 20px; margin-bottom: 2px; }
+  .pipe-arrow { font-size: 14px; color: var(--border); padding: 0 4px; flex-shrink: 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+    font-size: 10px; color: var(--text-faint); letter-spacing: .5px;
+  }
+  footer strong { color: var(--amber); }
+
+  /* ── INSTALL BANNER ── */
+  #installBanner {
+    display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 200; width: calc(100% - 32px); max-width: 420px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  }
+  #installBanner.show { display: flex; align-items: center; gap: 12px; }
+  .install-icon { font-size: 28px; flex-shrink: 0; }
+  .install-text { flex: 1; }
+  .install-title { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .install-sub   { font-size: 10px; color: var(--text-dim); }
+  .install-btns  { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-install {
+    font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 7px 14px; border-radius: 6px; cursor: pointer; border: none;
+    background: var(--amber); color: #000;
+  }
+  .btn-dismiss {
+    font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 7px 10px; border-radius: 6px; cursor: pointer;
+    background: transparent; color: var(--text-faint);
+    border: 1px solid var(--border);
+  }
+
+  @media(max-width:480px){
+    .hero { padding: 48px 20px 40px; }
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-brand">
+    <div class="hdr-badge">DCH</div>
+    <div>
+      <div class="hdr-name">Security Intelligence</div>
+      <div class="hdr-sub">Dubai Creek Harbour · Zone D</div>
+    </div>
+  </div>
+  <div class="live-pill"><div class="live-dot"></div>WeOne Security</div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Operational Intelligence Platform</div>
+  <h1 class="hero-title">Every incident.<br>Every guest.<br><span>One command view.</span></h1>
+  <p class="hero-desc">
+    Real-time security operations and holiday home monitoring across 14 residential communities at Dubai Creek Harbour — powered by AI classification, WhatsApp automation, and live Google Sheets telemetry.
+  </p>
+  <div class="hero-stats">
+    <div><span class="hero-stat-val amber">14</span>Communities</div>
+    <div><span class="hero-stat-val">6,566</span>Apartments</div>
+    <div><span class="hero-stat-val purple">8,008</span>CCTV Cameras</div>
+    <div><span class="hero-stat-val cyan">212</span>Officers</div>
+    <div><span class="hero-stat-val">44</span>ANPR Cameras</div>
+    <div><span class="hero-stat-val amber">24/7</span>Live Feed</div>
+  </div>
+</section>
+
+<div class="cards">
+  <a class="card ops" href="security-ops.html">
+    <div class="card-accent"></div>
+    <div class="card-label">Security Operations</div>
+    <div class="card-title">Live Feed Dashboard</div>
+    <div class="card-desc">Zone-wide incident command centre with AI-classified threat feeds, shift handover reports, zone heatmaps, and automated critical alerts.</div>
+    <div class="card-features">
+      <div class="card-feat">Live incident classification & severity scoring</div>
+      <div class="card-feat">Zone heatmap with shift performance analytics</div>
+      <div class="card-feat">Auto-generated shift handover reports</div>
+      <div class="card-feat">Critical & compliance WhatsApp alerting</div>
+      <div class="card-feat">Operational radar timeline (24h / 12h / 6h)</div>
+    </div>
+    <div class="card-btn">Open Security Dashboard <span>→</span></div>
+  </a>
+
+  <a class="card hho" href="holiday-home.html">
+    <div class="card-accent"></div>
+    <div class="card-label">Holiday Home Operations</div>
+    <div class="card-title">HHO Tracker</div>
+    <div class="card-desc">Guest check-in/check-out monitoring across all HHO communities with live occupancy, nationality compliance screening, and operator tracking.</div>
+    <div class="card-features">
+      <div class="card-feat">Community activity map with live occupancy</div>
+      <div class="card-feat">Nationality distribution & compliance flags</div>
+      <div class="card-feat">Check-in/out logs with date sort & filters</div>
+      <div class="card-feat">HHO operator registry & performance view</div>
+      <div class="card-feat">Active guest tracking across all communities</div>
+    </div>
+    <div class="card-btn">Open HHO Tracker <span>→</span></div>
+  </a>
+</div>
+
+<div class="section">
+  <div class="section-title">Automation Pipeline</div>
+  <div class="pipeline">
+    <div class="pipe-step"><div class="pipe-icon">📱</div>WhatsApp Report</div>
+    <div class="pipe-arrow">›</div>
+    <div class="pipe-step"><div class="pipe-icon">⚙️</div>n8n Workflow<br><span style="color:var(--text-faint);font-size:8px;">Railway</span></div>
+    <div class="pipe-arrow">›</div>
+    <div class="pipe-step"><div class="pipe-icon">🤖</div>AI Classifier<br><span style="color:var(--text-faint);font-size:8px;">Groq · 4-model failover</span></div>
+    <div class="pipe-arrow">›</div>
+    <div class="pipe-step"><div class="pipe-icon">📊</div>Google Sheets<br><span style="color:var(--text-faint);font-size:8px;">Live log</span></div>
+    <div class="pipe-arrow">›</div>
+    <div class="pipe-step"><div class="pipe-icon">🖥️</div>Dashboard<br><span style="color:var(--text-faint);font-size:8px;">GitHub Pages</span></div>
+    <div class="pipe-arrow">›</div>
+    <div class="pipe-step"><div class="pipe-icon">🚨</div>WhatsApp Alert<br><span style="color:var(--text-faint);font-size:8px;">Critical / Compliance</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Platform Capabilities</div>
+  <div class="feat-grid">
+    <div class="feat-item">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-name">4-Model AI Failover</div>
+      <div class="feat-desc">Groq llama-3.1-8b → llama-3.3-70b → gemma2-9b → OpenRouter. No dropped reports on quota exhaustion.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-icon">🛡️</div>
+      <div class="feat-name">Compliance Screening</div>
+      <div class="feat-desc">Auto-flags nationalities of interest across all guest check-ins. Instant supervisor alert via WhatsApp.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-icon">🔄</div>
+      <div class="feat-name">Dedup Protection</div>
+      <div class="feat-desc">Persistent message-ID tracking prevents duplicate sheet entries across execution retries.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-icon">📍</div>
+      <div class="feat-name">Zone Intelligence</div>
+      <div class="feat-desc">Per-community shift breakdown, peak hours, incident type heatmaps, and performance sorting.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-icon">🌐</div>
+      <div class="feat-name">PWA — Works Offline</div>
+      <div class="feat-desc">Install on any device. Cached assets load instantly. Auto-refreshes data when connectivity is restored.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-icon">🌍</div>
+      <div class="feat-name">Nationality Normalisation</div>
+      <div class="feat-desc">110-entry canonical map merges UK / British / United Kingdom into a single identity automatically.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Powered by <strong>DCH</strong> Security Intelligence Platform · WeOne Security · Zone D</span>
+  <span>© 2026 Dubai Creek Harbour</span>
+</footer>
+
+<!-- INSTALL BANNER -->
+<div id="installBanner">
+  <div class="install-icon">📲</div>
+  <div class="install-text">
+    <div class="install-title">Install DCH Platform</div>
+    <div class="install-sub">Add to home screen for instant access</div>
+  </div>
+  <div class="install-btns">
+    <button class="btn-install" id="btnInstall">Install</button>
+    <button class="btn-dismiss" id="btnDismiss">Later</button>
+  </div>
+</div>
+
+<script>
+// ── PWA INSTALL PROMPT ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+document.getElementById('btnInstall').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner').classList.remove('show');
+});
+document.getElementById('btnDismiss').addEventListener('click', () => {
+  document.getElementById('installBanner').classList.remove('show');
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+// ── SERVICE WORKER REGISTRATION ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+  "name": "DCH Security Intelligence Platform",
+  "short_name": "DCH Platform",
+  "description": "Security operations and holiday home monitoring for Dubai Creek Harbour \u2014 WeOne Security",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0b0f",
+  "theme_color": "#0a0b0f",
+  "categories": [
+    "security",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Security Operations",
+      "short_name": "OPS",
+      "url": "/security-ops.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "HHO Tracker",
+      "short_name": "HHO",
+      "url": "/holiday-home.html",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
