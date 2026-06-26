@@ -227,6 +227,18 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .search-input:focus{border-color:var(--purple);}
 .filter-sel{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:11px;outline:none;cursor:pointer;}
 .filter-sel:focus{border-color:var(--purple);}
+/* DATE PICKER */
+.date-picker-wrap{display:flex;align-items:center;gap:4px;position:relative;}
+.date-input{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;cursor:pointer;width:130px;border-radius:0;}
+.date-input:focus{border-color:var(--purple);}
+.date-input::-webkit-calendar-picker-indicator{filter:invert(0.6);cursor:pointer;opacity:.7;}
+.date-input::-webkit-calendar-picker-indicator:hover{opacity:1;}
+.date-clear-btn{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:13px;padding:0 2px;line-height:1;display:none;}
+.date-clear-btn.visible{display:inline;}
+.date-clear-btn:hover{color:var(--red);}
+.date-range-wrap{display:flex;align-items:center;gap:4px;}
+.date-range-sep{font-size:10px;color:var(--text-faint);padding:0 2px;}
+.date-active-pill{font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--purple-dim);color:var(--purple);border:1px solid var(--purple);padding:2px 7px;border-radius:10px;white-space:nowrap;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);}
@@ -382,6 +394,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         </select>
         <select class="filter-sel" id="ciMonth" onchange="renderCheckins()"><option value="">All Months</option></select>
         <select class="filter-sel" id="ciYear" onchange="renderCheckins()"><option value="">All Years</option></select>
+        <div class="date-picker-wrap">
+          <div class="date-range-wrap">
+            <input type="date" class="date-input" id="ciDateFrom" onchange="renderCheckins()" title="Check-in from date">
+            <span class="date-range-sep">→</span>
+            <input type="date" class="date-input" id="ciDateTo" onchange="renderCheckins()" title="Check-in to date">
+          </div>
+          <button class="date-clear-btn" id="ciDateClear" onclick="clearDateFilter('ci')" title="Clear date filter">✕</button>
+        </div>
         <label style="display:flex;align-items:center;gap:5px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1px;color:var(--red);cursor:pointer;text-transform:uppercase;">
           <input type="checkbox" id="ciAlertOnly" onchange="renderCheckins()" style="accent-color:var(--red);"> 🚨 Alerts Only
         </label>
@@ -425,6 +445,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         </select>
         <select class="filter-sel" id="coMonth" onchange="renderCheckouts()"><option value="">All Months</option></select>
         <select class="filter-sel" id="coYear" onchange="renderCheckouts()"><option value="">All Years</option></select>
+        <div class="date-picker-wrap">
+          <div class="date-range-wrap">
+            <input type="date" class="date-input" id="coDateFrom" onchange="renderCheckouts()" title="Check-out from date">
+            <span class="date-range-sep">→</span>
+            <input type="date" class="date-input" id="coDateTo" onchange="renderCheckouts()" title="Check-out to date">
+          </div>
+          <button class="date-clear-btn" id="coDateClear" onclick="clearDateFilter('co')" title="Clear date filter">✕</button>
+        </div>
         <div class="ptag ptag-red" id="coCount">0 RECORDS</div>
       </div>
     </div>
@@ -838,7 +866,48 @@ function getImg(community){
   return null;
 }
 
-// ── FORMAT TIME ──
+// ── DATE FILTER HELPERS ──
+function clearDateFilter(prefix){
+  const from=document.getElementById(prefix+'DateFrom');
+  const to=document.getElementById(prefix+'DateTo');
+  const btn=document.getElementById(prefix+'DateClear');
+  if(from)from.value='';
+  if(to)to.value='';
+  if(btn)btn.classList.remove('visible');
+  if(prefix==='ci')renderCheckins();
+  else renderCheckouts();
+}
+
+function updateDateClearBtn(prefix){
+  const from=(document.getElementById(prefix+'DateFrom')||{}).value||'';
+  const to=(document.getElementById(prefix+'DateTo')||{}).value||'';
+  const btn=document.getElementById(prefix+'DateClear');
+  if(btn){
+    if(from||to)btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  }
+}
+
+// Converts YYYY-MM-DD (HTML date input) to a Date at midnight
+function parseInputDate(str){
+  if(!str)return null;
+  const [y,m,d]=str.split('-').map(Number);
+  return new Date(y,m-1,d);
+}
+
+function applyDateRangeFilter(data,dateField,fromStr,toStr){
+  if(!fromStr&&!toStr)return data;
+  updateDateClearBtn(dateField==='checkin_date'?'ci':'co');
+  const from=parseInputDate(fromStr);
+  const to=parseInputDate(toStr);
+  return data.filter(r=>{
+    const d=parseDMY(r[dateField]);
+    if(!d)return false;
+    if(from&&d<from)return false;
+    if(to&&d>to)return false;
+    return true;
+  });
+}
 function fmtTime(ts){
   if(!ts)return'—';
   const d=new Date(ts);
@@ -1226,6 +1295,9 @@ function renderCheckins(){
   if(alertOnly)data=data.filter(isFlagged);
   if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getMonth()===parseInt(monthFilter);});
   if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkin_date);return d&&d.getFullYear()===parseInt(yearFilter);});
+  const ciDateFrom=(document.getElementById('ciDateFrom')||{}).value||'';
+  const ciDateTo=(document.getElementById('ciDateTo')||{}).value||'';
+  data=applyDateRangeFilter(data,'checkin_date',ciDateFrom,ciDateTo);
   data=applySortBy(data, sortBy, sortDir);
   const suffix=(alertOnly?' · 🚨 ALERTS ONLY':'')+(nat?` · 🌍 ${nat}`:'');
   document.getElementById('ciCount').textContent=data.length+' RECORDS'+suffix;
@@ -1249,6 +1321,9 @@ function renderCheckouts(){
   if(nat)data=data.filter(r=>normalizeNationality(r.guest_nationality)===nat);
   if(monthFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getMonth()===parseInt(monthFilter);});
   if(yearFilter!=='')data=data.filter(r=>{const d=parseDMY(r.checkout_date);return d&&d.getFullYear()===parseInt(yearFilter);});
+  const coDateFrom=(document.getElementById('coDateFrom')||{}).value||'';
+  const coDateTo=(document.getElementById('coDateTo')||{}).value||'';
+  data=applyDateRangeFilter(data,'checkout_date',coDateFrom,coDateTo);
   data=applySortBy(data, sortBy, sortDir);
   const suffix = nat ? ` · 🌍 ${nat}` : '';
   document.getElementById('coCount').textContent=data.length+' RECORDS'+suffix;
