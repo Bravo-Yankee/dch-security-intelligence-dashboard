@@ -1140,6 +1140,14 @@ let _kpiBaseData = [];
 let _kpiSelectedDay = '';
 const _SEV_ORDER = { Critical: 0, High: 1, Medium: 2, Low: 3 };
 
+// GST is UTC+4. All date comparisons must use GST so that an incident logged
+// at 01:00 GST on Jun 27 doesn't silently appear as Jun 26 in UTC.
+function _toGSTDate(ts) {
+  if (!ts) return null;
+  const gst = new Date(new Date(ts).getTime() + 4 * 60 * 60 * 1000);
+  return gst.toISOString().slice(0, 10); // YYYY-MM-DD in GST
+}
+
 function openKpiModal(type) {
   const data = getFilteredIncidents();
   let filtered, title;
@@ -1166,7 +1174,7 @@ function _kpiBuildDayStrip(data) {
   const dayCounts = {};
   data.forEach(i => {
     if (!i.timestamp) return;
-    const key = new Date(i.timestamp).toISOString().slice(0, 10);
+    const key = _toGSTDate(i.timestamp);
     dayCounts[key] = (dayCounts[key] || 0) + 1;
   });
   const days = Object.keys(dayCounts).sort().reverse().slice(0, 30);
@@ -1209,10 +1217,10 @@ function _kpiRender() {
   const sortBy   = document.getElementById('kpiSort')?.value || 'newest';
   let result = _kpiBaseData.slice();
   if (_kpiSelectedDay) {
-    result = result.filter(i => i.timestamp && new Date(i.timestamp).toISOString().slice(0,10) === _kpiSelectedDay);
+    result = result.filter(i => _toGSTDate(i.timestamp) === _kpiSelectedDay);
   } else {
-    if (dateFrom) result = result.filter(i => i.timestamp && new Date(i.timestamp) >= new Date(dateFrom));
-    if (dateTo)   result = result.filter(i => i.timestamp && new Date(i.timestamp) <= new Date(dateTo + 'T23:59:59'));
+    if (dateFrom) result = result.filter(i => (_toGSTDate(i.timestamp) || '') >= dateFrom);
+    if (dateTo)   result = result.filter(i => (_toGSTDate(i.timestamp) || '') <= dateTo);
   }
   if (search) result = result.filter(i =>
     [i.incident_type, i.summary, i.location_zone, i.sender, i.raw_message]
