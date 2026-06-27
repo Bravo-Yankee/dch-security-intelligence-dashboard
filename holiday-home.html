@@ -468,8 +468,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <input class="search-input" id="agSearch" placeholder="Search…" oninput="renderActiveGuests()">
         <select class="filter-sel" id="agNat" onchange="renderActiveGuests()"><option value="">All Nationalities</option></select>
+        <select class="filter-sel" id="agSortDir" onchange="renderActiveGuests()">
+          <option value="desc">↓ Newest First</option>
+          <option value="asc">↑ Oldest First</option>
+        </select>
         <select class="filter-sel" id="agSortBy" onchange="renderActiveGuests()">
-          <option value="date">Sort: Date</option>
+          <option value="checkin_date">Sort: Check-In Date</option>
+          <option value="timestamp">Sort: Record Date</option>
+          <option value="checkout_date">Sort: Check-Out Date</option>
           <option value="nationality">Sort: Nationality A–Z</option>
           <option value="nationality_desc">Sort: Nationality Z–A</option>
           <option value="guests_desc">Sort: Most Guests</option>
@@ -1082,8 +1088,7 @@ function applySortBy(data, sortBy, sortDir) {
     if (sortBy === 'nationality') {
       const na = normalizeNationality(a.guest_nationality).toLowerCase();
       const nb = normalizeNationality(b.guest_nationality).toLowerCase();
-      const cmp = na.localeCompare(nb);
-      return sortBy === 'nationality_desc' ? -cmp : cmp;
+      return na.localeCompare(nb);
     }
     if (sortBy === 'nationality_desc') {
       const na = normalizeNationality(a.guest_nationality).toLowerCase();
@@ -1093,10 +1098,24 @@ function applySortBy(data, sortBy, sortDir) {
     if (sortBy === 'guests_desc') return parseInt(b.guest_count||1) - parseInt(a.guest_count||1);
     if (sortBy === 'guests_asc')  return parseInt(a.guest_count||1) - parseInt(b.guest_count||1);
     if (sortBy === 'community') return (a.community||'').localeCompare(b.community||'');
-    // default: date sort
-    const dateField = getET(a) === 'in' ? 'checkin_date' : 'checkout_date';
-    const da = parseDMY(a[dateField]), db = parseDMY(b[dateField]);
-    if (!da && !db) return 0; if (!da) return 1; if (!db) return -1;
+
+    // ── Date sorts ──
+    // checkin_date / checkout_date → parse DD/MM/YYYY with parseDMY
+    // timestamp → ISO string, compare directly
+    // Fallback chain: if stated date field is N/A, fall back to timestamp so
+    // records are never left floating at an arbitrary position.
+    let da, db;
+    if (sortBy === 'timestamp') {
+      da = a.timestamp ? new Date(a.timestamp) : null;
+      db = b.timestamp ? new Date(b.timestamp) : null;
+    } else {
+      const field = sortBy === 'checkout_date' ? 'checkout_date' : 'checkin_date';
+      da = parseDMY(a[field]) || (a.timestamp ? new Date(a.timestamp) : null);
+      db = parseDMY(b[field]) || (b.timestamp ? new Date(b.timestamp) : null);
+    }
+    if (!da && !db) return 0;
+    if (!da) return 1;   // nulls always sink to bottom regardless of direction
+    if (!db) return -1;
     return sortDir === 'asc' ? da - db : db - da;
   });
 }
@@ -1334,13 +1353,14 @@ function renderCheckouts(){
 function renderActiveGuests(){
   const q=(document.getElementById('agSearch')||{}).value||'';
   const nat=(document.getElementById('agNat')||{}).value||'';
-  const sortBy=(document.getElementById('agSortBy')||{}).value||'date';
+  const sortBy=(document.getElementById('agSortBy')||{}).value||'checkin_date';
+  const sortDir=(document.getElementById('agSortDir')||{}).value||'desc';
   const groupBy=(document.getElementById('agGroupBy')||{}).value||'';
   let data=HHO.filter(r=>getET(r)==='in');
   populateNatDropdown('agNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
   if(nat)data=data.filter(r=>normalizeNationality(r.guest_nationality)===nat);
-  data=applySortBy(data, sortBy, 'asc');
+  data=applySortBy(data, sortBy, sortDir);
   const suffix = nat ? ` · 🌍 ${nat}` : '';
   document.getElementById('agCount').textContent=data.length+' RECORDS'+suffix;
   document.getElementById('agList').innerHTML = groupBy ? renderGroupedList(data, groupBy) : renderList(data);
