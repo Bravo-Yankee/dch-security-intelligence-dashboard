@@ -500,11 +500,39 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <div class="panel-title">HHO Operator &amp; Representative Directory</div>
       <div class="ptag ptag-blue" id="repCount">0 OPERATORS</div>
     </div>
+    <!-- INTELLIGENT SORT / FILTER BAR -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px;">
+      <input class="search-input" id="repSearch" placeholder="Search operator, company, community…" oninput="renderReps()" style="width:240px;">
+      <select class="filter-sel" id="repSortBy" onchange="renderReps()">
+        <option value="checkins">Sort: Most Active (Check-Ins)</option>
+        <option value="guests">Sort: Most Guests</option>
+        <option value="recent">Sort: Most Recent</option>
+        <option value="communities">Sort: Multi-Community Spread</option>
+        <option value="compliance">Sort: Compliance Risk First</option>
+        <option value="name">Sort: Name A–Z</option>
+        <option value="company">Sort: Company A–Z</option>
+        <option value="cold">Sort: Gone Cold (Oldest Last Seen)</option>
+      </select>
+      <select class="filter-sel" id="repComFilter" onchange="renderReps()">
+        <option value="">All Communities</option>
+      </select>
+      <select class="filter-sel" id="repComplianceFilter" onchange="renderReps()">
+        <option value="">All Operators</option>
+        <option value="flagged">⚠️ Has Compliance Flags</option>
+        <option value="clean">✅ No Flags</option>
+      </select>
+      <select class="filter-sel" id="repActivityFilter" onchange="renderReps()">
+        <option value="">All Activity</option>
+        <option value="active">Active (seen today)</option>
+        <option value="recent">Recent (last 7 days)</option>
+        <option value="cold">Gone Cold (7+ days)</option>
+      </select>
+    </div>
     <div style="overflow-x:auto;">
       <table class="rep-table">
         <thead><tr>
           <th>#</th><th>Rep Name</th><th>Company</th><th>Contact</th>
-          <th>Communities</th><th>Check-Ins</th><th>Guests</th><th>Last Seen</th>
+          <th>Communities</th><th>Check-Ins</th><th>Guests</th><th>Compliance</th><th>Last Seen</th>
         </tr></thead>
         <tbody id="repBody"></tbody>
       </table>
@@ -1395,27 +1423,106 @@ function renderList(data){
 
 // ── HHO REPS TABLE ──
 function renderReps(){
+  // ── Build operator map from HHO data ──
   const map={};
   HHO.forEach(r=>{
-    const key=r.hho_company||r.hho_operator||'Unknown';
-    if(!map[key])map[key]={name:r.hho_operator||'—',company:r.hho_company||key,contact:r.hho_contact||'—',comms:new Set(),ci:0,guests:0,last:null};
+    const key=(r.hho_company||r.hho_operator||'Unknown').trim();
+    if(!map[key])map[key]={
+      name:r.hho_operator||'—',
+      company:r.hho_company||key,
+      contact:r.hho_contact||'—',
+      comms:new Set(),
+      ci:0,guests:0,last:null,
+      complianceCount:0,complianceFlags:new Set()
+    };
     if(r.community)map[key].comms.add(r.community);
-    if(getET(r)==='in'){map[key].ci++;map[key].guests+=parseInt(r.guest_count||1);}
-    if(!map[key].last||new Date(r.timestamp)>new Date(map[key].last))map[key].last=r.timestamp;
+    if(getET(r)==='in'){
+      map[key].ci++;
+      map[key].guests+=parseInt(r.guest_count||1);
+      if(isFlagged(r)){
+        map[key].complianceCount++;
+        if(r.compliance_flags)r.compliance_flags.split(',').forEach(f=>map[key].complianceFlags.add(f.trim()));
+      }
+    }
+    const ts=r.timestamp?new Date(r.timestamp):null;
+    if(ts&&(!map[key].last||ts>new Date(map[key].last)))map[key].last=r.timestamp;
   });
-  const sorted=Object.entries(map).sort((a,b)=>b[1].ci-a[1].ci);
-  document.getElementById('repCount').textContent=sorted.length+' OPERATORS';
-  document.getElementById('repBody').innerHTML=sorted.map(([,d],i)=>`
-    <tr>
+
+  // ── Populate community filter from live data ──
+  const repComSel=document.getElementById('repComFilter');
+  const prevCom=repComSel.value;
+  const allComms=[...new Set(HHO.map(r=>r.community).filter(Boolean))].sort();
+  repComSel.innerHTML='<option value="">All Communities</option>'+allComms.map(c=>`<option value="${c}">${c}</option>`).join('');
+  repComSel.value=prevCom;
+
+  // ── Read controls ──
+  const q=(document.getElementById('repSearch')||{}).value||'';
+  const sortBy=(document.getElementById('repSortBy')||{}).value||'checkins';
+  const comFilter=(document.getElementById('repComFilter')||{}).value||'';
+  const complianceFilter=(document.getElementById('repComplianceFilter')||{}).value||'';
+  const activityFilter=(document.getElementById('repActivityFilter')||{}).value||'';
+  const now=Date.now();
+  const DAY=86400000;
+
+  // ── Convert map to array & apply filters ──
+  let ops=Object.values(map);
+
+  if(q.trim()){
+    const ql=q.toLowerCase();
+    ops=ops.filter(d=>
+      d.name.toLowerCase().includes(ql)||
+      d.company.toLowerCase().includes(ql)||
+      [...d.comms].some(c=>c.toLowerCase().includes(ql))
+    );
+  }
+  if(comFilter) ops=ops.filter(d=>d.comms.has(comFilter));
+  if(complianceFilter==='flagged') ops=ops.filter(d=>d.complianceCount>0);
+  if(complianceFilter==='clean') ops=ops.filter(d=>d.complianceCount===0);
+  if(activityFilter){
+    const age=d=>d.last?now-new Date(d.last).getTime():Infinity;
+    if(activityFilter==='active')  ops=ops.filter(d=>age(d)<DAY);
+    if(activityFilter==='recent')  ops=ops.filter(d=>age(d)<7*DAY);
+    if(activityFilter==='cold')    ops=ops.filter(d=>age(d)>=7*DAY);
+  }
+
+  // ── Intelligent sort ──
+  const age=d=>d.last?now-new Date(d.last).getTime():Infinity;
+  const sorts={
+    checkins:   (a,b)=>b.ci-a.ci||b.guests-a.guests,
+    guests:     (a,b)=>b.guests-a.guests||b.ci-a.ci,
+    recent:     (a,b)=>age(a)-age(b),
+    communities:(a,b)=>b.comms.size-a.comms.size||b.ci-a.ci,
+    compliance: (a,b)=>b.complianceCount-a.complianceCount||b.ci-a.ci,
+    name:       (a,b)=>a.name.localeCompare(b.name),
+    company:    (a,b)=>a.company.localeCompare(b.company),
+    cold:       (a,b)=>age(b)-age(a)
+  };
+  ops.sort(sorts[sortBy]||sorts.checkins);
+
+  document.getElementById('repCount').textContent=ops.length+' OPERATORS';
+
+  // ── Render rows ──
+  document.getElementById('repBody').innerHTML=ops.map((d,i)=>{
+    const lastAge=age(d);
+    const isHot=lastAge<DAY;
+    const isCold=lastAge>=7*DAY;
+    const ageCls=isHot?'color:var(--green)':isCold?'color:var(--red)':'color:var(--text-faint)';
+    const complianceCell=d.complianceCount>0
+      ?`<span style="background:var(--red-dim);color:var(--red);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;">⚠️ ${d.complianceCount} FLAG${d.complianceCount>1?'S':''}</span>`
+      :`<span style="color:var(--text-faint);font-size:10px;">—</span>`;
+    const multiComm=d.comms.size>1?`<span style="background:var(--purple-dim);color:var(--purple);font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;">${d.comms.size}</span>`:'';
+    return `<tr style="${d.complianceCount>0?'border-left:2px solid var(--red);':''}">
       <td style="font-family:'JetBrains Mono',monospace;color:var(--text-faint);">${String(i+1).padStart(2,'0')}</td>
       <td style="font-weight:600;">${d.name}</td>
       <td style="color:var(--amber);">${d.company}</td>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--green);font-size:10px;">${d.contact}</td>
-      <td style="color:var(--text-dim);font-size:10px;">${[...d.comms].join(', ')||'—'}</td>
+      <td style="color:var(--text-dim);font-size:10px;">${[...d.comms].join(', ')||'—'}${multiComm}</td>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--purple);text-align:center;">${d.ci}</td>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--blue);text-align:center;">${d.guests}</td>
-      <td style="font-size:10px;color:var(--text-faint);">${fmtTime(d.last)}</td>
-    </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-faint);">No data</td></tr>';
+      <td style="text-align:center;">${complianceCell}</td>
+      <td style="font-size:10px;${ageCls}">${fmtTime(d.last)}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-faint);">No operators match the current filters</td></tr>';
 }
 
 // ── COMMUNITY FILTER DROPDOWN ──
