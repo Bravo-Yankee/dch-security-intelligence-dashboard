@@ -677,12 +677,158 @@ border-radius:20px;}
 
 <!-- KPI DRILL-DOWN MODAL -->
 <div class="modal-backdrop" id="kpiModal" onclick="closeKpiModal(event)">
-  <div class="modal">
+  <div class="modal" style="max-width:780px;width:95vw;">
     <div class="modal-header">
-      <div class="modal-title" id="kpiModalTitle">INCIDENTS</div>
+      <div style="flex:1">
+        <div class="modal-title" id="kpiModalTitle">INCIDENTS</div>
+        <div id="kpiModalSubtitle" style="font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-top:2px;"></div>
+      </div>
       <button class="modal-close" onclick="document.getElementById('kpiModal').classList.remove('show')">✕</button>
     </div>
-    <div class="modal-body" id="kpiModalBody"></div>
+
+    <!-- SMART TOOLBAR -->
+    <div id="kpiToolbar" style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface2);">
+      <!-- Search -->
+      <input id="kpiSearch" type="text" placeholder="🔍  Search incidents, location, summary…"
+        oninput="_kpiRender()"
+        style="flex:1;min-width:180px;background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:5px 10px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text);outline:none;">
+
+      <!-- Date range -->
+      <div style="display:flex;align-items:center;gap:4px;">
+        <input id="kpiDateFrom" type="date" onchange="_kpiRender()"
+          style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);outline:none;">
+        <span style="font-size:9px;color:var(--text-faint);">→</span>
+        <input id="kpiDateTo" type="date" onchange="_kpiRender()"
+          style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);outline:none;">
+      </div>
+
+      <!-- Category -->
+      <select id="kpiCategory" onchange="_kpiRender()"
+        style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text);outline:none;">
+        <option value="">All Categories</option>
+        <optgroup label="── High Priority ──">
+          <option>Theft</option>
+          <option>Fire</option>
+          <option>Stabbing</option>
+          <option>Fight</option>
+          <option>Assault / Physical Altercations</option>
+          <option>Suicide Attempt</option>
+          <option>Suicide</option>
+          <option>Natural Death</option>
+          <option>Fatality</option>
+          <option>Medical / Ambulance Only</option>
+          <option>Medical Distress</option>
+          <option>Drowning / Pool Incident</option>
+          <option>Gas & Fuel Leak</option>
+          <option>Active Fire/Smoke</option>
+          <option>Elevator Entrapment</option>
+        </optgroup>
+        <optgroup label="── Criminal ──">
+          <option>Drugs / Suspected Drugs</option>
+          <option>LGBTQ</option>
+          <option>Prostitution</option>
+          <option>Immoral Activity</option>
+          <option>Theft / Burglary</option>
+          <option>Pick Pocketing</option>
+          <option>Trespassing & Unauthorized Entry</option>
+          <option>Suspicious Person</option>
+          <option>Suspicious Activity</option>
+          <option>Suspicious Items</option>
+          <option>Impersonation</option>
+          <option>Forging</option>
+          <option>Illegal Marketing</option>
+          <option>Illegal Selling</option>
+          <option>Begging</option>
+          <option>Threats</option>
+          <option>Possession of Weapons</option>
+          <option>Harassment</option>
+          <option>Entrapment</option>
+          <option>Political Slogans</option>
+          <option>Flag Related</option>
+        </optgroup>
+        <optgroup label="── Local Authority ──">
+          <option>Local Authority (Police Related Only)</option>
+          <option>Local Authority (CID Related Only)</option>
+          <option>Local Authority (Police & CID Related)</option>
+          <option>Local Authority (Police & Ambulance)</option>
+          <option>Local Authority (Police, Ambulance & CID Related)</option>
+          <option>Local Authority (DCD & Rescue)</option>
+          <option>Government (Police & DCD, Rescue, CID, CSD)</option>
+        </optgroup>
+        <optgroup label="── Community Violations ──">
+          <option>Parking Violation</option>
+          <option>Corridor Violation</option>
+          <option>Pet Rule Violation</option>
+          <option>Amenities Area Violation</option>
+          <option>Noise Complaint</option>
+          <option>Drunkenness and Alcohol</option>
+          <option>Uncontrolled Sub-Contractors/Deliveries</option>
+        </optgroup>
+        <optgroup label="── Infrastructure ──">
+          <option>Maintenance Security</option>
+          <option>Water Leak</option>
+          <option>Fire Alarm Due to Smoke (No Real Fire Reported)</option>
+          <option>Fire Drill</option>
+          <option>Severe Weather Impact</option>
+          <option>External & Environmental Factors</option>
+        </optgroup>
+        <optgroup label="── Traffic & Access ──">
+          <option>Traffic Accident</option>
+          <option>Access Control</option>
+          <option>Patrol Report</option>
+          <option>Lost & Found</option>
+        </optgroup>
+        <optgroup label="── Media & Drone ──">
+          <option>Unauthorized Drone Activity</option>
+          <option>Authorized Drone Activity</option>
+          <option>Authorized Media Shoot</option>
+          <option>Unauthorized Media Shoot</option>
+        </optgroup>
+        <optgroup label="── Events ──">
+          <option>Events</option>
+        </optgroup>
+      </select>
+
+      <!-- Severity -->
+      <select id="kpiSeverity" onchange="_kpiRender()"
+        style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text);outline:none;">
+        <option value="">All Severity</option>
+        <option>Critical</option>
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+      </select>
+
+      <!-- Shift -->
+      <select id="kpiShift" onchange="_kpiRender()"
+        style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text);outline:none;">
+        <option value="">All Shifts</option>
+        <option value="Morning">Morning (07:00–19:00)</option>
+        <option value="Night">Night (19:00–07:00)</option>
+      </select>
+
+      <!-- Sort -->
+      <select id="kpiSort" onchange="_kpiRender()"
+        style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text);outline:none;">
+        <option value="newest">↓ Newest First</option>
+        <option value="oldest">↑ Oldest First</option>
+        <option value="severity">Severity (Critical→Low)</option>
+        <option value="severity_asc">Severity (Low→Critical)</option>
+        <option value="zone">Zone A–Z</option>
+        <option value="type">Category A–Z</option>
+      </select>
+
+      <!-- Clear filters -->
+      <button onclick="_kpiClearFilters()"
+        style="font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border-radius:5px;cursor:pointer;background:transparent;color:var(--text-faint);border:1px solid var(--border);">
+        Clear
+      </button>
+    </div>
+
+    <!-- Quick calendar day strip -->
+    <div id="kpiDayStrip" style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:4px;overflow-x:auto;background:var(--surface2);"></div>
+
+    <div class="modal-body" id="kpiModalBody" style="max-height:60vh;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -989,38 +1135,134 @@ function renderKPIs(data){
 // ═══════════════════════════════════════════════════════════════════
 //  KPI DRILL-DOWN MODAL
 // ═══════════════════════════════════════════════════════════════════
-function openKpiModal(type){
-  const data=getFilteredIncidents();
+// ── KPI MODAL STATE ──
+let _kpiBaseData = [];
+let _kpiSelectedDay = '';
+const _SEV_ORDER = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+
+function openKpiModal(type) {
+  const data = getFilteredIncidents();
   let filtered, title;
-  switch(type){
-    case 'critical': filtered=data.filter(i=>i.severity==='Critical'); title='CRITICAL INCIDENTS'; break;
-    case 'high':     filtered=data.filter(i=>i.severity==='High'||i.severity==='Medium'); title='HIGH / MEDIUM INCIDENTS'; break;
-    case 'low':      filtered=data.filter(i=>i.severity==='Low'); title='LOW SEVERITY INCIDENTS'; break;
-    case 'action':   filtered=data.filter(i=>i.action_required==='TRUE'); title='ACTION REQUIRED INCIDENTS'; break;
-    default:         filtered=data; title='ALL INCIDENTS';
+  switch (type) {
+    case 'critical': filtered = data.filter(i => i.severity === 'Critical');            title = 'CRITICAL INCIDENTS'; break;
+    case 'high':     filtered = data.filter(i => i.severity === 'High' || i.severity === 'Medium'); title = 'HIGH / MEDIUM INCIDENTS'; break;
+    case 'low':      filtered = data.filter(i => i.severity === 'Low');                 title = 'LOW SEVERITY INCIDENTS'; break;
+    case 'action':   filtered = data.filter(i => i.action_required === 'TRUE');         title = 'ACTION REQUIRED INCIDENTS'; break;
+    default:         filtered = data; title = 'ALL INCIDENTS';
   }
-  document.getElementById('kpiModalTitle').textContent=title+' ('+filtered.length+')';
+  _kpiBaseData = filtered;
+  _kpiSelectedDay = '';
+  document.getElementById('kpiModalTitle').textContent = title + ' (' + filtered.length + ')';
+  ['kpiSearch','kpiDateFrom','kpiDateTo'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['kpiCategory','kpiSeverity','kpiShift','kpiSort'].forEach(id => { const el=document.getElementById(id); if(el) el.selectedIndex=0; });
+  _kpiBuildDayStrip(filtered);
+  _kpiRender();
+  document.getElementById('kpiModal').classList.add('show');
+}
+
+function _kpiBuildDayStrip(data) {
+  const strip = document.getElementById('kpiDayStrip');
+  if (!strip) return;
+  const dayCounts = {};
+  data.forEach(i => {
+    if (!i.timestamp) return;
+    const key = new Date(i.timestamp).toISOString().slice(0, 10);
+    dayCounts[key] = (dayCounts[key] || 0) + 1;
+  });
+  const days = Object.keys(dayCounts).sort().reverse().slice(0, 30);
+  if (!days.length) { strip.innerHTML = ''; return; }
+  const maxCount = Math.max(...Object.values(dayCounts));
+  strip.innerHTML = days.map(day => {
+    const count = dayCounts[day];
+    const label = new Date(day + 'T00:00:00').toLocaleDateString('en-AE', { day: 'numeric', month: 'short' });
+    const intensity = Math.round((count / maxCount) * 100);
+    const isSelected = _kpiSelectedDay === day;
+    return `<button onclick="_kpiSelectDay('${day}')" title="${count} incidents on ${label}" style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 7px;border-radius:5px;cursor:pointer;border:1px solid ${isSelected?'var(--amber)':'var(--border)'};background:${isSelected?'rgba(245,158,11,.15)':'var(--surface3)'};color:${isSelected?'var(--amber)':'var(--text-dim)'};transition:all .12s;">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;">${label}</span>
+      <div style="width:24px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--amber),var(--red));opacity:${0.2+intensity*0.008};"></div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function _kpiSelectDay(day) {
+  _kpiSelectedDay = _kpiSelectedDay === day ? '' : day;
+  _kpiBuildDayStrip(_kpiBaseData);
+  _kpiRender();
+}
+
+function _kpiClearFilters() {
+  _kpiSelectedDay = '';
+  ['kpiSearch','kpiDateFrom','kpiDateTo'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['kpiCategory','kpiSeverity','kpiShift','kpiSort'].forEach(id => { const el=document.getElementById(id); if(el) el.selectedIndex=0; });
+  _kpiBuildDayStrip(_kpiBaseData);
+  _kpiRender();
+}
+
+function _kpiRender() {
+  const search   = (document.getElementById('kpiSearch')?.value || '').toLowerCase().trim();
+  const dateFrom = document.getElementById('kpiDateFrom')?.value || '';
+  const dateTo   = document.getElementById('kpiDateTo')?.value || '';
+  const category = document.getElementById('kpiCategory')?.value || '';
+  const severity = document.getElementById('kpiSeverity')?.value || '';
+  const shift    = document.getElementById('kpiShift')?.value || '';
+  const sortBy   = document.getElementById('kpiSort')?.value || 'newest';
+  let result = _kpiBaseData.slice();
+  if (_kpiSelectedDay) {
+    result = result.filter(i => i.timestamp && new Date(i.timestamp).toISOString().slice(0,10) === _kpiSelectedDay);
+  } else {
+    if (dateFrom) result = result.filter(i => i.timestamp && new Date(i.timestamp) >= new Date(dateFrom));
+    if (dateTo)   result = result.filter(i => i.timestamp && new Date(i.timestamp) <= new Date(dateTo + 'T23:59:59'));
+  }
+  if (search) result = result.filter(i =>
+    [i.incident_type, i.summary, i.location_zone, i.sender, i.raw_message]
+      .map(f => (f||'').toLowerCase()).some(f => f.includes(search))
+  );
+  if (category) {
+    const catLower = category.toLowerCase().replace(/[^a-z0-9]/g,'');
+    result = result.filter(i => {
+      const t = (i.incident_type||'').toLowerCase().replace(/_/g,' ').replace(/[^a-z0-9]/g,'');
+      return t.includes(catLower) || catLower.includes(t.substring(0,6));
+    });
+  }
+  if (severity) result = result.filter(i => i.severity === severity);
+  if (shift)    result = result.filter(i => i.shift && i.shift.startsWith(shift));
+  result.sort((a,b) => {
+    if (sortBy==='newest')       return new Date(b.timestamp||0)-new Date(a.timestamp||0);
+    if (sortBy==='oldest')       return new Date(a.timestamp||0)-new Date(b.timestamp||0);
+    if (sortBy==='severity')     return (_SEV_ORDER[a.severity]??4)-(_SEV_ORDER[b.severity]??4);
+    if (sortBy==='severity_asc') return (_SEV_ORDER[b.severity]??4)-(_SEV_ORDER[a.severity]??4);
+    if (sortBy==='zone')         return (a.location_zone||'').localeCompare(b.location_zone||'');
+    if (sortBy==='type')         return (a.incident_type||'').localeCompare(b.incident_type||'');
+    return 0;
+  });
+  const activeFilters=[search&&'Search',category&&'Category',severity&&'Severity',shift&&'Shift',(dateFrom||dateTo||_kpiSelectedDay)&&'Date'].filter(Boolean);
+  document.getElementById('kpiModalSubtitle').textContent=result.length+' of '+_kpiBaseData.length+' incidents'+(activeFilters.length?'  ·  Filtered by: '+activeFilters.join(', '):'');
   const body=document.getElementById('kpiModalBody');
-  if(!filtered.length){body.innerHTML='<div class="empty-state">No incidents in this category.</div>';document.getElementById('kpiModal').classList.add('show');return;}
-  body.innerHTML=filtered.slice(0,40).map(inc=>{
+  if(!result.length){body.innerHTML='<div class="empty-state">No incidents match your filters. <span style="cursor:pointer;color:var(--amber);text-decoration:underline;" onclick="_kpiClearFilters()">Clear filters</span></div>';return;}
+  body.innerHTML=result.slice(0,50).map(inc=>{
     const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
     const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
+    const isAm=inc.shift&&inc.shift.startsWith('Morning');
+    const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||null;
+    const tsDate=inc.timestamp?new Date(inc.timestamp).toLocaleDateString('en-AE',{day:'numeric',month:'short',year:'2-digit'}):'';
     return `<div class="feed-item" onclick="document.getElementById('kpiModal').classList.remove('show');showIncidentModal(${idx})">
       <div class="feed-dot ${dotClass}"></div>
       <div class="feed-body" style="flex:1">
-        <div class="feed-title">${inc.incident_type.replace(/_/g,' ')}</div>
-        <div class="feed-desc">${inc.summary||'—'}</div>
+        <div class="feed-title">${inc.incident_type.replace(/_/g,' ')} <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:5px;">${isAm?'AM':'NIGHT'}</span></div>
+        <div class="feed-desc">${(inc.summary||'—').substring(0,100)}${(inc.summary||'').length>100?'…':''}</div>
         <div class="feed-meta">
           <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
           <span class="feed-tag tag-type" style="${sevTagStyle(inc.severity)}">${inc.severity}</span>
-          ${inc.time_of_incident?`<span class="feed-tag tag-time-of-inc">⏱ ${inc.time_of_incident}</span>`:''}
+          ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
+          <span class="feed-tag tag-sup" style="color:var(--text-faint);font-size:9px;">${tsDate}</span>
         </div>
       </div>
       <div class="feed-time">${formatTime(inc.timestamp)}</div>
     </div>`;
-  }).join('');
-  document.getElementById('kpiModal').classList.add('show');
+  }).join('')+(result.length>50?`<div style="text-align:center;padding:12px;font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:1px;">Showing 50 of ${result.length} — use filters to narrow down</div>`:'');
 }
+
 function closeKpiModal(e){if(e.target===document.getElementById('kpiModal'))document.getElementById('kpiModal').classList.remove('show');}
 
 // ═══════════════════════════════════════════════════════════════════
