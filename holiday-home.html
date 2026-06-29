@@ -1830,7 +1830,7 @@ function openHHOAnalytics() {
   document.getElementById('kpiAnalytics').textContent = ci.length;
   document.getElementById('kpiAnalyticsSub').textContent = `${pvt} private · ${taxi} taxi · top: ${topNat?topNat[0]:'—'}`;
   document.getElementById('analyticsSubtitle').textContent = ci.length + ' check-ins · ' + totalGuests + ' total guests';
-  document.getElementById('hhoAnalyticsModal').classList.add('show');
+  document.getElementById('hhoAnalyticsModal').classList.add('open');
   anSwitch(0);
 }
 
@@ -1892,7 +1892,7 @@ function _anVehicle(ci, body) {
     ` : ''}
     <div class="an-section-title">Guests with Private Vehicles — Recent</div>
     ${pvtRecords.slice(0,10).map(r=>`
-      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('show');showModal(${HHO.indexOf(r)})">
+      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('open');showModal(${HHO.indexOf(r)})">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
           <span style="font-size:12px;font-weight:600;">${r.guest_name||'—'}</span>
           <span style="font-size:10px;color:#06b6d4;">${r.vehicle_type||'—'}</span>
@@ -1976,7 +1976,7 @@ function _anGroupSize(ci, body) {
       </div>`).join('')}
     <div class="an-section-title">Largest Groups — Top 10</div>
     ${ci.slice().sort((a,b)=>parseInt(b.guest_count||1)-parseInt(a.guest_count||1)).slice(0,10).map(r=>`
-      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('show');showModal(${HHO.indexOf(r)})">
+      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('open');showModal(${HHO.indexOf(r)})">
         <div style="display:flex;justify-content:space-between;">
           <span style="font-size:12px;font-weight:600;">${r.guest_name||'—'}</span>
           <span style="font-size:14px;font-weight:700;color:#f59e0b;">${r.guest_count||1} guests</span>
@@ -2057,7 +2057,7 @@ function _anStayLength(ci, body) {
       </div>`).join('')}
     <div class="an-section-title">Longest Active Stays</div>
     ${stays.slice().sort((a,b)=>b.days-a.days).slice(0,8).map(({r,days})=>`
-      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('show');showModal(${HHO.indexOf(r)})">
+      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('open');showModal(${HHO.indexOf(r)})">
         <div style="display:flex;justify-content:space-between;">
           <span style="font-size:12px;font-weight:600;">${r.guest_name||'—'}</span>
           <span style="font-size:13px;font-weight:700;color:#f59e0b;">${days} days</span>
@@ -2089,7 +2089,7 @@ function _anLookupRender() {
   if (!results.length) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">No guests match your search.</div>'; return; }
   out.innerHTML = `<div style="font-size:9px;color:var(--text-faint);margin-bottom:8px;">${results.length} result${results.length!==1?'s':''}</div>` +
     results.map(r=>`
-      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('show');showModal(${HHO.indexOf(r)})">
+      <div class="an-guest-card" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('open');showModal(${HHO.indexOf(r)})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div>
             <div style="font-size:12px;font-weight:600;margin-bottom:3px;">${r.guest_name||'—'}
@@ -2163,14 +2163,14 @@ window.addEventListener('DOMContentLoaded',()=>{
 <div class="sync-bar" id="syncBar"><div class="sync-dot"></div><span id="syncText">SYNCING...</span></div>
 
 <!-- HHO ANALYTICS MODAL -->
-<div class="modal-backdrop" id="hhoAnalyticsModal" onclick="if(event.target===this)this.classList.remove('show')">
+<div class="modal-backdrop" id="hhoAnalyticsModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:820px;width:96vw;max-height:90vh;display:flex;flex-direction:column;">
     <div class="modal-header" style="flex-shrink:0;">
       <div>
         <div class="modal-title">HHO GUEST INTELLIGENCE</div>
         <div id="analyticsSubtitle" style="font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-top:2px;"></div>
       </div>
-      <button class="modal-close" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('show')">✕</button>
+      <button class="modal-close" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('open')">✕</button>
     </div>
     <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--surface2);">
       <button class="an-tab active" id="anTab0" onclick="anSwitch(0)">🚗 Vehicle</button>
