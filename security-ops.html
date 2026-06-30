@@ -825,6 +825,15 @@ border-radius:20px;}
         <optgroup label="── Events ──">
           <option>Events</option>
         </optgroup>
+        <optgroup label="── DCH Operational ──">
+          <option>Gift &amp; Tips Related</option>
+          <option>EMAAR Sales Centre</option>
+          <option>Marina Parking</option>
+          <option>Improper Disposal</option>
+          <option>Dubai Court Visits</option>
+          <option>DCH Project Sites</option>
+          <option>Community Violation</option>
+        </optgroup>
         <optgroup label="── Data Quality ──">
           <option>Uncategorized — Review</option>
         </optgroup>
@@ -1391,7 +1400,15 @@ const OFFICIAL_CATEGORIES = [
   'EV-Charging Violation','Long-Time Parking Violation','Noise Violation','Balcony Violation',
   'Common Area Violation','Storage Violation','Vehicle Breakdown','Pet Violation',
   'Driveway Violation','Electric Scooter Violation','Resident Move-In','Resident Move-Out',
-  'Property Damage','Amenities Violation','Hygiene Related'
+  'Property Damage','Amenities Violation','Hygiene Related',
+  // DCH-specific operational categories
+  'Gift & Tips Related',
+  'EMAAR Sales Centre',
+  'Marina Parking',
+  'Improper Disposal',
+  'Dubai Court Visits',
+  'DCH Project Sites',
+  'Community Violation',
 ];
 
 const CATEGORY_NORM = {
@@ -1406,7 +1423,7 @@ const CATEGORY_NORM = {
   'vandalism': 'Vandalism',
   'altercation': 'Assault / Physical Altercations',
   'medical': 'Medical / Ambulance Only',
-  'other': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
+  'other': 'Gift & Tips Related', // default bucket — keyword scan refines further, see classifyByContentKeywords()
   'drugssuspecteddrugs': 'Drugs / Suspected Drugs',
   'possessionofweapons': 'Possession of Weapons',
   'drunkennessandalcohol': 'Drunkenness and Alcohol',
@@ -1418,7 +1435,7 @@ const CATEGORY_NORM = {
   'longtimeparking': 'Long-Time Parking Violation',
   'evchargingviolation': 'EV-Charging Violation',
   'balconyviolation': 'Balcony Violation',
-  'communityviolation': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyCommunityViolation()
+  'communityviolation': 'Community Violation', // refined by keyword scan, see classifyByContentKeywords()
   'unauthorizedstorage': 'Storage Violation',
   'vehiclebreakdown': 'Vehicle Breakdown',
   'petmismanagement': 'Pet Violation',
@@ -1536,7 +1553,31 @@ const CATEGORY_NORM = {
 // strong keyword signals before giving up and bucketing into "Uncategorized — Review".
 // Ordered most-specific-first so e.g. "fire alarm" doesn't get caught by a bare "fire" rule.
 const CATEGORY_KEYWORD_FALLBACK = [
-  [/fire\s*alarm/, 'Fire Alarm Due to Smoke (No Real Fire Reported)'],
+  // ── DCH-SPECIFIC LOCATION RULES (fire first — most specific) ──
+  // Sales Pavilion / EMAAR Sales Centre
+  [/sales\s*pavilion|emaar\s*sales|sales\s*centre|sales\s*center|sales\s*office/i, 'EMAAR Sales Centre'],
+  // Marina Parking area
+  [/marina\s*parking|marina\s*car\s*park/i, 'Marina Parking'],
+  // DCH Project Sites — construction, plot numbers, HSE
+  [/plot\s*(no|number|#|num)|\bplot\s*\d|\bconstruction\s*(site|area|work)|\bhse\s*(officer|team|inspection|compliance)\b|project\s*site|dch\s*project/i, 'DCH Project Sites'],
+  // Dubai Court visits
+  [/dubai\s*court|court\s*representative|court\s*visit|court\s*order/i, 'Dubai Court Visits'],
+  // Gift & Tips (bribery, tips, monetary gifts to staff)
+  [/tip\s*money|tips?\s*(submission|handed|given|offer|receiv)|bribe|gift\s*(of\s*money|money|cash)|aed\s*(tip|gift|bribe)|tip\s*&\s*bribe/i, 'Gift & Tips Related'],
+  // Improper Disposal (waste, garbage, illegal dumping)
+  [/improper\s*disposal|illegal\s*dumping|dumping\s*waste|disposing?\s*(waste|garbage|trash|rubbish)\s*(illegally|improperly)|abandoned\s*(rubbish|garbage|waste|trash)/i, 'Improper Disposal'],
+  // Lights malfunction → Maintenance | MEP Related
+  [/lights?\s*(malfunction|fault|fail|not\s*working|out|broken|damage|issue)|lamp\s*(malfunction|fault|fail|broken)|lighting\s*(issue|problem|fault|failure)/i, 'Maintenance | MEP Related'],
+  // Unauthorized charging in corridor → Corridor Violation
+  [/unauthoriz(ed)?\s*charging.*corridor|charging\s*(in|inside|at)\s*corridor|corridor.*unauthoriz(ed)?\s*charging/i, 'Corridor Violation'],
+  // Unauthorized charging in parking → Parking Violation
+  [/unauthoriz(ed)?\s*charging.*park|charging\s*(in|inside|at)\s*park|park.*unauthoriz(ed)?\s*charging|ev\s*charging\s*(in|at)\s*parking/i, 'Parking Violation'],
+  // Parking slot / slot related → Parking Violation
+  [/parking\s*slot|slot\s*(no|number|#|\d)|parked\s*in\s*(visitor|reserved|wrong)\s*slot/i, 'Parking Violation'],
+  // Community violation keyword
+  [/community\s*violation|violating\s*community\s*rules?|breach\s*of\s*community/i, 'Community Violation'],
+
+  // ── EXISTING RULES BELOW (preserved exactly) ──
   [/active\s*fire|fire\s*smoke/, 'Active Fire/Smoke'],
   [/fire\s*drill/, 'Fire Drill'],
   [/\bfire\b/, 'Fire'],
@@ -1635,10 +1676,13 @@ function classifyMaintenanceSecurity(incident) {
 // on keywords inside the report" rather than mapping to one fixed bucket — scan summary+raw_message
 // against the full keyword fallback list (most specific patterns first) before giving up.
 function classifyByContentKeywords(incident) {
-  const text = `${incident.summary || ''} ${incident.raw_message || ''}`.toLowerCase();
+  const text = `${incident.summary || ''} ${incident.raw_message || ''} ${incident.location_zone || ''}`.toLowerCase();
   for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
     if (re.test(text)) return cat;
   }
+  // If incident_type was 'other', default to Gift & Tips Related rather than Uncategorized
+  const raw = (incident.incident_type || '').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if (raw === 'other') return 'Gift & Tips Related';
   return 'Uncategorized — Review';
 }
 
@@ -1649,6 +1693,24 @@ function normalizeIncidentCategory(incidentOrRaw) {
   if (!raw) return 'Uncategorized — Review';
   const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   if (key === 'maintenancesecurity') return classifyMaintenanceSecurity(incident);
+  // Location-based rules override everything — check before type-based lookup
+  const locText = `${incident.summary || ''} ${incident.raw_message || ''} ${incident.location_zone || ''}`.toLowerCase();
+  const LOCATION_RULES = [
+    [/sales\s*pavilion|emaar\s*sales|sales\s*centre|sales\s*center|sales\s*office/i, 'EMAAR Sales Centre'],
+    [/marina\s*parking|marina\s*car\s*park/i, 'Marina Parking'],
+    [/plot\s*(no|number|#|num)|\bplot\s*\d|\bconstruction\s*(site|area|work)|\bhse\s*(officer|team|inspection|compliance)\b|project\s*site|dch\s*project/i, 'DCH Project Sites'],
+    [/dubai\s*court|court\s*representative|court\s*visit|court\s*order/i, 'Dubai Court Visits'],
+    [/tip\s*money|tips?\s*(submission|handed|given|offer|receiv)|bribe|gift\s*(of\s*money|money|cash)|aed\s*(tip|gift|bribe)|tip\s*&\s*bribe/i, 'Gift & Tips Related'],
+    [/improper\s*disposal|illegal\s*dumping|dumping\s*waste|disposing?\s*(waste|garbage|trash|rubbish)\s*(illegally|improperly)|abandoned\s*(rubbish|garbage|waste|trash)/i, 'Improper Disposal'],
+    [/lights?\s*(malfunction|fault|fail|not\s*working|out|broken|damage|issue)|lamp\s*(malfunction|fault|fail|broken)|lighting\s*(issue|problem|fault|failure)/i, 'Maintenance | MEP Related'],
+    [/community\s*violation|violating\s*community\s*rules?|breach\s*of\s*community/i, 'Community Violation'],
+    [/unauthoriz(ed)?\s*charging.*corridor|charging\s*(in|inside|at)\s*corridor|corridor.*unauthoriz(ed)?\s*charging/i, 'Corridor Violation'],
+    [/unauthoriz(ed)?\s*charging.*park|charging\s*(in|inside|at)\s*park|park.*unauthoriz(ed)?\s*charging/i, 'Parking Violation'],
+    [/parking\s*slot|slot\s*(no|number|#|\d)|parked\s*in\s*(visitor|reserved|wrong)\s*slot/i, 'Parking Violation'],
+  ];
+  for (const [re, cat] of LOCATION_RULES) {
+    if (re.test(locText)) return cat;
+  }
   const CONTENT_DRIVEN_KEYS = new Set([
     'patrolreport','communityviolation','other','minor','unauthorizedactivity',
     'misuseoffacilities','healthsafetyrelated','safetyrelatedconcern','vehicledamage','information',
