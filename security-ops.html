@@ -1677,6 +1677,44 @@ function getUnmappedRawCategories(data) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 }
 
+// Returns up to `limit` sample {summary, raw_message} pairs for a given raw
+// incident_type value among incidents still falling to "Uncategorized — Review".
+// Used by the diagnostic sample-text viewer so the actual report wording behind
+// a stubborn raw label can be inspected directly in the dashboard.
+function getUnmappedSamples(data, rawValue, limit = 3) {
+  return data
+    .filter(i => {
+      if (normalizeIncidentCategory(i) !== 'Uncategorized — Review') return false;
+      const raw = (i.incident_type && i.incident_type.trim()) || '(blank)';
+      return raw === rawValue;
+    })
+    .slice(0, limit)
+    .map(i => ({
+      summary: i.summary || '',
+      raw_message: i.raw_message || '',
+      timestamp: i.timestamp || '',
+      location_zone: i.location_zone || ''
+    }));
+}
+
+function _iaShowSamples(rawValue) {
+  const data = getFilteredIncidents();
+  const samples = getUnmappedSamples(data, rawValue, 3);
+  const rid = '_iaSampleDetail_' + rawValue.replace(/[^a-zA-Z0-9]/g, '_');
+  const el = document.getElementById(rid);
+  if (!el) return;
+  if (el.dataset.loaded !== '1') {
+    el.innerHTML = samples.length ? samples.map(s => `
+      <div style="border-left:2px solid var(--amber);padding:6px 8px;margin-bottom:6px;background:rgba(245,158,11,.05);">
+        <div style="font-size:9px;color:var(--text-faint);margin-bottom:3px;">${s.location_zone} · ${formatTime(s.timestamp)}</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:3px;"><strong>summary:</strong> ${(s.summary||'(blank)').replace(/</g,'&lt;')}</div>
+        <div style="font-size:10px;color:var(--text-dim);white-space:pre-wrap;"><strong>raw_message:</strong> ${(s.raw_message||'(blank)').substring(0,400).replace(/</g,'&lt;')}</div>
+      </div>`).join('') : '<div style="font-size:10px;color:var(--text-faint);">No sample text available for this label.</div>';
+    el.dataset.loaded = '1';
+  }
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
 function _iaOpen(idx){
   document.getElementById('incidentAnalyticsModal').classList.remove('show');
   showIncidentModal(idx);
@@ -1780,11 +1818,18 @@ function _iaCategories(data, body) {
         <span>⚠️ ${uncatCount} incident${uncatCount!==1?'s':''} (${Math.round(uncatCount/total*100)}%) returned a category outside the official 62-category taxonomy and need manual reclassification.</span>
         <span style="white-space:nowrap;margin-left:8px;text-decoration:underline;">view raw values ▾</span>
       </div>
+      <div style="font-size:9px;color:var(--text-faint);margin-top:4px;">Click any label below to view sample report text</div>
       <div id="${rid}" style="display:none;margin-top:8px;max-height:220px;overflow-y:auto;border-top:1px solid rgba(245,158,11,.25);padding-top:8px;">
-        ${unmapped.map(([raw,c])=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;color:var(--text-dim);">
-          <span style="font-family:'JetBrains Mono',monospace;word-break:break-word;">${raw.replace(/</g,'&lt;')}</span>
-          <span style="white-space:nowrap;color:var(--amber);">${c}</span>
-        </div>`).join('')}
+        ${unmapped.map(([raw,c])=>{
+          const sid = '_iaSampleDetail_' + raw.replace(/[^a-zA-Z0-9]/g, '_');
+          return `<div>
+          <div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;color:var(--text-dim);cursor:pointer;" onclick="event.stopPropagation();_iaShowSamples('${raw.replace(/'/g,"\\'")}')">
+            <span style="font-family:'JetBrains Mono',monospace;word-break:break-word;text-decoration:underline dotted;">${raw.replace(/</g,'&lt;')}</span>
+            <span style="white-space:nowrap;color:var(--amber);">${c}</span>
+          </div>
+          <div id="${sid}" style="display:none;margin:4px 0 8px 0;"></div>
+        </div>`;
+        }).join('')}
       </div>
     </div>`;
     })():''}
