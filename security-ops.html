@@ -732,50 +732,65 @@ border-radius:20px;}
       </div>
 
       <!-- Category -->
-      <select id="kpiCategory" onchange="_kpiRender()"
+            <select id="kpiCategory" onchange="_kpiRender()"
         style="background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text);outline:none;">
         <option value="">All Categories</option>
-        <optgroup label="── High Priority ──">
-          <option>Theft</option>
+        <optgroup label="── Life Safety & Medical ──">
           <option>Fire</option>
-          <option>Stabbing</option>
-          <option>Fight</option>
-          <option>Assault / Physical Altercations</option>
-          <option>Suicide Attempt</option>
-          <option>Suicide</option>
-          <option>Natural Death</option>
-          <option>Fatality</option>
+          <option>Active Fire/Smoke</option>
+          <option>Fire Alarm Due to Smoke (No Real Fire Reported)</option>
+          <option>Fire Drill</option>
+          <option>Gas & Fuel Leak</option>
           <option>Medical / Ambulance Only</option>
           <option>Medical Distress</option>
           <option>Drowning / Pool Incident</option>
-          <option>Gas & Fuel Leak</option>
-          <option>Active Fire/Smoke</option>
           <option>Elevator Entrapment</option>
+          <option>Natural Death</option>
+          <option>Fatality</option>
+          <option>Suicide Attempt</option>
+          <option>Suicide</option>
+          <option>Severe Weather Impact</option>
         </optgroup>
-        <optgroup label="── Criminal ──">
+        <optgroup label="── Violence & Weapons ──">
+          <option>Stabbing</option>
+          <option>Fight</option>
+          <option>Assault / Physical Altercations</option>
+          <option>Threats</option>
+          <option>Possession of Weapons</option>
+          <option>Harassment</option>
+        </optgroup>
+        <optgroup label="── Theft & Property Crime ──">
+          <option>Theft</option>
+          <option>Theft / Burglary</option>
+          <option>Pick Pocketing</option>
+          <option>Lost & Found</option>
+        </optgroup>
+        <optgroup label="── Suspicious Activity ──">
+          <option>Suspicious Person</option>
+          <option>Suspicious Activity</option>
+          <option>Suspicious Items</option>
+          <option>Trespassing & Unauthorized Entry</option>
+          <option>Entrapment</option>
+        </optgroup>
+        <optgroup label="── Vice & Moral Conduct ──">
           <option>Drugs / Suspected Drugs</option>
           <option>LGBTQ</option>
           <option>Prostitution</option>
           <option>Immoral Activity</option>
-          <option>Theft / Burglary</option>
-          <option>Pick Pocketing</option>
-          <option>Trespassing & Unauthorized Entry</option>
-          <option>Suspicious Person</option>
-          <option>Suspicious Activity</option>
-          <option>Suspicious Items</option>
+          <option>Drunkenness and Alcohol</option>
+          <option>Begging</option>
+        </optgroup>
+        <optgroup label="── Fraud & Misrepresentation ──">
           <option>Impersonation</option>
           <option>Forging</option>
           <option>Illegal Marketing</option>
           <option>Illegal Selling</option>
-          <option>Begging</option>
-          <option>Threats</option>
-          <option>Possession of Weapons</option>
-          <option>Harassment</option>
-          <option>Entrapment</option>
+        </optgroup>
+        <optgroup label="── Political / Social ──">
           <option>Political Slogans</option>
           <option>Flag Related</option>
         </optgroup>
-        <optgroup label="── Local Authority ──">
+        <optgroup label="── Local Authority Involvement ──">
           <option>Local Authority (Police Related Only)</option>
           <option>Local Authority (CID Related Only)</option>
           <option>Local Authority (Police & CID Related)</option>
@@ -784,30 +799,21 @@ border-radius:20px;}
           <option>Local Authority (DCD & Rescue)</option>
           <option>Government (Police & DCD, Rescue, CID, CSD)</option>
         </optgroup>
-        <optgroup label="── Community Violations ──">
+        <optgroup label="── Community Rule Violations ──">
           <option>Parking Violation</option>
           <option>Corridor Violation</option>
           <option>Pet Rule Violation</option>
           <option>Amenities Area Violation</option>
-          <option>Noise Complaint</option>
-          <option>Drunkenness and Alcohol</option>
-          <option>Uncontrolled Sub-Contractors/Deliveries</option>
         </optgroup>
-        <optgroup label="── Infrastructure ──">
-          <option>Maintenance Security</option>
+        <optgroup label="── Infrastructure & Maintenance ──">
           <option>Water Leak</option>
-          <option>Fire Alarm Due to Smoke (No Real Fire Reported)</option>
-          <option>Fire Drill</option>
-          <option>Severe Weather Impact</option>
+          <option>Uncontrolled Sub-Contractors/Deliveries</option>
           <option>External & Environmental Factors</option>
         </optgroup>
-        <optgroup label="── Traffic & Access ──">
+        <optgroup label="── Traffic ──">
           <option>Traffic Accident</option>
-          <option>Access Control</option>
-          <option>Patrol Report</option>
-          <option>Lost & Found</option>
         </optgroup>
-        <optgroup label="── Media & Drone ──">
+        <optgroup label="── Drone & Media ──">
           <option>Unauthorized Drone Activity</option>
           <option>Authorized Drone Activity</option>
           <option>Authorized Media Shoot</option>
@@ -815,6 +821,9 @@ border-radius:20px;}
         </optgroup>
         <optgroup label="── Events ──">
           <option>Events</option>
+        </optgroup>
+        <optgroup label="── Data Quality ──">
+          <option>Uncategorized — Review</option>
         </optgroup>
       </select>
 
@@ -1283,11 +1292,7 @@ function _kpiRender() {
       .map(f => (f||'').toLowerCase()).some(f => f.includes(search))
   );
   if (category) {
-    const catLower = category.toLowerCase().replace(/[^a-z0-9]/g,'');
-    result = result.filter(i => {
-      const t = (i.incident_type||'').toLowerCase().replace(/_/g,' ').replace(/[^a-z0-9]/g,'');
-      return t.includes(catLower) || catLower.includes(t.substring(0,6));
-    });
+    result = result.filter(i => normalizeIncidentCategory(i.incident_type) === category);
   }
   if (severity) result = result.filter(i => i.severity === severity);
   if (shift)    result = result.filter(i => i.shift && i.shift.startsWith(shift));
@@ -1353,6 +1358,57 @@ function _iaStatGrid(stats) {
     `<div class="an-stat"><div class="an-stat-val" style="color:${color||'var(--text)'}">${val}</div><div class="an-stat-lbl">${lbl}</div></div>`
   ).join('')}</div>`;
 }
+// ── CANONICAL INCIDENT CATEGORY NORMALISATION ──────────────────────
+// The official 62-category taxonomy (from Incident_Categories.docx).
+// AI classification sometimes returns off-taxonomy labels (e.g.
+// "Maintenance Security", "Access Control") that don't exist in the
+// real operational categories. This map corrects every known variant
+// to its canonical name so analytics reflect the actual taxonomy
+// instead of inventing new buckets. Anything still unmapped is
+// surfaced honestly as "Uncategorized — Review" rather than silently
+// merged into the wrong bucket.
+const OFFICIAL_CATEGORIES = [
+  'Theft','Drugs / Suspected Drugs','LGBTQ','Prostitution','Immoral Activity','Traffic Accident',
+  'Local Authority (Police Related Only)','Local Authority (CID Related Only)',
+  'Local Authority (Police & CID Related)','Local Authority (Police & Ambulance)',
+  'Local Authority (Police, Ambulance & CID Related)','Local Authority (DCD & Rescue)',
+  'Entrapment','Suspicious Items','Suspicious Person','Medical / Ambulance Only',
+  'Government (Police & DCD, Rescue, CID, CSD)','Fire','Unauthorized Drone Activity',
+  'Authorized Drone Activity','Authorized Media Shoot','Unauthorized Media Shoot','Lost & Found',
+  'Fire Drill','Fight','Impersonation','Forging','Illegal Marketing','External & Environmental Factors',
+  'Illegal Selling','Begging','Natural Death','Fatality','Suicide Attempt','Suicide','Events',
+  'Harassment','Political Slogans','Flag Related','Threats','Possession of Weapons','Pick Pocketing',
+  'Stabbing','Drunkenness and Alcohol','Parking Violation','Pet Rule Violation','Corridor Violation',
+  'Amenities Area Violation','Assault / Physical Altercations','Suspicious Activity','Theft / Burglary',
+  'Trespassing & Unauthorized Entry','Gas & Fuel Leak','Water Leak','Active Fire/Smoke',
+  'Fire Alarm Due to Smoke (No Real Fire Reported)','Drowning / Pool Incident','Medical Distress',
+  'Elevator Entrapment','Severe Weather Impact','Uncontrolled Sub-Contractors/Deliveries'
+];
+
+const CATEGORY_NORM = {
+  // Direct lowercase-key matches for every official category (handles case/underscore variance)
+  ...Object.fromEntries(OFFICIAL_CATEGORIES.map(c => [c.toLowerCase().replace(/[^a-z0-9]/g,''), c])),
+  // Known off-taxonomy AI outputs → best-fit official category
+  'maintenancesecurity': 'Uncategorized — Review',
+  'accesscontrol': 'Trespassing & Unauthorized Entry',
+  'noisecomplaint': 'Uncategorized — Review',
+  'patrolreport': 'Uncategorized — Review',
+  'falsealarm': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'vandalism': 'Uncategorized — Review',
+  'altercation': 'Assault / Physical Altercations',
+  'medical': 'Medical / Ambulance Only',
+  'other': 'Uncategorized — Review',
+  'drugssuspecteddrugs': 'Drugs / Suspected Drugs',
+  'possessionofweapons': 'Possession of Weapons',
+  'drunkennessandalcohol': 'Drunkenness and Alcohol',
+};
+
+function normalizeIncidentCategory(raw) {
+  if (!raw) return 'Uncategorized — Review';
+  const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  return CATEGORY_NORM[key] || 'Uncategorized — Review';
+}
+
 function _iaOpen(idx){
   document.getElementById('incidentAnalyticsModal').classList.remove('show');
   showIncidentModal(idx);
@@ -1424,29 +1480,35 @@ function _iaHotspots(data, body) {
     }).join('')}`;
 }
 
-// ── CATEGORIES: breakdown by incident type ──
+// ── CATEGORIES: breakdown by official incident taxonomy ──
 function _iaCategories(data, body) {
   const typeMap = {};
-  data.forEach(i => { const t=i.incident_type||'Other'; typeMap[t]=(typeMap[t]||0)+1; });
+  data.forEach(i => { const t=normalizeIncidentCategory(i.incident_type); typeMap[t]=(typeMap[t]||0)+1; });
   const sorted = Object.entries(typeMap).sort((a,b)=>b[1]-a[1]);
   const max = sorted[0]?.[1]||1;
   const total = data.length;
+  const uncatCount = typeMap['Uncategorized — Review']||0;
 
-  // Severity distribution within top category
-  const topType = sorted[0]?.[0];
-  const topTypeIncidents = data.filter(i=>i.incident_type===topType);
+  // Severity distribution within top category (excluding "Uncategorized" if it happens to be #1,
+  // since that's a data-quality bucket rather than a real threat category)
+  const realSorted = sorted.filter(([t])=>t!=='Uncategorized — Review');
+  const topType = realSorted[0]?.[0] || sorted[0]?.[0];
+  const topTypeIncidents = data.filter(i=>normalizeIncidentCategory(i.incident_type)===topType);
   const topSevBreak = {Critical:0,High:0,Medium:0,Low:0};
   topTypeIncidents.forEach(i=>{if(topSevBreak[i.severity]!==undefined)topSevBreak[i.severity]++;});
 
   body.innerHTML = `
     ${_iaStatGrid([
-      [sorted.length, 'Distinct Categories', '#06b6d4'],
-      [(topType||'—').replace(/_/g,' '), 'Top Category', '#f59e0b'],
-      [sorted[0]?.[1]||0, 'Top Category Count', '#8b5cf6'],
-      [Math.round((sorted[0]?.[1]||0)/total*100)+'%', 'Share of Total', '#10b981']
+      [realSorted.length, 'Official Categories Hit', '#06b6d4'],
+      [topType||'—', 'Top Category', '#f59e0b'],
+      [topTypeIncidents.length, 'Top Category Count', '#8b5cf6'],
+      [Math.round(topTypeIncidents.length/total*100)+'%', 'Share of Total', '#10b981']
     ])}
-    <div class="an-section-title">All Categories — Ranked</div>
-    ${_iaRows(sorted.map(([t,c])=>[t.replace(/_/g,' '),c]), max, '#06b6d4', total)}
+    ${uncatCount>0?`<div style="font-size:10px;color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px;margin-bottom:12px;">
+      ⚠️ ${uncatCount} incident${uncatCount!==1?'s':''} (${Math.round(uncatCount/total*100)}%) returned a category outside the official 62-category taxonomy and need manual reclassification.
+    </div>`:''}
+    <div class="an-section-title">All Categories — Ranked (Official Taxonomy)</div>
+    ${_iaRows(sorted, max, '#06b6d4', total)}
     <div class="an-section-title">Severity Mix — ${(topType||'').replace(/_/g,' ')}</div>
     <div style="display:flex;gap:0;border-radius:5px;overflow:hidden;height:20px;margin-bottom:8px;">
       ${['Critical','High','Medium','Low'].map(s=>{
