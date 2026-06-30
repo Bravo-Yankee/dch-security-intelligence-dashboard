@@ -134,9 +134,33 @@ border-radius:20px;}
 .main{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
 
 /* KPI CARDS — GOOGLE SHEETS DATA DRIVEN */
-.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
-@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(3,1fr);}}
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+@media(max-width:1300px){.kpi-row{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+.kpi.analytics{border-color:rgba(6,182,212,.35);background:rgba(6,182,212,.04);transition:border-color .15s,background .15s;cursor:pointer;}
+.kpi.analytics:hover{border-color:rgba(6,182,212,.6);background:rgba(6,182,212,.1);}
+.kpi.analytics .kpi-label,.kpi.analytics .kpi-num{color:#06b6d4;}
+.an-tab{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-faint);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.an-tab.active{color:#06b6d4;border-bottom-color:#06b6d4;background:rgba(6,182,212,.06);}
+.an-tab:hover:not(.active){color:var(--text);}
+.an-bar-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--border);}
+.an-bar-row:last-child{border-bottom:none;}
+.an-rank{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);width:18px;flex-shrink:0;text-align:right;}
+.an-label{font-size:11px;color:var(--text-dim);flex:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.an-bar-wrap{flex:1.5;background:var(--surface3);height:5px;border-radius:3px;overflow:hidden;}
+.an-bar{height:100%;border-radius:3px;transition:width .4s ease;}
+.an-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);width:28px;text-align:right;flex-shrink:0;}
+.an-pct{font-size:9px;color:var(--text-faint);width:36px;text-align:right;flex-shrink:0;}
+.an-section-title{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
+.an-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.an-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px;}
+.an-stat{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;}
+.an-stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;margin-bottom:2px;}
+.an-stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-faint);}
+.an-lookup-input{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--text);outline:none;margin-bottom:12px;}
+.an-guest-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.an-guest-card:hover{border-color:#06b6d4;}
+.an-heat-cell{height:20px;border-radius:2px;cursor:default;}
 .kpi{
   background:var(--surface);border:1px solid var(--border);
   padding:16px 18px;position:relative;overflow:hidden;
@@ -516,6 +540,11 @@ border-radius:20px;}
       <div class="kpi-num" id="kpiHandover">—</div>
       <div class="kpi-update" id="lastUpdate">LAST UPDATE: --:--:--</div>
     </div>
+    <div class="kpi analytics" onclick="openIncidentAnalytics()">
+      <div class="kpi-label" style="color:#06b6d4;">📊 Incident Analytics</div>
+      <div class="kpi-num" id="kpiAnalyticsTotal">—</div>
+      <div class="kpi-sub" id="kpiAnalyticsSub">Tap for threat intelligence</div>
+    </div>
   </div>
 
   <!-- MIDDLE ROW -->
@@ -832,6 +861,28 @@ border-radius:20px;}
   </div>
 </div>
 
+<!-- INCIDENT ANALYTICS MODAL -->
+<div class="modal-backdrop" id="incidentAnalyticsModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal" style="max-width:860px;width:96vw;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="modal-header" style="flex-shrink:0;">
+      <div>
+        <div class="modal-title">INCIDENT THREAT INTELLIGENCE</div>
+        <div id="iaSubtitle" style="font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-top:2px;"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('incidentAnalyticsModal').classList.remove('show')">✕</button>
+    </div>
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--surface2);">
+      <button class="an-tab active" id="iaTab0" onclick="iaSwitch(0)">🔥 Hotspots</button>
+      <button class="an-tab" id="iaTab1" onclick="iaSwitch(1)">📁 Categories</button>
+      <button class="an-tab" id="iaTab2" onclick="iaSwitch(2)">⏰ Time Patterns</button>
+      <button class="an-tab" id="iaTab3" onclick="iaSwitch(3)">🌙 Shift Compare</button>
+      <button class="an-tab" id="iaTab4" onclick="iaSwitch(4)">📈 Trend</button>
+      <button class="an-tab" id="iaTab5" onclick="iaSwitch(5)">🔍 Lookup</button>
+    </div>
+    <div id="iaBody" class="modal-body" style="flex:1;overflow-y:auto;padding:16px;"></div>
+  </div>
+</div>
+
 <!-- SYNC PULSE BAR -->
 <div class="sync-bar" id="loadingOverlay"><div class="sync-dot" id="syncDot"></div><span id="loadingText">SYNCING...</span></div>
 
@@ -1130,6 +1181,11 @@ function renderKPIs(data){
   document.getElementById('kpiLow').textContent=data.filter(i=>i.severity==='Low').length;
   document.getElementById('kpiAction').textContent=data.filter(i=>i.action_required==='TRUE').length;
   document.getElementById('kpiHandover').textContent=data.length;
+  // Analytics card — quick summary line
+  const topZoneEntry=Object.entries(data.reduce((m,i)=>{const z=i.location_zone||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
+  const topTypeEntry=Object.entries(data.reduce((m,i)=>{const t=i.incident_type||'Other';m[t]=(m[t]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('kpiAnalyticsTotal').textContent=data.length;
+  document.getElementById('kpiAnalyticsSub').textContent=(topZoneEntry?topZoneEntry[0]:'—')+' · '+(topTypeEntry?topTypeEntry[0].replace(/_/g,' '):'—');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1272,6 +1328,306 @@ function _kpiRender() {
 }
 
 function closeKpiModal(e){if(e.target===document.getElementById('kpiModal'))document.getElementById('kpiModal').classList.remove('show');}
+
+// ══════════════════════════════════════════════════════════════
+// INCIDENT ANALYTICS — Threat Intelligence
+// ══════════════════════════════════════════════════════════════
+let _iaTab = 0;
+
+function _iaBar(val, max, color='#06b6d4') {
+  return `<div class="an-bar" style="width:${Math.round(val/max*100)}%;background:${color}"></div>`;
+}
+function _iaRows(entries, max, color='#06b6d4', pctBase) {
+  return entries.map(([label, count], i) =>
+    `<div class="an-bar-row">
+      <span class="an-rank">${i+1}</span>
+      <span class="an-label" title="${label}">${label}</span>
+      <div class="an-bar-wrap">${_iaBar(count, max, color)}</div>
+      <span class="an-count">${count}</span>
+      <span class="an-pct">${pctBase?Math.round(count/pctBase*100)+'%':''}</span>
+    </div>`
+  ).join('');
+}
+function _iaStatGrid(stats) {
+  return `<div class="an-stat-grid">${stats.map(([val,lbl,color])=>
+    `<div class="an-stat"><div class="an-stat-val" style="color:${color||'var(--text)'}">${val}</div><div class="an-stat-lbl">${lbl}</div></div>`
+  ).join('')}</div>`;
+}
+function _iaOpen(idx){
+  document.getElementById('incidentAnalyticsModal').classList.remove('show');
+  showIncidentModal(idx);
+}
+
+function openIncidentAnalytics() {
+  const data = getFilteredIncidents();
+  const topZone = Object.entries(data.reduce((m,i)=>{const z=i.location_zone||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('iaSubtitle').textContent = data.length+' incidents in current range'+(topZone?'  ·  Hotspot: '+topZone[0]+' ('+topZone[1]+')':'');
+  document.getElementById('incidentAnalyticsModal').classList.add('show');
+  iaSwitch(0);
+}
+
+function iaSwitch(idx) {
+  _iaTab = idx;
+  document.querySelectorAll('#incidentAnalyticsModal .an-tab').forEach((b,i) => b.classList.toggle('active', i===idx));
+  const data = getFilteredIncidents();
+  const body = document.getElementById('iaBody');
+  if (!data.length) { body.innerHTML = '<div class="empty-state">No incident data available.</div>'; return; }
+
+  if (idx === 0) _iaHotspots(data, body);
+  else if (idx === 1) _iaCategories(data, body);
+  else if (idx === 2) _iaTimePatterns(data, body);
+  else if (idx === 3) _iaShiftCompare(data, body);
+  else if (idx === 4) _iaTrend(data, body);
+  else if (idx === 5) _iaLookup(data, body);
+}
+
+// ── HOTSPOTS: which zones/communities generate the most reports ──
+function _iaHotspots(data, body) {
+  const zoneMap = {}, zoneCrit = {};
+  data.forEach(i => {
+    const z = i.location_zone || 'Unknown';
+    zoneMap[z] = (zoneMap[z]||0) + 1;
+    if (i.severity==='Critical'||i.severity==='High') zoneCrit[z] = (zoneCrit[z]||0) + 1;
+  });
+  const sorted = Object.entries(zoneMap).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1]||1;
+  const total = data.length;
+  const colors=['#ef4444','#f59e0b','#f97316','#06b6d4','#8b5cf6','#10b981'];
+
+  body.innerHTML = `
+    ${_iaStatGrid([
+      [sorted.length, 'Active Zones', '#06b6d4'],
+      [sorted[0]?.[0]||'—', 'Busiest Zone', '#ef4444'],
+      [sorted[0]?.[1]||0, 'Top Zone Reports', '#f59e0b'],
+      [Math.round((sorted[0]?.[1]||0)/total*100)+'%', 'Top Zone Share', '#8b5cf6']
+    ])}
+    <div class="an-section-title">Reports by Zone — Ranked</div>
+    ${sorted.map(([z,c],i)=>`
+      <div class="an-bar-row">
+        <span class="an-rank">${i+1}</span>
+        <span class="an-label">${z}</span>
+        <div class="an-bar-wrap">${_iaBar(c,max,colors[i%colors.length])}</div>
+        <span class="an-count">${c}</span>
+        <span class="an-pct">${zoneCrit[z]?zoneCrit[z]+' crit/high':''}</span>
+      </div>`).join('')}
+    <div class="an-section-title">Most Recent in Top Zone — ${sorted[0]?.[0]||'—'}</div>
+    ${data.filter(i=>i.location_zone===sorted[0]?.[0]).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,6).map(inc=>{
+      const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
+      return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-size:12px;font-weight:600;">${inc.incident_type.replace(/_/g,' ')}</span>
+          <span style="font-size:10px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
+        </div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">${(inc.summary||'').substring(0,90)}…</div>
+        <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">${formatTime(inc.timestamp)}</div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── CATEGORIES: breakdown by incident type ──
+function _iaCategories(data, body) {
+  const typeMap = {};
+  data.forEach(i => { const t=i.incident_type||'Other'; typeMap[t]=(typeMap[t]||0)+1; });
+  const sorted = Object.entries(typeMap).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1]||1;
+  const total = data.length;
+
+  // Severity distribution within top category
+  const topType = sorted[0]?.[0];
+  const topTypeIncidents = data.filter(i=>i.incident_type===topType);
+  const topSevBreak = {Critical:0,High:0,Medium:0,Low:0};
+  topTypeIncidents.forEach(i=>{if(topSevBreak[i.severity]!==undefined)topSevBreak[i.severity]++;});
+
+  body.innerHTML = `
+    ${_iaStatGrid([
+      [sorted.length, 'Distinct Categories', '#06b6d4'],
+      [(topType||'—').replace(/_/g,' '), 'Top Category', '#f59e0b'],
+      [sorted[0]?.[1]||0, 'Top Category Count', '#8b5cf6'],
+      [Math.round((sorted[0]?.[1]||0)/total*100)+'%', 'Share of Total', '#10b981']
+    ])}
+    <div class="an-section-title">All Categories — Ranked</div>
+    ${_iaRows(sorted.map(([t,c])=>[t.replace(/_/g,' '),c]), max, '#06b6d4', total)}
+    <div class="an-section-title">Severity Mix — ${(topType||'').replace(/_/g,' ')}</div>
+    <div style="display:flex;gap:0;border-radius:5px;overflow:hidden;height:20px;margin-bottom:8px;">
+      ${['Critical','High','Medium','Low'].map(s=>{
+        const c=topSevBreak[s], pct=topTypeIncidents.length?Math.round(c/topTypeIncidents.length*100):0;
+        const col={Critical:'#ef4444',High:'#f97316',Medium:'#f59e0b',Low:'#10b981'}[s];
+        return pct>0?`<div style="width:${pct}%;background:${col};display:flex;align-items:center;justify-content:center;" title="${s}: ${c}">
+          ${pct>10?`<span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${pct}%</span>`:''}
+        </div>`:'';
+      }).join('')}
+    </div>`;
+}
+
+// ── TIME PATTERNS: hourly heatmap across the whole dataset ──
+function _iaTimePatterns(data, body) {
+  const hourCounts = Array(24).fill(0);
+  data.forEach(i => { if(i.timestamp){ const h=new Date(new Date(i.timestamp).getTime()+4*3600000).getUTCHours(); hourCounts[h]++; } });
+  const maxHr = Math.max(...hourCounts,1);
+  const peakHr = hourCounts.indexOf(maxHr);
+  const quietHr = hourCounts.indexOf(Math.min(...hourCounts.filter(c=>c>0)));
+
+  // Day of week breakdown
+  const dowCounts = {};
+  const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  data.forEach(i => { if(i.timestamp){ const d=new Date(new Date(i.timestamp).getTime()+4*3600000).getUTCDay(); dowCounts[dowNames[d]]=(dowCounts[dowNames[d]]||0)+1; } });
+  const maxDow = Math.max(...Object.values(dowCounts),1);
+
+  body.innerHTML = `
+    ${_iaStatGrid([
+      [String(peakHr).padStart(2,'0')+':00', 'Peak Hour', '#ef4444'],
+      [maxHr, 'Peak Hour Count', '#f59e0b'],
+      [String(quietHr).padStart(2,'0')+':00', 'Quietest Hour', '#10b981'],
+      [Object.entries(dowCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—', 'Busiest Day', '#8b5cf6']
+    ])}
+    <div class="an-section-title">24-Hour Activity Heatmap (GST)</div>
+    <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-bottom:4px;">
+      ${hourCounts.map((c,h)=>{
+        const isAm = h>=7 && h<19;
+        const intensity = Math.round(c/maxHr*100);
+        const bg = c===0?'var(--surface3)':isAm?`#06b6d4${Math.round(intensity*2.55).toString(16).padStart(2,'0')}`:`#f59e0b${Math.round(intensity*2.55).toString(16).padStart(2,'0')}`;
+        return `<div class="an-heat-cell" title="${String(h).padStart(2,'0')}:00 — ${c} incidents" style="background:${bg};"></div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;margin-bottom:10px;">
+      <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:14px;">
+      <span style="font-size:9px;color:#06b6d4">■ Morning shift</span>
+      <span style="font-size:9px;color:#f59e0b">■ Night shift</span>
+    </div>
+    <div class="an-section-title">Reports by Day of Week</div>
+    ${_iaRows(dowNames.filter(d=>dowCounts[d]).map(d=>[d,dowCounts[d]]).sort((a,b)=>b[1]-a[1]), maxDow, '#8b5cf6', data.length)}`;
+}
+
+// ── SHIFT COMPARE: Morning vs Night across severity & category ──
+function _iaShiftCompare(data, body) {
+  const am = data.filter(i=>i.shift&&i.shift.startsWith('Morning'));
+  const pm = data.filter(i=>i.shift&&i.shift.startsWith('Night'));
+  const total = data.length||1;
+  const amPct = Math.round(am.length/total*100), pmPct=100-amPct;
+
+  function sevBreak(arr){const s={Critical:0,High:0,Medium:0,Low:0};arr.forEach(i=>{if(s[i.severity]!==undefined)s[i.severity]++;});return s;}
+  const amS=sevBreak(am), pmS=sevBreak(pm);
+
+  function topTypes(arr,n=6){const t={};arr.forEach(i=>{t[i.incident_type]=(t[i.incident_type]||0)+1;});return Object.entries(t).sort((a,b)=>b[1]-a[1]).slice(0,n);}
+  const amTypes=topTypes(am), pmTypes=topTypes(pm);
+  const amMax=amTypes[0]?.[1]||1, pmMax=pmTypes[0]?.[1]||1;
+
+  body.innerHTML = `
+    <div class="an-section-title">Shift Load Distribution</div>
+    <div style="display:flex;align-items:center;gap:0;border-radius:4px;overflow:hidden;height:22px;margin:4px 0 10px;">
+      <div style="width:${amPct}%;background:#06b6d4;height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${amPct}%</span></div>
+      <div style="width:${pmPct}%;background:#f59e0b;height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${pmPct}%</span></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:14px;">
+      <span class="shift-badge am">AM ${am.length}</span>
+      <span class="shift-badge pm">Night ${pm.length}</span>
+      <span style="font-size:10px;color:var(--text-faint);margin-left:auto;">of ${total} total</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="an-section-title">🌅 Morning Severity</div>
+        ${['Critical','High','Medium','Low'].map(s=>`
+          <div class="an-bar-row" style="padding:4px 0;">
+            <span class="an-label" style="font-size:10px">${s}</span>
+            <span class="an-count" style="color:${s==='Critical'?'#ef4444':s==='High'?'#f97316':s==='Medium'?'var(--amber)':'var(--green)'}">${amS[s]}</span>
+          </div>`).join('')}
+      </div>
+      <div>
+        <div class="an-section-title">🌙 Night Severity</div>
+        ${['Critical','High','Medium','Low'].map(s=>`
+          <div class="an-bar-row" style="padding:4px 0;">
+            <span class="an-label" style="font-size:10px">${s}</span>
+            <span class="an-count" style="color:${s==='Critical'?'#ef4444':s==='High'?'#f97316':s==='Medium'?'var(--amber)':'var(--green)'}">${pmS[s]}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="an-section-title">🌅 AM Top Categories</div>
+        ${amTypes.length?_iaRows(amTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),amMax,'#06b6d4'):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
+      </div>
+      <div>
+        <div class="an-section-title">🌙 Night Top Categories</div>
+        ${pmTypes.length?_iaRows(pmTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),pmMax,'#f59e0b'):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
+      </div>
+    </div>`;
+}
+
+// ── TREND: daily volume over the selected range ──
+function _iaTrend(data, body) {
+  const dayCounts = {};
+  data.forEach(i => { if(i.timestamp) { const d=_toGSTDate(i.timestamp); dayCounts[d]=(dayCounts[d]||0)+1; } });
+  const days = Object.keys(dayCounts).sort();
+  if (!days.length) { body.innerHTML='<div class="empty-state">No dated incidents to trend.</div>'; return; }
+  const maxDay = Math.max(...Object.values(dayCounts));
+  const avgPerDay = (data.length/days.length).toFixed(1);
+  const lastDay = days[days.length-1], firstDay = days[0];
+  const lastCount = dayCounts[lastDay], prevCount = dayCounts[days[days.length-2]] || 0;
+  const trendDir = lastCount > prevCount ? '▲ Rising' : lastCount < prevCount ? '▼ Falling' : '— Stable';
+  const trendColor = lastCount > prevCount ? '#ef4444' : lastCount < prevCount ? '#10b981' : 'var(--text-faint)';
+
+  body.innerHTML = `
+    ${_iaStatGrid([
+      [avgPerDay, 'Avg / Day', '#06b6d4'],
+      [maxDay, 'Peak Day Volume', '#f59e0b'],
+      [trendDir, 'Latest Trend', trendColor],
+      [days.length, 'Days in Range', '#8b5cf6']
+    ])}
+    <div class="an-section-title">Daily Volume — ${firstDay} to ${lastDay}</div>
+    <div style="display:flex;align-items:flex-end;gap:2px;height:90px;margin-bottom:6px;overflow-x:auto;padding-bottom:2px;">
+      ${days.map(d=>{
+        const c = dayCounts[d];
+        const h = Math.max(4, Math.round(c/maxDay*84));
+        const label = new Date(d+'T00:00:00').toLocaleDateString('en-AE',{day:'numeric',month:'short'});
+        return `<div title="${label}: ${c} incidents" style="flex-shrink:0;width:18px;height:${h}px;background:linear-gradient(180deg,#06b6d4,#0891b2);border-radius:2px 2px 0 0;"></div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;">
+      <span>${new Date(firstDay+'T00:00:00').toLocaleDateString('en-AE',{day:'numeric',month:'short'})}</span>
+      <span>${new Date(lastDay+'T00:00:00').toLocaleDateString('en-AE',{day:'numeric',month:'short'})}</span>
+    </div>`;
+}
+
+// ── LOOKUP: free-text search across all incidents ──
+function _iaLookup(data, body) {
+  body.innerHTML = `
+    <div style="margin-bottom:4px;font-size:10px;color:var(--text-faint);">Search by category, zone, supervisor, or summary text</div>
+    <input class="an-lookup-input" id="iaLookupInput" placeholder="e.g. Theft, Creek Edge, Mr. Ahmed, parking…"
+      oninput="_iaLookupRender()" autofocus>
+    <div id="iaLookupResults"></div>`;
+  setTimeout(()=>document.getElementById('iaLookupInput')?.focus(), 100);
+}
+
+function _iaLookupRender() {
+  const q = (document.getElementById('iaLookupInput')?.value||'').toLowerCase().trim();
+  const out = document.getElementById('iaLookupResults');
+  if (!q) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">Start typing to search incidents…</div>'; return; }
+  const data = getFilteredIncidents();
+  const results = data.filter(i =>
+    [i.incident_type, i.summary, i.location_zone, i.sender, i.raw_message]
+      .map(f=>(f||'').toLowerCase()).some(f=>f.includes(q))
+  ).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,20);
+  if (!results.length) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">No incidents match your search.</div>'; return; }
+  out.innerHTML = `<div style="font-size:9px;color:var(--text-faint);margin-bottom:8px;">${results.length} result${results.length!==1?'s':''}</div>` +
+    results.map(inc=>{
+      const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
+      return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:600;margin-bottom:3px;">${inc.incident_type.replace(/_/g,' ')}</div>
+            <div style="font-size:10px;color:var(--text-faint);">${(inc.summary||'').substring(0,90)}…</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:10px;${sevTagStyle(inc.severity)}">${inc.severity}</div>
+            <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">${inc.location_zone||'—'}</div>
+            <div style="font-size:9px;color:var(--text-faint);">${formatTime(inc.timestamp)}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
 
 // ═══════════════════════════════════════════════════════════════════
 //  LIVE INCIDENT PARSING STREAM
