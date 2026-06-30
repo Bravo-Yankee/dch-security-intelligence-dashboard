@@ -1438,6 +1438,12 @@ const CATEGORY_NORM = {
   'minor': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
   'hygienerelated': 'Hygiene Related',
   'hygienecomplaint': 'Hygiene Related',
+  'amenityruleviolation': 'Amenities Area Violation',
+  'communityruleviolation': 'Common Area Violation',
+  'communitiesviolation': 'Common Area Violation',
+  'swimmingpoolviolation': 'Drowning / Pool Incident',
+  'safetyconcern': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
+  'traffic': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
   // Additional commonly-seen variants
   'trespassing': 'Trespassing & Unauthorized Entry',
   'unauthorizedentry': 'Trespassing & Unauthorized Entry',
@@ -1546,7 +1552,7 @@ const CATEGORY_KEYWORD_FALLBACK = [
   [/\btheft\b/, 'Theft'],
   [/gas\s*(&|and)?\s*fuel\s*leak|fuel\s*leak/, 'Gas & Fuel Leak'],
   [/water\s*leak/, 'Water Leak'],
-  [/drown|pool\s*incident/, 'Drowning / Pool Incident'],
+  [/drown|pool\s*incident|swimming\s*pool/, 'Drowning / Pool Incident'],
   [/medical\s*distress/, 'Medical Distress'],
   [/medical|ambulance/, 'Medical / Ambulance Only'],
   [/elevator\s*entrapment|lift\s*entrapment/, 'Elevator Entrapment'],
@@ -1575,7 +1581,8 @@ const CATEGORY_KEYWORD_FALLBACK = [
   [/political\s*slogan/, 'Political Slogans'],
   [/flag/, 'Flag Related'],
   [/sub-?contractor|delivery|deliveries/, 'Uncontrolled Sub-Contractors/Deliveries'],
-  [/traffic\s*accident/, 'Traffic Accident'],
+  [/traffic\s*accident|vehicle\s*collision|car\s*accident/, 'Traffic Accident'],
+  [/traffic\s*(jam|congestion|blockage)|speeding|illegal\s*u-?turn|road\s*block(ed|age)?/, 'Traffic Accident'],
   [/prostitution/, 'Prostitution'],
   [/entrapment/, 'Entrapment'],
   [/ev[\s-]?charg|electric\s*vehicle\s*charg/, 'EV-Charging Violation'],
@@ -1595,6 +1602,7 @@ const CATEGORY_KEYWORD_FALLBACK = [
   [/damaged?\s*(vehicle|car)|scratch(ed)?\s*(vehicle|car)|dent(ed)?\s*(vehicle|car)/, 'Property Damage'],
   [/smell|odo(u)?r|leak(ing)?\s*gas|gas\s*smell/, 'Maintenance | Gas Related'],
   [/water\s*leak|pipe\s*(burst|leak)|flooding/, 'Water Leak'],
+  [/unsafe\s*condition|safety\s*hazard|hazardous/, 'External & Environmental Factors'],
 ];
 
 // Maintenance_Security is an umbrella raw label that actually covers three distinct
@@ -1643,7 +1651,8 @@ function normalizeIncidentCategory(incidentOrRaw) {
   if (key === 'maintenancesecurity') return classifyMaintenanceSecurity(incident);
   const CONTENT_DRIVEN_KEYS = new Set([
     'patrolreport','communityviolation','other','minor','unauthorizedactivity',
-    'misuseoffacilities','healthsafetyrelated','safetyrelatedconcern','vehicledamage','information'
+    'misuseoffacilities','healthsafetyrelated','safetyrelatedconcern','vehicledamage','information',
+    'traffic','safetyconcern'
   ]);
   if (CONTENT_DRIVEN_KEYS.has(key)) return classifyByContentKeywords(incident);
   if (CATEGORY_NORM[key]) return CATEGORY_NORM[key];
