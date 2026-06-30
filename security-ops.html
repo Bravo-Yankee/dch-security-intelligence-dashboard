@@ -809,6 +809,9 @@ border-radius:20px;}
           <option>Water Leak</option>
           <option>Uncontrolled Sub-Contractors/Deliveries</option>
           <option>External & Environmental Factors</option>
+          <option>Maintenance | Access Control System Failure</option>
+          <option>Maintenance | Surveillance System Failure</option>
+          <option>Maintenance | House Keeping Related</option>
         </optgroup>
         <optgroup label="── Traffic ──">
           <option>Traffic Accident</option>
@@ -1292,7 +1295,7 @@ function _kpiRender() {
       .map(f => (f||'').toLowerCase()).some(f => f.includes(search))
   );
   if (category) {
-    result = result.filter(i => normalizeIncidentCategory(i.incident_type) === category);
+    result = result.filter(i => normalizeIncidentCategory(i) === category);
   }
   if (severity) result = result.filter(i => i.severity === severity);
   if (shift)    result = result.filter(i => i.shift && i.shift.startsWith(shift));
@@ -1382,7 +1385,9 @@ const OFFICIAL_CATEGORIES = [
   'Amenities Area Violation','Assault / Physical Altercations','Suspicious Activity','Theft / Burglary',
   'Trespassing & Unauthorized Entry','Gas & Fuel Leak','Water Leak','Active Fire/Smoke',
   'Fire Alarm Due to Smoke (No Real Fire Reported)','Drowning / Pool Incident','Medical Distress',
-  'Elevator Entrapment','Severe Weather Impact','Uncontrolled Sub-Contractors/Deliveries'
+  'Elevator Entrapment','Severe Weather Impact','Uncontrolled Sub-Contractors/Deliveries',
+  'Maintenance | Access Control System Failure','Maintenance | Surveillance System Failure',
+  'Maintenance | House Keeping Related'
 ];
 
 const CATEGORY_NORM = {
@@ -1543,9 +1548,30 @@ const CATEGORY_KEYWORD_FALLBACK = [
   [/entrapment/, 'Entrapment'],
 ];
 
-function normalizeIncidentCategory(raw) {
+// Maintenance_Security is an umbrella raw label that actually covers three distinct
+// failure types. We sub-classify it by scanning the incident's summary/raw_message
+// for content signals, ordered most-specific-first.
+const MAINTENANCE_SUBTYPE_RULES = [
+  [/access\s*control|door\s*controller|gate\s*sensor|access\s*gate|card\s*reader|turnstile|lock\s*(malfunction|fault|fail)/, 'Maintenance | Access Control System Failure'],
+  [/cctv|camera|surveillance|playback|dvr|nvr|video\s*(feed|footage|loss)/, 'Maintenance | Surveillance System Failure'],
+  [/housekeeping|\bhk\b|waste\s*bin|garbage|trash|janitorial|cleaning\s*(staff|team|crew)|refuse/, 'Maintenance | House Keeping Related'],
+];
+
+function classifyMaintenanceSecurity(incident) {
+  const text = `${incident.summary || ''} ${incident.raw_message || ''}`.toLowerCase();
+  for (const [re, cat] of MAINTENANCE_SUBTYPE_RULES) {
+    if (re.test(text)) return cat;
+  }
+  return 'Uncategorized — Review';
+}
+
+function normalizeIncidentCategory(incidentOrRaw) {
+  // Accept either a full incident record or a bare raw string (legacy calls).
+  const incident = (typeof incidentOrRaw === 'string') ? { incident_type: incidentOrRaw } : (incidentOrRaw || {});
+  const raw = incident.incident_type;
   if (!raw) return 'Uncategorized — Review';
   const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if (key === 'maintenancesecurity') return classifyMaintenanceSecurity(incident);
   if (CATEGORY_NORM[key]) return CATEGORY_NORM[key];
   const lower = raw.trim().toLowerCase();
   for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
@@ -1560,7 +1586,7 @@ function normalizeIncidentCategory(raw) {
 function getUnmappedRawCategories(data) {
   const counts = {};
   data.forEach(i => {
-    if (normalizeIncidentCategory(i.incident_type) === 'Uncategorized — Review') {
+    if (normalizeIncidentCategory(i) === 'Uncategorized — Review') {
       const raw = (i.incident_type && i.incident_type.trim()) || '(blank)';
       counts[raw] = (counts[raw] || 0) + 1;
     }
@@ -1642,7 +1668,7 @@ function _iaHotspots(data, body) {
 // ── CATEGORIES: breakdown by official incident taxonomy ──
 function _iaCategories(data, body) {
   const typeMap = {};
-  data.forEach(i => { const t=normalizeIncidentCategory(i.incident_type); typeMap[t]=(typeMap[t]||0)+1; });
+  data.forEach(i => { const t=normalizeIncidentCategory(i); typeMap[t]=(typeMap[t]||0)+1; });
   const sorted = Object.entries(typeMap).sort((a,b)=>b[1]-a[1]);
   const max = sorted[0]?.[1]||1;
   const total = data.length;
@@ -1652,7 +1678,7 @@ function _iaCategories(data, body) {
   // since that's a data-quality bucket rather than a real threat category)
   const realSorted = sorted.filter(([t])=>t!=='Uncategorized — Review');
   const topType = realSorted[0]?.[0] || sorted[0]?.[0];
-  const topTypeIncidents = data.filter(i=>normalizeIncidentCategory(i.incident_type)===topType);
+  const topTypeIncidents = data.filter(i=>normalizeIncidentCategory(i)===topType);
   const topSevBreak = {Critical:0,High:0,Medium:0,Low:0};
   topTypeIncidents.forEach(i=>{if(topSevBreak[i.severity]!==undefined)topSevBreak[i.severity]++;});
 
