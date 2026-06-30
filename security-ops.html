@@ -1401,12 +1401,171 @@ const CATEGORY_NORM = {
   'drugssuspecteddrugs': 'Drugs / Suspected Drugs',
   'possessionofweapons': 'Possession of Weapons',
   'drunkennessandalcohol': 'Drunkenness and Alcohol',
+  // Additional commonly-seen variants
+  'trespassing': 'Trespassing & Unauthorized Entry',
+  'unauthorizedentry': 'Trespassing & Unauthorized Entry',
+  'unauthorizedaccess': 'Trespassing & Unauthorized Entry',
+  'trespass': 'Trespassing & Unauthorized Entry',
+  'parking': 'Parking Violation',
+  'parkingviolation': 'Parking Violation',
+  'illegalparking': 'Parking Violation',
+  'lostproperty': 'Lost & Found',
+  'lostfound': 'Lost & Found',
+  'lostandfound': 'Lost & Found',
+  'suspiciousactivity': 'Suspicious Activity',
+  'suspiciousperson': 'Suspicious Person',
+  'suspiciousitem': 'Suspicious Items',
+  'suspiciousitems': 'Suspicious Items',
+  'fight': 'Fight',
+  'fighting': 'Fight',
+  'assault': 'Assault / Physical Altercations',
+  'physicalaltercation': 'Assault / Physical Altercations',
+  'theft': 'Theft',
+  'burglary': 'Theft / Burglary',
+  'theftburglary': 'Theft / Burglary',
+  'fire': 'Fire',
+  'activefire': 'Active Fire/Smoke',
+  'activefiresmoke': 'Active Fire/Smoke',
+  'smoke': 'Active Fire/Smoke',
+  'firedrill': 'Fire Drill',
+  'firealarm': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'gasleak': 'Gas & Fuel Leak',
+  'fuelleak': 'Gas & Fuel Leak',
+  'gasfuelleak': 'Gas & Fuel Leak',
+  'waterleak': 'Water Leak',
+  'drowning': 'Drowning / Pool Incident',
+  'poolincident': 'Drowning / Pool Incident',
+  'medicaldistress': 'Medical Distress',
+  'medicalambulance': 'Medical / Ambulance Only',
+  'ambulance': 'Medical / Ambulance Only',
+  'elevatorentrapment': 'Elevator Entrapment',
+  'liftentrapment': 'Elevator Entrapment',
+  'severeweather': 'Severe Weather Impact',
+  'weatherimpact': 'Severe Weather Impact',
+  'corridorviolation': 'Corridor Violation',
+  'amenitiesviolation': 'Amenities Area Violation',
+  'amenitiesareaviolation': 'Amenities Area Violation',
+  'petruleviolation': 'Pet Rule Violation',
+  'petviolation': 'Pet Rule Violation',
+  'harassment': 'Harassment',
+  'threat': 'Threats',
+  'threats': 'Threats',
+  'weapon': 'Possession of Weapons',
+  'weapons': 'Possession of Weapons',
+  'drugs': 'Drugs / Suspected Drugs',
+  'suspecteddrugs': 'Drugs / Suspected Drugs',
+  'drunkenness': 'Drunkenness and Alcohol',
+  'alcohol': 'Drunkenness and Alcohol',
+  'drone': 'Unauthorized Drone Activity',
+  'unauthorizeddrone': 'Unauthorized Drone Activity',
+  'authorizeddrone': 'Authorized Drone Activity',
+  'mediashoot': 'Unauthorized Media Shoot',
+  'unauthorizedmediashoot': 'Unauthorized Media Shoot',
+  'authorizedmediashoot': 'Authorized Media Shoot',
+  'fatality': 'Fatality',
+  'naturaldeath': 'Natural Death',
+  'death': 'Fatality',
+  'suicide': 'Suicide',
+  'suicideattempt': 'Suicide Attempt',
+  'pickpocketing': 'Pick Pocketing',
+  'pickpocket': 'Pick Pocketing',
+  'stabbing': 'Stabbing',
+  'impersonation': 'Impersonation',
+  'forging': 'Forging',
+  'forgery': 'Forging',
+  'illegalmarketing': 'Illegal Marketing',
+  'illegalselling': 'Illegal Selling',
+  'begging': 'Begging',
+  'politicalslogans': 'Political Slogans',
+  'flagrelated': 'Flag Related',
+  'subcontractors': 'Uncontrolled Sub-Contractors/Deliveries',
+  'subcontractordeliveries': 'Uncontrolled Sub-Contractors/Deliveries',
+  'deliveries': 'Uncontrolled Sub-Contractors/Deliveries',
+  'trafficaccident': 'Traffic Accident',
+  'environmentalfactors': 'External & Environmental Factors',
+  'prostitution': 'Prostitution',
+  'immoralactivity': 'Immoral Activity',
+  'entrapment': 'Entrapment',
+  'events': 'Events',
 };
+
+// Keyword fallback: if no exact/synonym match was found, scan the raw text for
+// strong keyword signals before giving up and bucketing into "Uncategorized — Review".
+// Ordered most-specific-first so e.g. "fire alarm" doesn't get caught by a bare "fire" rule.
+const CATEGORY_KEYWORD_FALLBACK = [
+  [/fire\s*alarm/, 'Fire Alarm Due to Smoke (No Real Fire Reported)'],
+  [/active\s*fire|fire\s*smoke/, 'Active Fire/Smoke'],
+  [/fire\s*drill/, 'Fire Drill'],
+  [/\bfire\b/, 'Fire'],
+  [/trespass|unauthoriz(ed)?\s*(entry|access)|access\s*control/, 'Trespassing & Unauthorized Entry'],
+  [/park(ing)?\s*violation|illegal\s*park/, 'Parking Violation'],
+  [/lost\s*(&|and)?\s*(found|property)/, 'Lost & Found'],
+  [/suspicious\s*(activity)/, 'Suspicious Activity'],
+  [/suspicious\s*person/, 'Suspicious Person'],
+  [/suspicious\s*item/, 'Suspicious Items'],
+  [/altercation|assault|physical\s*fight/, 'Assault / Physical Altercations'],
+  [/\bfight(ing)?\b/, 'Fight'],
+  [/burglary/, 'Theft / Burglary'],
+  [/\btheft\b/, 'Theft'],
+  [/gas\s*(&|and)?\s*fuel\s*leak|fuel\s*leak/, 'Gas & Fuel Leak'],
+  [/water\s*leak/, 'Water Leak'],
+  [/drown|pool\s*incident/, 'Drowning / Pool Incident'],
+  [/medical\s*distress/, 'Medical Distress'],
+  [/medical|ambulance/, 'Medical / Ambulance Only'],
+  [/elevator\s*entrapment|lift\s*entrapment/, 'Elevator Entrapment'],
+  [/severe\s*weather/, 'Severe Weather Impact'],
+  [/corridor\s*violation/, 'Corridor Violation'],
+  [/amenit(y|ies)\s*(area)?\s*violation/, 'Amenities Area Violation'],
+  [/pet\s*(rule)?\s*violation/, 'Pet Rule Violation'],
+  [/harass/, 'Harassment'],
+  [/threat/, 'Threats'],
+  [/weapon/, 'Possession of Weapons'],
+  [/drug/, 'Drugs / Suspected Drugs'],
+  [/drunk|alcohol/, 'Drunkenness and Alcohol'],
+  [/drone/, 'Unauthorized Drone Activity'],
+  [/media\s*shoot/, 'Unauthorized Media Shoot'],
+  [/fatal/, 'Fatality'],
+  [/natural\s*death/, 'Natural Death'],
+  [/suicide\s*attempt/, 'Suicide Attempt'],
+  [/suicide/, 'Suicide'],
+  [/pick\s*pocket/, 'Pick Pocketing'],
+  [/stabbing/, 'Stabbing'],
+  [/impersonat/, 'Impersonation'],
+  [/forg(e|ing|ery)/, 'Forging'],
+  [/illegal\s*marketing/, 'Illegal Marketing'],
+  [/illegal\s*sell/, 'Illegal Selling'],
+  [/begging/, 'Begging'],
+  [/political\s*slogan/, 'Political Slogans'],
+  [/flag/, 'Flag Related'],
+  [/sub-?contractor|delivery|deliveries/, 'Uncontrolled Sub-Contractors/Deliveries'],
+  [/traffic\s*accident/, 'Traffic Accident'],
+  [/prostitution/, 'Prostitution'],
+  [/entrapment/, 'Entrapment'],
+];
 
 function normalizeIncidentCategory(raw) {
   if (!raw) return 'Uncategorized — Review';
   const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  return CATEGORY_NORM[key] || 'Uncategorized — Review';
+  if (CATEGORY_NORM[key]) return CATEGORY_NORM[key];
+  const lower = raw.trim().toLowerCase();
+  for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
+    if (re.test(lower)) return cat;
+  }
+  return 'Uncategorized — Review';
+}
+
+// Returns [rawValue, count] pairs for every distinct raw incident_type string
+// that still falls through to "Uncategorized — Review", so it's possible to see
+// exactly what's missing from the taxonomy map instead of guessing.
+function getUnmappedRawCategories(data) {
+  const counts = {};
+  data.forEach(i => {
+    if (normalizeIncidentCategory(i.incident_type) === 'Uncategorized — Review') {
+      const raw = (i.incident_type && i.incident_type.trim()) || '(blank)';
+      counts[raw] = (counts[raw] || 0) + 1;
+    }
+  });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 }
 
 function _iaOpen(idx){
@@ -1504,9 +1663,22 @@ function _iaCategories(data, body) {
       [topTypeIncidents.length, 'Top Category Count', '#8b5cf6'],
       [Math.round(topTypeIncidents.length/total*100)+'%', 'Share of Total', '#10b981']
     ])}
-    ${uncatCount>0?`<div style="font-size:10px;color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px;margin-bottom:12px;">
-      ⚠️ ${uncatCount} incident${uncatCount!==1?'s':''} (${Math.round(uncatCount/total*100)}%) returned a category outside the official 62-category taxonomy and need manual reclassification.
-    </div>`:''}
+    ${uncatCount>0?(()=>{
+      const unmapped = getUnmappedRawCategories(data);
+      const rid = '_iaUncatDetail';
+      return `<div style="font-size:10px;color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:8px 10px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="const el=document.getElementById('${rid}');el.style.display=el.style.display==='none'?'block':'none';">
+        <span>⚠️ ${uncatCount} incident${uncatCount!==1?'s':''} (${Math.round(uncatCount/total*100)}%) returned a category outside the official 62-category taxonomy and need manual reclassification.</span>
+        <span style="white-space:nowrap;margin-left:8px;text-decoration:underline;">view raw values ▾</span>
+      </div>
+      <div id="${rid}" style="display:none;margin-top:8px;max-height:220px;overflow-y:auto;border-top:1px solid rgba(245,158,11,.25);padding-top:8px;">
+        ${unmapped.map(([raw,c])=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0;color:var(--text-dim);">
+          <span style="font-family:'JetBrains Mono',monospace;word-break:break-word;">${raw.replace(/</g,'&lt;')}</span>
+          <span style="white-space:nowrap;color:var(--amber);">${c}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+    })():''}
     <div class="an-section-title">All Categories — Ranked (Official Taxonomy)</div>
     ${_iaRows(sorted, max, '#06b6d4', total)}
     <div class="an-section-title">Severity Mix — ${(topType||'').replace(/_/g,' ')}</div>
