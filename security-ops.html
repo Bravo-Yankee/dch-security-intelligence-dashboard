@@ -597,8 +597,8 @@ border-radius:20px;}
         <div class="panel-title">Operations Summary &amp; Timings</div>
         <div class="ops-tabs">
           <div class="otab active" onclick="setOpsTab('ALL',this)">ALL</div>
-          <div class="otab" onclick="setOpsTab('AM',this)">Day</div>
-          <div class="otab" onclick="setOpsTab('PM',this)">Night</div>
+          <div class="otab" onclick="setOpsTab('AM',this)">AM</div>
+          <div class="otab" onclick="setOpsTab('PM',this)">PM</div>
         </div>
       </div>
       <table class="ops-table" id="opsTable"></table>
@@ -658,7 +658,7 @@ border-radius:20px;}
 </div><!-- /main -->
 
 <footer class="footer">
-  <div>Powered By: <strong style="color:var(--amber);">DCH</strong> Security Intelligence Platform · Zone D · 14 Communities · 212 Officers</div>
+  <div>Powered By: <strong style="color:var(--amber);">DCH</strong> Security Intelligence Platform · Zone D · 14 Communities · 204 Officers</div>
   <div id="lastRefresh">LAST REFRESH: —</div>
   <div>© 2026 Dubai Creek Harbour Command Center</div>
 </footer>
@@ -1409,11 +1409,6 @@ const OFFICIAL_CATEGORIES = [
   'Dubai Court Visits',
   'DCH Project Sites',
   'Community Violation',
-  // New DCH operational categories (added per operational review)
-  'Tourist / Visitor Arrival',
-  'DEWA Related',
-  'New Retail Space Openings',
-  'Traffic Violation',
 ];
 
 const CATEGORY_NORM = {
@@ -1424,7 +1419,7 @@ const CATEGORY_NORM = {
   'accesscontrol': 'Trespassing & Unauthorized Entry',
   'noisecomplaint': 'Noise Violation',
   'patrolreport': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyPatrolReport()
-  'firealarmduetosmoke': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'falsealarm': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
   'vandalism': 'Vandalism',
   'altercation': 'Assault / Physical Altercations',
   'medical': 'Medical / Ambulance Only',
@@ -1432,11 +1427,8 @@ const CATEGORY_NORM = {
   'drugssuspecteddrugs': 'Drugs / Suspected Drugs',
   'possessionofweapons': 'Possession of Weapons',
   'drunkennessandalcohol': 'Drunkenness and Alcohol',
-  ' maintenanceteam': 'Maintenance | MEP Related'
-  'buildingtechnician': 'Maintenance | MEP Related'
   // Raw incident_type labels from the categorisation spec
   'wrongfulparking': 'Parking Violation',
-  'minorcollision': 'Minor Accident',
   'improperparking': 'Parking Violation',
   'unauthorizedparkingstorage': 'Parking Violation',
   'handicapviolation': 'Parking Violation',
@@ -1448,8 +1440,8 @@ const CATEGORY_NORM = {
   'vehiclebreakdown': 'Vehicle Breakdown',
   'petmismanagement': 'Pet Violation',
   'poolrulesviolation': 'Amenities Area Violation',
-  'misuseoffacilities': 'Common Area Violation',      // was Uncategorized — now mapped
-  'healthsafetyrelated': 'Uncategorized — Review',
+  'misuseoffacilities': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
+  'healthsafetyrelated': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
   'safetyrelatedconcern': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
   'vehicledamage': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
   'wrongwaydriving': 'Driveway Violation',
@@ -1470,11 +1462,8 @@ const CATEGORY_NORM = {
   'safetyconcern': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
   'traffic': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
   // Additional commonly-seen variants
-  'Unauthorizedscootercharging': 'Common Area Violation',
-  'touristsarrival': 'Tourists Arrival',
   'trespassing': 'Trespassing & Unauthorized Entry',
   'unauthorizedentry': 'Trespassing & Unauthorized Entry',
-  'roommisuse': 'Amenities Violation',
   'unauthorizedaccess': 'Trespassing & Unauthorized Entry',
   'trespass': 'Trespassing & Unauthorized Entry',
   'parking': 'Parking Violation',
@@ -1557,47 +1546,19 @@ const CATEGORY_NORM = {
   'prostitution': 'Prostitution',
   'immoralactivity': 'Immoral Activity',
   'entrapment': 'Entrapment',
-  'vehiclelightsinoncondition': 'Parking Violation',
-  'emaarqualitycontrol': 'EMMAAR Management Visits',
   'events': 'Events',
-  'buildingmaintenance': 'Maintenance | MEP Related',
-  'workbeyondapprovedtime': 'Work-Timing Violation',
-  'trafficsignalnotworking': 'Maintenance | Traffic Related',
 };
 
 // Keyword fallback: if no exact/synonym match was found, scan the raw text for
 // strong keyword signals before giving up and bucketing into "Uncategorized — Review".
 // Ordered most-specific-first so e.g. "fire alarm" doesn't get caught by a bare "fire" rule.
 const CATEGORY_KEYWORD_FALLBACK = [
-  // ── NEW DCH OPERATIONAL CATEGORY RULES (most-specific first) ──
-
-  // 1. Tourist / Visitor Arrival — tourist, visitor, day-pass, welcome desk arrivals
-  [/\btourist\b|\bvisitor\s*arriv|\bday[\s-]?pass\b|tourist\s*(visit|arriv|group|guide)|visitor\s*(check[\s-]?in|register|arrival|management)|welcome\s*desk\s*arriv|arrived?\s*(as|a)\s*(tourist|visitor)/i, 'Tourist / Visitor Arrival'],
-
-  // 2. DEWA Related — water PH, DEWA meter, water quality, utilities authority
-  [/water\s*p\.?\s*h\b|ph\s*(level|test|reading|value|result)|dewa\s*(meter|reading|inspection|officer|team|notice|related|utility|bill|complaint)|water\s*(quality|sample|test|testing|analysis)|utility\s*(meter|reading)|electricity\s*(meter|supply)\s*(issue|fault|failure)/i, 'DEWA Related'],
-
-  // 3. New Retail Space Openings — officially opened, grand opening, new shop/outlet
-  [/officially\s*open(ed)?|grand\s*open(ing)?|new\s*(retail|shop|outlet|store|restaurant|cafe|business)\s*(open(ed|ing)?|launch(ed)?)|soft\s*open(ing)?|ribbon[\s-]?cut(ting)?|inaugurat/i, 'New Retail Space Openings'],
-
-  // 4. Traffic Violation — main driveway keyword + moving traffic violations (not parking)
-  [/main\s*driveway|entry\s*driveway|exit\s*driveway|driveway\s*(block(ed|age)?|obstruct|congestion)|speeding\s*(in|at|near)\s*(driveway|entrance|gate)|illegal\s*u[\s-]?turn|road\s*block(ed|age)?|traffic\s*(violation|offence|offense)|reckless\s*driv/i, 'Traffic Violation'],
-
-  // 5. Common Area Violation — sleeping in co-working/lobby/reception + Misuse_of_Facilities
-  [/sleeping\s*(in|at|inside)\s*(the\s*)?(co[\s-]?work(ing)?(\s*area)?|lobby|reception|common\s*area|lounge|corridor|hallway)|found\s*sleeping\s*(in|at)\s*(lobby|reception|co[\s-]?work)|misuse[\s_]of[\s_]facilities|misusing\s*(common|shared|public)\s*(area|space|facilit)/i, 'Common Area Violation'],
-
-  // 6. Parking Violation — vehicle light left on (vehicle light keyword)
-  [/vehicle\s*light(s)?\s*(left\s*)?(on|running|still\s*on)|light(s)?\s*(left|still)\s*(on|running)\s*(in|at)?\s*(parking|car\s*park|lot)|headlight(s)?\s*(on|left\s*on|still\s*on)|interior\s*light(s)?\s*(on|left\s*on)/i, 'Parking Violation'],
-
-  // 7. DCH Project Sites — construction, plot, concrete company names (extend existing rule)
-  [/\bconcrete\b|concrete\s*(company|firm|contractor|work|pour|mix|pump)|\\bplot\b.*\b(construction|work|site)\b|construction\s*(company|firm|crew|team)|hse\s*(officer|team|inspection|compliance)\b|project\s*site|dch\s*project|civil\s*(contractor|work|crew)/i, 'DCH Project Sites'],
-
   // ── DCH-SPECIFIC LOCATION RULES (fire first — most specific) ──
   // Sales Pavilion / EMAAR Sales Centre
   [/sales\s*pavilion|emaar\s*sales|sales\s*centre|sales\s*center|sales\s*office/i, 'EMAAR Sales Centre'],
   // Marina Parking area
   [/marina\s*parking|marina\s*car\s*park/i, 'Marina Parking'],
-  // DCH Project Sites — plot numbers, HSE (broad backup — concrete/company names caught above)
+  // DCH Project Sites — construction, plot numbers, HSE
   [/plot\s*(no|number|#|num)|\bplot\s*\d|\bconstruction\s*(site|area|work)|\bhse\s*(officer|team|inspection|compliance)\b|project\s*site|dch\s*project/i, 'DCH Project Sites'],
   // Dubai Court visits
   [/dubai\s*court|court\s*representative|court\s*visit|court\s*order/i, 'Dubai Court Visits'],
