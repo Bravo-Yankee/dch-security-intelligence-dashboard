@@ -1792,6 +1792,7 @@ function downloadWorkflow(){
 // HHO ANALYTICS
 // ══════════════════════════════════════════════════════════════
 let _anTab = 0;
+const _anFilters = { month:'', year:'', community:'', nat:'', vehicle:'', group:'', compliance:'' };
 
 function _anBar(val, max, color='#06b6d4') {
   return `<div class="an-bar" style="width:${Math.round(val/max*100)}%;background:${color}"></div>`;
@@ -1820,6 +1821,137 @@ function _normalizeVehicle(raw) {
   return 'Private Vehicle';
 }
 
+// ── Returns filtered check-in dataset based on _anFilters ──
+function _anGetData() {
+  let ci = HHO.filter(r => getET(r) === 'in');
+  const f = _anFilters;
+  if (f.month !== '' || f.year !== '') {
+    ci = ci.filter(r => {
+      const d = parseDMY(r.checkin_date);
+      if (!d) return false;
+      if (f.month !== '' && d.getMonth() !== parseInt(f.month)) return false;
+      if (f.year !== '' && d.getFullYear() !== parseInt(f.year)) return false;
+      return true;
+    });
+  }
+  if (f.community) ci = ci.filter(r => (r.community||'') === f.community);
+  if (f.nat) ci = ci.filter(r => normalizeNationality(r.guest_nationality) === f.nat);
+  if (f.vehicle === 'private') ci = ci.filter(r => _normalizeVehicle(r.vehicle_type) === 'Private Vehicle');
+  else if (f.vehicle === 'taxi') ci = ci.filter(r => _normalizeVehicle(r.vehicle_type) === 'Taxi / Rideshare');
+  else if (f.vehicle === 'none') ci = ci.filter(r => !_normalizeVehicle(r.vehicle_type));
+  if (f.group === 'solo') ci = ci.filter(r => parseInt(r.guest_count||1) === 1);
+  else if (f.group === 'pair') ci = ci.filter(r => parseInt(r.guest_count||1) === 2);
+  else if (f.group === 'small') ci = ci.filter(r => { const g=parseInt(r.guest_count||1); return g>=3&&g<=4; });
+  else if (f.group === 'large') ci = ci.filter(r => parseInt(r.guest_count||1) >= 5);
+  if (f.compliance === 'flagged') ci = ci.filter(isFlagged);
+  else if (f.compliance === 'clean') ci = ci.filter(r => !isFlagged(r));
+  return ci;
+}
+
+// ── Populate dynamic dropdowns from full check-in pool ──
+function _anPopulateDropdowns() {
+  const all = HHO.filter(r => getET(r) === 'in');
+  // Month/Year from check-in dates
+  const monthSel = document.getElementById('anFMonth');
+  const yearSel = document.getElementById('anFYear');
+  const months = new Set(), years = new Set();
+  all.forEach(r => { const d=parseDMY(r.checkin_date); if(d){months.add(d.getMonth());years.add(d.getFullYear());} });
+  monthSel.innerHTML = '<option value="">All Months</option>' +
+    [...months].sort((a,b)=>a-b).map(m=>`<option value="${m}">${MONTH_NAMES[m]}</option>`).join('');
+  yearSel.innerHTML = '<option value="">All Years</option>' +
+    [...years].sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}</option>`).join('');
+  // Communities
+  const commSel = document.getElementById('anFCommunity');
+  const comms = [...new Set(all.map(r=>r.community||'').filter(Boolean))].sort();
+  commSel.innerHTML = '<option value="">All Communities</option>' +
+    comms.map(c=>`<option value="${c}">${c}</option>`).join('');
+  // Nationalities (top 40 by count)
+  const natSel = document.getElementById('anFNat');
+  const natCounts = {};
+  all.forEach(r => { const n=normalizeNationality(r.guest_nationality); if(n)natCounts[n]=(natCounts[n]||0)+1; });
+  const topNats = Object.entries(natCounts).sort((a,b)=>b[1]-a[1]).slice(0,40).map(([n])=>n);
+  natSel.innerHTML = '<option value="">All Nationalities</option>' +
+    topNats.map(n=>`<option value="${n}">${n}</option>`).join('');
+  // Restore saved selections
+  document.getElementById('anFMonth').value = _anFilters.month;
+  document.getElementById('anFYear').value = _anFilters.year;
+  document.getElementById('anFCommunity').value = _anFilters.community;
+  document.getElementById('anFNat').value = _anFilters.nat;
+  document.getElementById('anFVehicle').value = _anFilters.vehicle;
+  document.getElementById('anFGroup').value = _anFilters.group;
+  document.getElementById('anFCompliance').value = _anFilters.compliance;
+}
+
+// ── Read filter dropdowns → update state → re-render ──
+function anApplyFilters() {
+  _anFilters.month      = document.getElementById('anFMonth').value;
+  _anFilters.year       = document.getElementById('anFYear').value;
+  _anFilters.community  = document.getElementById('anFCommunity').value;
+  _anFilters.nat        = document.getElementById('anFNat').value;
+  _anFilters.vehicle    = document.getElementById('anFVehicle').value;
+  _anFilters.group      = document.getElementById('anFGroup').value;
+  _anFilters.compliance = document.getElementById('anFCompliance').value;
+  _anUpdateFilterUI();
+  anSwitch(_anTab);
+}
+
+function anClearFilters() {
+  Object.keys(_anFilters).forEach(k => _anFilters[k] = '');
+  ['anFMonth','anFYear','anFCommunity','anFNat','anFVehicle','anFGroup','anFCompliance']
+    .forEach(id => { const el=document.getElementById(id); if(el)el.value=''; });
+  _anUpdateFilterUI();
+  anSwitch(_anTab);
+}
+
+// ── Update filter badge, chips and result count ──
+function _anUpdateFilterUI() {
+  const f = _anFilters;
+  const labels = {
+    month: f.month!==''?MONTH_NAMES[parseInt(f.month)]:'',
+    year: f.year,
+    community: f.community,
+    nat: f.nat,
+    vehicle: f.vehicle==='private'?'Private Vehicle':f.vehicle==='taxi'?'Taxi/Rideshare':f.vehicle==='none'?'No Vehicle':'',
+    group: f.group==='solo'?'Solo':f.group==='pair'?'Pairs':f.group==='small'?'Small Group':f.group==='large'?'Large Group (5+)':'',
+    compliance: f.compliance==='flagged'?'🚨 Flagged Only':f.compliance==='clean'?'✅ Clean Only':''
+  };
+  const active = Object.entries(labels).filter(([,v])=>v);
+  const badge = document.getElementById('anFilterBadge');
+  const clearBtn = document.getElementById('anClearBtn');
+  if (active.length) {
+    badge.style.display='inline';
+    badge.textContent = active.length + ' filter' + (active.length>1?'s':'')+' active';
+    clearBtn.style.color='#06b6d4';
+    clearBtn.style.borderColor='rgba(6,182,212,.5)';
+  } else {
+    badge.style.display='none';
+    clearBtn.style.color='';
+    clearBtn.style.borderColor='';
+  }
+  // Chips
+  document.getElementById('anFilterChips').innerHTML = active.map(([key, val])=>
+    `<span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:#06b6d4;font-family:'JetBrains Mono',monospace;">
+      ${val}
+      <span onclick="anRemoveFilter('${key}')" style="cursor:pointer;opacity:.7;font-size:10px;line-height:1;">✕</span>
+    </span>`
+  ).join('');
+  // Count
+  const filtered = _anGetData();
+  const all = HHO.filter(r=>getET(r)==='in').length;
+  document.getElementById('anFilterCount').textContent = active.length
+    ? `Showing ${filtered.length} of ${all} check-ins`
+    : `${all} check-ins total`;
+}
+
+function anRemoveFilter(key) {
+  _anFilters[key] = '';
+  const idMap = { month:'anFMonth', year:'anFYear', community:'anFCommunity', nat:'anFNat', vehicle:'anFVehicle', group:'anFGroup', compliance:'anFCompliance' };
+  const el = document.getElementById(idMap[key]);
+  if (el) el.value = '';
+  _anUpdateFilterUI();
+  anSwitch(_anTab);
+}
+
 function openHHOAnalytics() {
   const ci = HHO.filter(r => getET(r) === 'in');
   const totalGuests = ci.reduce((s,r) => s + parseInt(r.guest_count||1), 0);
@@ -1831,15 +1963,25 @@ function openHHOAnalytics() {
   document.getElementById('kpiAnalyticsSub').textContent = `${pvt} private · ${taxi} taxi · top: ${topNat?topNat[0]:'—'}`;
   document.getElementById('analyticsSubtitle').textContent = ci.length + ' check-ins · ' + totalGuests + ' total guests';
   document.getElementById('hhoAnalyticsModal').classList.add('open');
+  _anPopulateDropdowns();
+  _anUpdateFilterUI();
   anSwitch(0);
 }
 
 function anSwitch(idx) {
   _anTab = idx;
   document.querySelectorAll('.an-tab').forEach((b,i) => b.classList.toggle('active', i===idx));
-  const ci = HHO.filter(r => getET(r) === 'in');
+  const ci = _anGetData();
   const body = document.getElementById('analyticsBody');
-  if (!ci.length) { body.innerHTML = '<div class="empty-state">No check-in data available.</div>'; return; }
+  if (!ci.length) {
+    body.innerHTML = `<div class="empty-state" style="padding:40px 0;">
+      <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+      <div style="font-weight:600;margin-bottom:4px;">No check-ins match the active filters</div>
+      <div style="font-size:11px;color:var(--text-faint);margin-bottom:14px;">Try removing some filters to broaden the results</div>
+      <button onclick="anClearFilters()" style="font-size:11px;padding:6px 16px;border-radius:5px;border:1px solid rgba(6,182,212,.5);background:rgba(6,182,212,.08);color:#06b6d4;cursor:pointer;">Clear All Filters</button>
+    </div>`;
+    return;
+  }
 
   if (idx === 0) _anVehicle(ci, body);
   else if (idx === 1) _anNationality(ci, body);
@@ -1847,6 +1989,7 @@ function anSwitch(idx) {
   else if (idx === 3) _anCommunity(ci, body);
   else if (idx === 4) _anStayLength(ci, body);
   else if (idx === 5) _anLookup(ci, body);
+  else if (idx === 6) _anTrends(ci, body);
 }
 
 function _anVehicle(ci, body) {
@@ -2068,8 +2211,9 @@ function _anStayLength(ci, body) {
 }
 
 function _anLookup(ci, body) {
+  const hasFilters = Object.values(_anFilters).some(v=>v!=='');
   body.innerHTML = `
-    <div style="margin-bottom:4px;font-size:10px;color:var(--text-faint);">Search by name, nationality, apartment, company, or vehicle plate</div>
+    <div style="margin-bottom:4px;font-size:10px;color:var(--text-faint);">Search by name, nationality, apartment, company, or vehicle plate${hasFilters?' · <span style="color:#06b6d4;">searching within active filters ('+ci.length+' records)</span>':''}</div>
     <input class="an-lookup-input" id="anLookupInput" placeholder="e.g. Smith, Russia, Creek Rise, Nissan, DXB-K-44756…"
       oninput="_anLookupRender()" autofocus>
     <div id="anLookupResults"></div>`;
@@ -2080,7 +2224,8 @@ function _anLookupRender() {
   const q = (document.getElementById('anLookupInput')?.value||'').toLowerCase().trim();
   const out = document.getElementById('anLookupResults');
   if (!q) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">Start typing to search guests…</div>'; return; }
-  const ci = HHO.filter(r => getET(r) === 'in');
+  // Use filter-aware dataset so lookup respects month/community/etc filters
+  const ci = _anGetData();
   const results = ci.filter(r =>
     [r.guest_name, r.guest_nationality, r.apt_number, r.community,
      r.hho_company, r.vehicle_type, r.vehicle_plate, r.secondary_guests_summary]
@@ -2105,6 +2250,140 @@ function _anLookupRender() {
           </div>
         </div>
       </div>`).join('');
+}
+
+// ── TRENDS TAB ──
+function _anTrends(ci, body) {
+  // 1. Check-ins by month (using checkin_date)
+  const byMonth = {};
+  const byMonthGuests = {};
+  const byDow = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const byHour = {};
+  for(let h=0;h<24;h++) byHour[h]=0;
+  const byNatMonth = {}; // nat → month → count
+
+  ci.forEach(r => {
+    const d = parseDMY(r.checkin_date);
+    if (d) {
+      const mk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      byMonth[mk] = (byMonth[mk]||0) + 1;
+      byMonthGuests[mk] = (byMonthGuests[mk]||0) + parseInt(r.guest_count||1);
+      byDow[d.getDay()] = (byDow[d.getDay()]||0) + 1;
+      const nat = normalizeNationality(r.guest_nationality);
+      if (!byNatMonth[nat]) byNatMonth[nat] = {};
+      byNatMonth[nat][mk] = (byNatMonth[nat][mk]||0) + 1;
+    }
+    if (r.timestamp) {
+      const ts = new Date(r.timestamp);
+      if (!isNaN(ts)) byHour[ts.getHours()] = (byHour[ts.getHours()]||0) + 1;
+    }
+  });
+
+  const months = Object.keys(byMonth).sort();
+  const maxMonth = Math.max(...Object.values(byMonth), 1);
+  const maxDow = Math.max(...Object.values(byDow), 1);
+  const maxHour = Math.max(...Object.values(byHour), 1);
+
+  // Top 5 nationalities for trend lines
+  const natTotals = {};
+  Object.entries(byNatMonth).forEach(([n, mm]) => { natTotals[n] = Object.values(mm).reduce((a,b)=>a+b,0); });
+  const top5Nats = Object.entries(natTotals).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n])=>n);
+  const natColors = ['#06b6d4','#f59e0b','#10b981','#8b5cf6','#ef4444'];
+
+  // Busy day / peak month
+  const peakMonth = months.length ? months.reduce((a,b) => byMonth[a]>=byMonth[b]?a:b) : null;
+  const peakDow = dowNames[Object.entries(byDow).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? 0];
+  const peakHour = Object.entries(byHour).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  const peakHourLabel = peakHour!=null ? `${peakHour.toString().padStart(2,'0')}:00` : '—';
+
+  // MoM growth
+  let momText = '—';
+  if (months.length >= 2) {
+    const prev = byMonth[months[months.length-2]];
+    const curr = byMonth[months[months.length-1]];
+    const pct = Math.round((curr-prev)/prev*100);
+    momText = (pct>=0?'+':'')+pct+'%';
+  }
+
+  body.innerHTML = `
+    ${_anStatGrid([
+      [peakMonth ? MONTH_NAMES[parseInt(peakMonth.split('-')[1])-1]+' '+peakMonth.split('-')[0] : '—', 'Busiest Month', '#f59e0b'],
+      [momText, 'MoM Change', momText.startsWith('+')?'#10b981':'var(--red)'],
+      [peakDow, 'Busiest Day', '#06b6d4'],
+      [peakHourLabel, 'Peak Check-In Hour', '#8b5cf6']
+    ])}
+
+    ${months.length ? `
+    <div class="an-section-title">Check-Ins by Month</div>
+    <div style="overflow-x:auto;padding-bottom:4px;">
+      <div style="min-width:${Math.max(months.length*52,300)}px;">
+        <div style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:4px;">
+          ${months.map(mk => {
+            const h = Math.max(Math.round(byMonth[mk]/maxMonth*74),2);
+            const isLast = mk===months[months.length-1];
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:default;" title="${mk}: ${byMonth[mk]} check-ins, ${byMonthGuests[mk]||0} guests">
+              <span style="font-size:8px;color:${isLast?'#f59e0b':'var(--text-faint)'};">${byMonth[mk]}</span>
+              <div style="width:100%;height:${h}px;background:${isLast?'#f59e0b':'#06b6d4'};border-radius:2px 2px 0 0;opacity:.85;"></div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;gap:4px;border-top:1px solid var(--border);padding-top:3px;">
+          ${months.map(mk=>`<div style="flex:1;font-size:7.5px;color:var(--text-faint);text-align:center;font-family:'JetBrains Mono',monospace;">${MONTH_NAMES[parseInt(mk.split('-')[1])-1].slice(0,3)}<br>${mk.split('-')[0]}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ` : '<div class="empty-state" style="font-size:10px;padding:20px;">No date data available for trend chart.</div>'}
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+      <div>
+        <div class="an-section-title">Check-Ins by Day of Week</div>
+        ${dowNames.map((d,i)=>`
+          <div class="an-bar-row" style="margin-bottom:3px;">
+            <span class="an-label" style="min-width:30px;">${d}</span>
+            <div class="an-bar-wrap">${_anBar(byDow[i],maxDow,'#8b5cf6')}</div>
+            <span class="an-count">${byDow[i]}</span>
+          </div>`).join('')}
+      </div>
+      <div>
+        <div class="an-section-title">Arrivals by Hour</div>
+        ${Object.entries(byHour).filter(([h,c])=>c>0).map(([h,c])=>`
+          <div class="an-bar-row" style="margin-bottom:2px;">
+            <span class="an-label" style="min-width:38px;font-family:'JetBrains Mono',monospace;">${h.toString().padStart(2,'0')}:00</span>
+            <div class="an-bar-wrap">${_anBar(c,maxHour,'#10b981')}</div>
+            <span class="an-count">${c}</span>
+          </div>`).join('') || '<div style="font-size:10px;color:var(--text-faint);padding:8px 0;">No timestamp data</div>'}
+      </div>
+    </div>
+
+    ${top5Nats.length && months.length >= 2 ? `
+    <div class="an-section-title" style="margin-top:12px;">Top Nationality Trends — Month on Month</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+      ${top5Nats.map((n,i)=>`<span style="font-size:9px;color:${natColors[i]};">■ ${n}</span>`).join('')}
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:9px;font-family:'JetBrains Mono',monospace;">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:3px 6px;color:var(--text-faint);border-bottom:1px solid var(--border);">Nationality</th>
+            ${months.map(mk=>`<th style="text-align:center;padding:3px 4px;color:var(--text-faint);border-bottom:1px solid var(--border);">${MONTH_NAMES[parseInt(mk.split('-')[1])-1].slice(0,3)}</th>`).join('')}
+            <th style="text-align:center;padding:3px 4px;color:var(--text-faint);border-bottom:1px solid var(--border);">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${top5Nats.map((n,ni)=>`
+            <tr>
+              <td style="padding:3px 6px;color:${natColors[ni]};font-weight:600;">${n}</td>
+              ${months.map(mk=>{
+                const val = (byNatMonth[n]||{})[mk]||0;
+                return `<td style="text-align:center;padding:3px 4px;color:${val>0?'var(--text)':'var(--text-faint)'};">${val||'–'}</td>`;
+              }).join('')}
+              <td style="text-align:center;padding:3px 4px;color:${natColors[ni]};font-weight:700;">${natTotals[n]}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''}
+  `;
 }
 
 function renderAll(){
@@ -2164,7 +2443,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 <!-- HHO ANALYTICS MODAL -->
 <div class="modal-backdrop" id="hhoAnalyticsModal" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="modal" style="max-width:820px;width:96vw;max-height:90vh;display:flex;flex-direction:column;">
+  <div class="modal" style="max-width:860px;width:96vw;max-height:92vh;display:flex;flex-direction:column;">
     <div class="modal-header" style="flex-shrink:0;">
       <div>
         <div class="modal-title">HHO GUEST INTELLIGENCE</div>
@@ -2172,6 +2451,64 @@ window.addEventListener('DOMContentLoaded',()=>{
       </div>
       <button class="modal-close" onclick="document.getElementById('hhoAnalyticsModal').classList.remove('open')">✕</button>
     </div>
+
+    <!-- ── SMART FILTER BAR ── -->
+    <div id="anFilterBar" style="flex-shrink:0;background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 12px 10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <span style="font-size:9px;letter-spacing:1px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;text-transform:uppercase;">Filters</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="anFilterBadge" style="display:none;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.4);color:#06b6d4;font-family:'JetBrains Mono',monospace;"></span>
+          <button onclick="anClearFilters()" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;" id="anClearBtn">CLEAR ALL</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <!-- Month -->
+        <select id="anFMonth" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:100px;">
+          <option value="">All Months</option>
+        </select>
+        <!-- Year -->
+        <select id="anFYear" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:72px;">
+          <option value="">All Years</option>
+        </select>
+        <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+        <!-- Community -->
+        <select id="anFCommunity" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:130px;">
+          <option value="">All Communities</option>
+        </select>
+        <!-- Nationality -->
+        <select id="anFNat" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:120px;">
+          <option value="">All Nationalities</option>
+        </select>
+        <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+        <!-- Vehicle -->
+        <select id="anFVehicle" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:110px;">
+          <option value="">All Vehicles</option>
+          <option value="private">Private Only</option>
+          <option value="taxi">Taxi / Rideshare</option>
+          <option value="none">No Vehicle</option>
+        </select>
+        <!-- Group size -->
+        <select id="anFGroup" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:120px;">
+          <option value="">All Group Sizes</option>
+          <option value="solo">Solo (1 guest)</option>
+          <option value="pair">Pairs (2 guests)</option>
+          <option value="small">Small Group (3–4)</option>
+          <option value="large">Large Group (5+)</option>
+        </select>
+        <!-- Compliance -->
+        <select id="anFCompliance" onchange="anApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:110px;">
+          <option value="">All Guests</option>
+          <option value="flagged">🚨 Flagged Only</option>
+          <option value="clean">✅ Clean Only</option>
+        </select>
+      </div>
+      <!-- Active filter chips -->
+      <div id="anFilterChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:0;"></div>
+      <!-- Result count feedback -->
+      <div id="anFilterCount" style="font-size:9px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;margin-top:5px;"></div>
+    </div>
+
+    <!-- Tabs -->
     <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--surface2);">
       <button class="an-tab active" id="anTab0" onclick="anSwitch(0)">🚗 Vehicle</button>
       <button class="an-tab" id="anTab1" onclick="anSwitch(1)">🌍 Nationality</button>
@@ -2179,6 +2516,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       <button class="an-tab" id="anTab3" onclick="anSwitch(3)">🏢 Community</button>
       <button class="an-tab" id="anTab4" onclick="anSwitch(4)">📅 Stay Length</button>
       <button class="an-tab" id="anTab5" onclick="anSwitch(5)">🔍 Guest Lookup</button>
+      <button class="an-tab" id="anTab6" onclick="anSwitch(6)">📈 Trends</button>
     </div>
     <div id="analyticsBody" class="modal-body" style="flex:1;overflow-y:auto;padding:16px;"></div>
   </div>
