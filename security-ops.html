@@ -597,8 +597,8 @@ border-radius:20px;}
         <div class="panel-title">Operations Summary &amp; Timings</div>
         <div class="ops-tabs">
           <div class="otab active" onclick="setOpsTab('ALL',this)">ALL</div>
-          <div class="otab" onclick="setOpsTab('AM',this)">AM</div>
-          <div class="otab" onclick="setOpsTab('PM',this)">PM</div>
+          <div class="otab" onclick="setOpsTab('AM',this)">Day</div>
+          <div class="otab" onclick="setOpsTab('PM',this)">Night</div>
         </div>
       </div>
       <table class="ops-table" id="opsTable"></table>
@@ -658,7 +658,7 @@ border-radius:20px;}
 </div><!-- /main -->
 
 <footer class="footer">
-  <div>Powered By: <strong style="color:var(--amber);">DCH</strong> Security Intelligence Platform · Zone D · 14 Communities · 204 Officers</div>
+  <div>Powered By: <strong style="color:var(--amber);">DCH</strong> Security Intelligence Platform · Zone D · 14 Communities · 212 Officers</div>
   <div id="lastRefresh">LAST REFRESH: —</div>
   <div>© 2026 Dubai Creek Harbour Command Center</div>
 </footer>
@@ -1424,7 +1424,7 @@ const CATEGORY_NORM = {
   'accesscontrol': 'Trespassing & Unauthorized Entry',
   'noisecomplaint': 'Noise Violation',
   'patrolreport': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyPatrolReport()
-  'falsealarm': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'firealarmduetosmoke': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
   'vandalism': 'Vandalism',
   'altercation': 'Assault / Physical Altercations',
   'medical': 'Medical / Ambulance Only',
@@ -1432,8 +1432,11 @@ const CATEGORY_NORM = {
   'drugssuspecteddrugs': 'Drugs / Suspected Drugs',
   'possessionofweapons': 'Possession of Weapons',
   'drunkennessandalcohol': 'Drunkenness and Alcohol',
+  ' maintenanceteam': 'Maintenance | MEP Related'
+  'buildingtechnician': 'Maintenance | MEP Related'
   // Raw incident_type labels from the categorisation spec
   'wrongfulparking': 'Parking Violation',
+  'minorcollision': 'Minor Accident',
   'improperparking': 'Parking Violation',
   'unauthorizedparkingstorage': 'Parking Violation',
   'handicapviolation': 'Parking Violation',
@@ -1467,8 +1470,11 @@ const CATEGORY_NORM = {
   'safetyconcern': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
   'traffic': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
   // Additional commonly-seen variants
+  'Unauthorizedscootercharging': 'Common Area Violation',
+  'touristsarrival': 'Tourists Arrival',
   'trespassing': 'Trespassing & Unauthorized Entry',
   'unauthorizedentry': 'Trespassing & Unauthorized Entry',
+  'roommisuse': 'Amenities Violation',
   'unauthorizedaccess': 'Trespassing & Unauthorized Entry',
   'trespass': 'Trespassing & Unauthorized Entry',
   'parking': 'Parking Violation',
@@ -1551,7 +1557,12 @@ const CATEGORY_NORM = {
   'prostitution': 'Prostitution',
   'immoralactivity': 'Immoral Activity',
   'entrapment': 'Entrapment',
+  'vehiclelightsinoncondition': 'Parking Violation',
+  'emaarqualitycontrol': 'EMMAAR Management Visits',
   'events': 'Events',
+  'buildingmaintenance': 'Maintenance | MEP Related',
+  'workbeyondapprovedtime': 'Work-Timing Violation',
+  'trafficsignalnotworking': 'Maintenance | Traffic Related',
 };
 
 // Keyword fallback: if no exact/synonym match was found, scan the raw text for
