@@ -1412,318 +1412,409 @@ const OFFICIAL_CATEGORIES = [
 ];
 
 const CATEGORY_NORM = {
-  // Direct lowercase-key matches for every official category (handles case/underscore variance)
+  // ── Auto-generate exact-match keys from every official category ──
   ...Object.fromEntries(OFFICIAL_CATEGORIES.map(c => [c.toLowerCase().replace(/[^a-z0-9]/g,''), c])),
-  // Known off-taxonomy AI outputs → best-fit official category
-  'maintenancesecurity': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyMaintenanceSecurity()
-  'accesscontrol': 'Trespassing & Unauthorized Entry',
-  'noisecomplaint': 'Noise Violation',
-  'patrolreport': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyPatrolReport()
-  'falsealarm': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
-  'vandalism': 'Vandalism',
-  'altercation': 'Assault / Physical Altercations',
-  'medical': 'Medical / Ambulance Only',
-  'other': 'Gift & Tips Related', // default bucket — keyword scan refines further, see classifyByContentKeywords()
-  'drugssuspecteddrugs': 'Drugs / Suspected Drugs',
-  'possessionofweapons': 'Possession of Weapons',
-  'drunkennessandalcohol': 'Drunkenness and Alcohol',
-  // Raw incident_type labels from the categorisation spec
-  'wrongfulparking': 'Parking Violation',
-  'improperparking': 'Parking Violation',
-  'unauthorizedparkingstorage': 'Parking Violation',
-  'handicapviolation': 'Parking Violation',
-  'longtimeparking': 'Long-Time Parking Violation',
-  'evchargingviolation': 'EV-Charging Violation',
-  'balconyviolation': 'Balcony Violation',
-  'communityviolation': 'Community Violation', // refined by keyword scan, see classifyByContentKeywords()
-  'unauthorizedstorage': 'Storage Violation',
-  'vehiclebreakdown': 'Vehicle Breakdown',
-  'petmismanagement': 'Pet Violation',
-  'poolrulesviolation': 'Amenities Area Violation',
-  'misuseoffacilities': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'healthsafetyrelated': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'safetyrelatedconcern': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'vehicledamage': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'wrongwaydriving': 'Driveway Violation',
-  'electricscooterviolation': 'Electric Scooter Violation',
-  'information': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'movein': 'Resident Move-In',
-  'moveout': 'Resident Move-Out',
-  'propertydamage': 'Property Damage',
-  'unauthorizedactivity': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'amenityviolation': 'Amenities Violation',
-  'minor': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyOther()
-  'hygienerelated': 'Hygiene Related',
-  'hygienecomplaint': 'Hygiene Related',
-  'amenityruleviolation': 'Amenities Area Violation',
-  'communityruleviolation': 'Common Area Violation',
-  'communitiesviolation': 'Common Area Violation',
-  'swimmingpoolviolation': 'Drowning / Pool Incident',
-  'safetyconcern': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
-  'traffic': 'Uncategorized — Review', // sub-classified by keyword scan, see classifyByContentKeywords()
-  // Additional commonly-seen variants
-  'trespassing': 'Trespassing & Unauthorized Entry',
-  'unauthorizedentry': 'Trespassing & Unauthorized Entry',
-  'unauthorizedaccess': 'Trespassing & Unauthorized Entry',
-  'trespass': 'Trespassing & Unauthorized Entry',
-  'parking': 'Parking Violation',
-  'parkingviolation': 'Parking Violation',
-  'illegalparking': 'Parking Violation',
-  'lostproperty': 'Lost & Found',
-  'lostfound': 'Lost & Found',
-  'lostandfound': 'Lost & Found',
-  'suspiciousactivity': 'Suspicious Activity',
-  'suspiciousperson': 'Suspicious Person',
-  'suspiciousitem': 'Suspicious Items',
-  'suspiciousitems': 'Suspicious Items',
-  'fight': 'Fight',
-  'fighting': 'Fight',
-  'assault': 'Assault / Physical Altercations',
-  'physicalaltercation': 'Assault / Physical Altercations',
-  'theft': 'Theft',
-  'burglary': 'Theft / Burglary',
-  'theftburglary': 'Theft / Burglary',
-  'fire': 'Fire',
-  'activefire': 'Active Fire/Smoke',
-  'activefiresmoke': 'Active Fire/Smoke',
-  'smoke': 'Active Fire/Smoke',
-  'firedrill': 'Fire Drill',
-  'firealarm': 'Fire Alarm Due to Smoke (No Real Fire Reported)',
-  'gasleak': 'Gas & Fuel Leak',
-  'fuelleak': 'Gas & Fuel Leak',
-  'gasfuelleak': 'Gas & Fuel Leak',
-  'waterleak': 'Water Leak',
-  'drowning': 'Drowning / Pool Incident',
-  'poolincident': 'Drowning / Pool Incident',
-  'medicaldistress': 'Medical Distress',
-  'medicalambulance': 'Medical / Ambulance Only',
-  'ambulance': 'Medical / Ambulance Only',
-  'elevatorentrapment': 'Elevator Entrapment',
-  'liftentrapment': 'Elevator Entrapment',
-  'severeweather': 'Severe Weather Impact',
-  'weatherimpact': 'Severe Weather Impact',
-  'corridorviolation': 'Corridor Violation',
-  'amenitiesviolation': 'Amenities Area Violation',
-  'amenitiesareaviolation': 'Amenities Area Violation',
-  'petruleviolation': 'Pet Rule Violation',
-  'petviolation': 'Pet Rule Violation',
-  'harassment': 'Harassment',
-  'threat': 'Threats',
-  'threats': 'Threats',
-  'weapon': 'Possession of Weapons',
-  'weapons': 'Possession of Weapons',
-  'drugs': 'Drugs / Suspected Drugs',
-  'suspecteddrugs': 'Drugs / Suspected Drugs',
-  'drunkenness': 'Drunkenness and Alcohol',
-  'alcohol': 'Drunkenness and Alcohol',
-  'drone': 'Unauthorized Drone Activity',
-  'unauthorizeddrone': 'Unauthorized Drone Activity',
-  'authorizeddrone': 'Authorized Drone Activity',
-  'mediashoot': 'Unauthorized Media Shoot',
-  'unauthorizedmediashoot': 'Unauthorized Media Shoot',
-  'authorizedmediashoot': 'Authorized Media Shoot',
-  'fatality': 'Fatality',
-  'naturaldeath': 'Natural Death',
-  'death': 'Fatality',
-  'suicide': 'Suicide',
-  'suicideattempt': 'Suicide Attempt',
-  'pickpocketing': 'Pick Pocketing',
-  'pickpocket': 'Pick Pocketing',
-  'stabbing': 'Stabbing',
-  'impersonation': 'Impersonation',
-  'forging': 'Forging',
-  'forgery': 'Forging',
-  'illegalmarketing': 'Illegal Marketing',
-  'illegalselling': 'Illegal Selling',
-  'begging': 'Begging',
-  'politicalslogans': 'Political Slogans',
-  'flagrelated': 'Flag Related',
-  'subcontractors': 'Uncontrolled Sub-Contractors/Deliveries',
-  'subcontractordeliveries': 'Uncontrolled Sub-Contractors/Deliveries',
-  'deliveries': 'Uncontrolled Sub-Contractors/Deliveries',
-  'trafficaccident': 'Traffic Accident',
-  'environmentalfactors': 'External & Environmental Factors',
-  'prostitution': 'Prostitution',
-  'immoralactivity': 'Immoral Activity',
-  'entrapment': 'Entrapment',
-  'events': 'Events',
+
+  // ══════════════════════════════════════════════════════════════════════
+  // SECTION A — New AI output types (expanded taxonomy from updated prompt)
+  // The updated workflow prompt outputs these underscore-format strings.
+  // ══════════════════════════════════════════════════════════════════════
+  // Trespassing
+  'trespassingunauthorizedentry':        'Trespassing & Unauthorized Entry',
+  'unauthorizedentry':                   'Trespassing & Unauthorized Entry',
+  'unauthorizedaccess':                  'Trespassing & Unauthorized Entry',
+  'unauthorizedapartmententry':          'Trespassing & Unauthorized Entry',
+  'trespassing':                         'Trespassing & Unauthorized Entry',
+  'trespass':                            'Trespassing & Unauthorized Entry',
+  'accesscontrol':                       'Trespassing & Unauthorized Entry',
+  // Theft
+  'theft':                               'Theft',
+  'theftburglary':                       'Theft / Burglary',
+  'burglary':                            'Theft / Burglary',
+  // Vandalism → Property Damage (closest official match)
+  'vandalism':                           'Property Damage',
+  'propertyvandalism':                   'Property Damage',
+  // Suspicious
+  'suspiciousactivity':                  'Suspicious Activity',
+  'suspiciousperson':                    'Suspicious Person',
+  'suspiciousitem':                      'Suspicious Items',
+  'suspiciousitems':                     'Suspicious Items',
+  // Fight / Assault
+  'fight':                               'Fight',
+  'fighting':                            'Fight',
+  'altercation':                         'Assault / Physical Altercations',
+  'assault':                             'Assault / Physical Altercations',
+  'assaultphysicalaltercations':         'Assault / Physical Altercations',
+  'physicalaltercation':                 'Assault / Physical Altercations',
+  'physicalfight':                       'Fight',
+  // Harassment / Threats / Weapons
+  'harassment':                          'Harassment',
+  'threat':                              'Threats',
+  'threats':                             'Threats',
+  'weapon':                              'Possession of Weapons',
+  'weapons':                             'Possession of Weapons',
+  'possessionofweapons':                 'Possession of Weapons',
+  'stabbing':                            'Stabbing',
+  'pickpocketing':                       'Pick Pocketing',
+  'pickpocket':                          'Pick Pocketing',
+  'impersonation':                       'Impersonation',
+  'forging':                             'Forging',
+  'forgery':                             'Forging',
+  // Drugs & Behaviour
+  'drugssuspecteddrugs':                 'Drugs / Suspected Drugs',
+  'drugs':                               'Drugs / Suspected Drugs',
+  'suspecteddrugs':                      'Drugs / Suspected Drugs',
+  'drunkenness':                         'Drunkenness and Alcohol',
+  'drunkennessandalcohol':               'Drunkenness and Alcohol',
+  'drunkenessalcohol':                   'Drunkenness and Alcohol',
+  'alcohol':                             'Drunkenness and Alcohol',
+  'lgbtq':                               'LGBTQ',
+  'prostitution':                        'Prostitution',
+  'immoralactivity':                     'Immoral Activity',
+  'begging':                             'Begging',
+  'illegalmarketing':                    'Illegal Marketing',
+  'illegalselling':                      'Illegal Selling',
+  'politicalslogans':                    'Political Slogans',
+  'flagrelated':                         'Flag Related',
+  'entrapment':                          'Entrapment',
+  // Traffic & Vehicles
+  'trafficaccident':                     'Traffic Accident',
+  'vehiclecollision':                    'Traffic Accident',
+  'minorcollision':                      'Traffic Accident',
+  'minorvehiclecollision':               'Traffic Accident',
+  'collison':                            'Traffic Accident',
+  'parkingviolation':                    'Parking Violation',
+  'parking':                             'Parking Violation',
+  'illegalparking':                      'Parking Violation',
+  'wrongfulparking':                     'Parking Violation',
+  'improperparking':                     'Parking Violation',
+  'unauthorizedparkingstorage':          'Parking Violation',
+  'handicapviolation':                   'Parking Violation',
+  'longtimeparking':                     'Long-Time Parking Violation',
+  'longtimeparkingviolation':            'Long-Time Parking Violation',
+  'evchargingviolation':                 'EV-Charging Violation',
+  'evcharging':                          'EV-Charging Violation',
+  'drivewayviolation':                   'Driveway Violation',
+  'wrongwaydriving':                     'Driveway Violation',
+  'electricscooterviolation':            'Electric Scooter Violation',
+  'vehiclebreakdown':                    'Vehicle Breakdown',
+  // Community Violations
+  'noiseviolation':                      'Noise Violation',
+  'noisecomplaint':                      'Noise Violation',
+  'noise':                               'Noise Violation',
+  'balconyviolation':                    'Balcony Violation',
+  'communityviolation':                  'Community Violation',
+  'communityruleviolation':              'Community Violation',
+  'communitiesviolation':                'Community Violation',
+  'commonareaviolation':                 'Common Area Violation',
+  'corridorviolation':                   'Corridor Violation',
+  'amenitiesviolation':                  'Amenities Area Violation',
+  'amenitiesareaviolation':              'Amenities Area Violation',
+  'amenityviolation':                    'Amenities Violation',
+  'amenityruleviolation':                'Amenities Area Violation',
+  'poolrulesviolation':                  'Amenities Area Violation',
+  'swimmingpoolviolation':               'Amenities Area Violation',
+  'petruleviolation':                    'Pet Rule Violation',
+  'petviolation':                        'Pet Violation',
+  'petmismanagement':                    'Pet Violation',
+  'storageviolation':                    'Storage Violation',
+  'unauthorizedstorage':                 'Storage Violation',
+  'hygienerelated':                      'Hygiene Related',
+  'hygienecomplaint':                    'Hygiene Related',
+  // Fire & Life Safety
+  'fire':                                'Fire',
+  'activefire':                          'Active Fire/Smoke',
+  'activefiresmoke':                     'Active Fire/Smoke',
+  'smoke':                               'Active Fire/Smoke',
+  'firedrill':                           'Fire Drill',
+  'firealarm':                           'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'firealarmnosmokefire':                'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'firealarmnorealfire':                 'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'firealarmsmokenorealfire':            'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'falsealarm':                          'Fire Alarm Due to Smoke (No Real Fire Reported)',
+  'gasleak':                             'Gas & Fuel Leak',
+  'gasfuelleak':                         'Gas & Fuel Leak',
+  'fuelleak':                            'Gas & Fuel Leak',
+  'waterleak':                           'Water Leak',
+  'waterleakage':                        'Water Leak',
+  'drowning':                            'Drowning / Pool Incident',
+  'drowningpoolincident':                'Drowning / Pool Incident',
+  'poolincident':                        'Drowning / Pool Incident',
+  'medical':                             'Medical / Ambulance Only',
+  'medicalambulance':                    'Medical / Ambulance Only',
+  'medicalambulanceonly':                'Medical / Ambulance Only',
+  'ambulance':                           'Medical / Ambulance Only',
+  'medicaldistress':                     'Medical Distress',
+  'elevatorentrapment':                  'Elevator Entrapment',
+  'liftentrapment':                      'Elevator Entrapment',
+  'severeweather':                       'Severe Weather Impact',
+  'severeweatherimpact':                 'Severe Weather Impact',
+  'weatherimpact':                       'Severe Weather Impact',
+  // Fatalities
+  'fatality':                            'Fatality',
+  'death':                               'Fatality',
+  'naturaldeath':                        'Natural Death',
+  'suicide':                             'Suicide',
+  'suicideattempt':                      'Suicide Attempt',
+  // Maintenance (direct AI outputs from expanded prompt)
+  'maintenancesecurity':                 '__CONTENT_CLASSIFY__', // handled by classifyMaintenanceSecurity()
+  'maintenanceaccesscontrolfailure':     'Maintenance | Access Control System Failure',
+  'maintenanceaccesscontrol':            'Maintenance | Access Control System Failure',
+  'maintenancesurveillancefailure':      'Maintenance | Surveillance System Failure',
+  'maintenancesurveillance':             'Maintenance | Surveillance System Failure',
+  'maintenancecctv':                     'Maintenance | Surveillance System Failure',
+  'maintenancehousekeeping':             'Maintenance | House Keeping Related',
+  'maintenancehk':                       'Maintenance | House Keeping Related',
+  'housekeeping':                        'Maintenance | House Keeping Related',
+  'maintenancegasrelated':               'Maintenance | Gas Related',
+  'maintenancegas':                      'Maintenance | Gas Related',
+  'maintenancemeprelated':               'Maintenance | MEP Related',
+  'maintenancemep':                      'Maintenance | MEP Related',
+  'mep':                                 'Maintenance | MEP Related',
+  // Local Authority
+  'localauthoritypolice':                'Local Authority (Police Related Only)',
+  'localauthoritycid':                   'Local Authority (CID Related Only)',
+  'localauthoritypolicecid':             'Local Authority (Police & CID Related)',
+  'localauthoritypolicecidrelated':      'Local Authority (Police & CID Related)',
+  'localauthoritypoliceambulance':       'Local Authority (Police & Ambulance)',
+  'localauthoritypoliceambulancecid':    'Local Authority (Police, Ambulance & CID Related)',
+  'localauthoritydcdrescue':             'Local Authority (DCD & Rescue)',
+  'governmentpolicedcd':                 'Government (Police & DCD, Rescue, CID, CSD)',
+  'police':                              'Local Authority (Police Related Only)',
+  'cid':                                 'Local Authority (CID Related Only)',
+  'dcd':                                 'Local Authority (DCD & Rescue)',
+  // Events & Media
+  'events':                              'Events',
+  'event':                               'Events',
+  'unauthorizeddrone':                   'Unauthorized Drone Activity',
+  'unauthorizeddronactivity':            'Unauthorized Drone Activity',
+  'drone':                               'Unauthorized Drone Activity',
+  'authorizeddrone':                     'Authorized Drone Activity',
+  'unauthorizedmediashoot':              'Unauthorized Media Shoot',
+  'mediashoot':                          'Unauthorized Media Shoot',
+  'authorizedmediashoot':                'Authorized Media Shoot',
+  // Residential
+  'movein':                              'Resident Move-In',
+  'residentmovein':                      'Resident Move-In',
+  'moveout':                             'Resident Move-Out',
+  'residentmoveout':                     'Resident Move-Out',
+  'lostproperty':                        'Lost & Found',
+  'lostfound':                           'Lost & Found',
+  'lostandfound':                        'Lost & Found',
+  'lostandproperty':                     'Lost & Found',
+  'propertydamage':                      'Property Damage',
+  'subcontractors':                      'Uncontrolled Sub-Contractors/Deliveries',
+  'subcontractordeliveries':             'Uncontrolled Sub-Contractors/Deliveries',
+  'deliveries':                          'Uncontrolled Sub-Contractors/Deliveries',
+  'uncontrolledsubcontractorsdeliveries':'Uncontrolled Sub-Contractors/Deliveries',
+  // DCH-specific
+  'gifttipsrelated':                     'Gift & Tips Related',
+  'giftandtipsrelated':                  'Gift & Tips Related',
+  'gifttips':                            'Gift & Tips Related',
+  'emaarsal­escentre':                   'EMAAR Sales Centre',
+  'emaarsalescentre':                    'EMAAR Sales Centre',
+  'marinaparking':                       'Marina Parking',
+  'improperdisposal':                    'Improper Disposal',
+  'dubaicourt':                          'Dubai Court Visits',
+  'dubaicourtvisits':                    'Dubai Court Visits',
+  'dchprojectsites':                     'DCH Project Sites',
+  'dchprojectsite':                      'DCH Project Sites',
+  'environmentalfactors':                'External & Environmental Factors',
+  'externalenvironmentalfactors':        'External & Environmental Factors',
+  // Content-driven umbrella labels — handled by classifyByContentKeywords()
+  'patrolreport':                        '__CONTENT_CLASSIFY__',
+  'communityviolations':                 '__CONTENT_CLASSIFY__',
+  'other':                               '__CONTENT_CLASSIFY__',
+  'minor':                               '__CONTENT_CLASSIFY__',
+  'unauthorizedactivity':                '__CONTENT_CLASSIFY__',
+  'misuseoffacilities':                  '__CONTENT_CLASSIFY__',
+  'healthsafetyrelated':                 '__CONTENT_CLASSIFY__',
+  'safetyrelatedconcern':                '__CONTENT_CLASSIFY__',
+  'vehicledamage':                       '__CONTENT_CLASSIFY__',
+  'information':                         '__CONTENT_CLASSIFY__',
+  'traffic':                             '__CONTENT_CLASSIFY__',
+  'safetyconcern':                       '__CONTENT_CLASSIFY__',
 };
 
-// Keyword fallback: if no exact/synonym match was found, scan the raw text for
-// strong keyword signals before giving up and bucketing into "Uncategorized — Review".
-// Ordered most-specific-first so e.g. "fire alarm" doesn't get caught by a bare "fire" rule.
+// ── KEYWORD FALLBACK ──────────────────────────────────────────────────────────
+// Ordered most-specific-first. Used when no exact key match resolves.
+// Each rule is [regex, officialCategoryName].
 const CATEGORY_KEYWORD_FALLBACK = [
-  // ── DCH-SPECIFIC LOCATION RULES (fire first — most specific) ──
-  // Sales Pavilion / EMAAR Sales Centre
-  [/sales\s*pavilion|emaar\s*sales|sales\s*centre|sales\s*center|sales\s*office/i, 'EMAAR Sales Centre'],
-  // Marina Parking area
-  [/marina\s*parking|marina\s*car\s*park/i, 'Marina Parking'],
-  // DCH Project Sites — construction, plot numbers, HSE
-  [/plot\s*(no|number|#|num)|\bplot\s*\d|\bconstruction\s*(site|area|work)|\bhse\s*(officer|team|inspection|compliance)\b|project\s*site|dch\s*project/i, 'DCH Project Sites'],
-  // Dubai Court visits
-  [/dubai\s*court|court\s*representative|court\s*visit|court\s*order/i, 'Dubai Court Visits'],
-  // Gift & Tips (bribery, tips, monetary gifts to staff)
-  [/tip\s*money|tips?\s*(submission|handed|given|offer|receiv)|bribe|gift\s*(of\s*money|money|cash)|aed\s*(tip|gift|bribe)|tip\s*&\s*bribe/i, 'Gift & Tips Related'],
-  // Improper Disposal (waste, garbage, illegal dumping)
-  [/improper\s*disposal|illegal\s*dumping|dumping\s*waste|disposing?\s*(waste|garbage|trash|rubbish)\s*(illegally|improperly)|abandoned\s*(rubbish|garbage|waste|trash)/i, 'Improper Disposal'],
-  // Lights malfunction → Maintenance | MEP Related
-  [/lights?\s*(malfunction|fault|fail|not\s*working|out|broken|damage|issue)|lamp\s*(malfunction|fault|fail|broken)|lighting\s*(issue|problem|fault|failure)/i, 'Maintenance | MEP Related'],
-  // Unauthorized charging in corridor → Corridor Violation
-  [/unauthoriz(ed)?\s*charging.*corridor|charging\s*(in|inside|at)\s*corridor|corridor.*unauthoriz(ed)?\s*charging/i, 'Corridor Violation'],
-  // Unauthorized charging in parking → Parking Violation
-  [/unauthoriz(ed)?\s*charging.*park|charging\s*(in|inside|at)\s*park|park.*unauthoriz(ed)?\s*charging|ev\s*charging\s*(in|at)\s*parking/i, 'Parking Violation'],
-  // Parking slot / slot related → Parking Violation
-  [/parking\s*slot|slot\s*(no|number|#|\d)|parked\s*in\s*(visitor|reserved|wrong)\s*slot/i, 'Parking Violation'],
-  // Community violation keyword
+  // DCH-Specific locations (highest priority)
+  [/sales\s*pavilion|emaar\s*sales|sales\s*cent(re|er)|sales\s*office/i, 'EMAAR Sales Centre'],
+  [/marina\s*(car\s*)?park/i, 'Marina Parking'],
+  [/plot\s*(no|num|#|\d)|\bconstruction\s*(site|area|work)|\bhse\s*(officer|team)|project\s*site|dch\s*project/i, 'DCH Project Sites'],
+  [/dubai\s*court|court\s*(representative|visit|order)/i, 'Dubai Court Visits'],
+  [/tip[\s_]?(money|submission|handed|given|offer|receiv)|bribe|gift\s*(of\s*)?(?:money|cash)|aed\s*(tip|gift|bribe)/i, 'Gift & Tips Related'],
+  [/improper\s*disposal|illegal\s*dump|dumping\s*waste|disposing?\s*(waste|garbage|trash|rubbish)|abandoned\s*(rubbish|garbage|waste|trash)/i, 'Improper Disposal'],
+  // Maintenance subtypes (specific before generic)
+  [/access[\s_]?control|door[\s_]?controller|gate[\s_]?sensor|card[\s_]?reader|turnstile|lock\s*(malfunction|fault|fail)/i, 'Maintenance | Access Control System Failure'],
+  [/cctv|surveillance[\s_]?(camera|system)?|camera[\s_]?(malfunction|fault|fail|offline|not\s*working)|playback|dvr|nvr|video\s*(feed|footage|loss)/i, 'Maintenance | Surveillance System Failure'],
+  [/housekeeping|\bhk\b|waste[\s_]?bin|garbage|trash|janitorial|cleaning\s*(staff|team|crew)|refuse|rubbish[\s_]?collection/i, 'Maintenance | House Keeping Related'],
+  [/gas[\s_]?(smell|leak|malfunction|sensor)|smell\s*of\s*gas|gas[\s_]?alarm/i, 'Maintenance | Gas Related'],
+  [/\bmep\b|mechanical|electrical|plumbing|hvac|a[\/\s]?c\s*(malfunction|fault|fail|not\s*working)|intercom|lift\s*(malfunction|fault|fail)|elevator\s*(malfunction|fault|fail)|pump\s*(malfunction|fault)|lights?\s*(malfunction|fault|fail|not\s*working|out|broken)|lighting\s*(issue|fault|failure)/i, 'Maintenance | MEP Related'],
+  // Fire & Life Safety (specific before generic)
+  [/fire\s*alarm/i, 'Fire Alarm Due to Smoke (No Real Fire Reported)'],
+  [/active\s*fire|fire[\s_]?smoke/i, 'Active Fire/Smoke'],
+  [/fire[\s_]?drill/i, 'Fire Drill'],
+  [/\bfire\b/i, 'Fire'],
+  [/gas\s*(fuel\s*)?leak|fuel[\s_]?leak/i, 'Gas & Fuel Leak'],
+  [/water\s*leak|pipe\s*(burst|leak)|flooding/i, 'Water Leak'],
+  [/drown|pool\s*incident|swimming[\s_]?pool[\s_]?(incident|accident)/i, 'Drowning / Pool Incident'],
+  [/elevator\s*entrapment|lift\s*entrapment|stuck\s*(in|inside)\s*(lift|elevator)/i, 'Elevator Entrapment'],
+  [/medical\s*distress/i, 'Medical Distress'],
+  [/\bambulance\b|\bmedical\b/i, 'Medical / Ambulance Only'],
+  [/severe\s*weather/i, 'Severe Weather Impact'],
+  [/fatal/i, 'Fatality'],
+  [/natural\s*death/i, 'Natural Death'],
+  [/suicide\s*attempt/i, 'Suicide Attempt'],
+  [/\bsuicide\b/i, 'Suicide'],
+  // Crime / Security
+  [/trespass|unauthori[zs]ed\s*(entry|access|apartment|apartment\s*entry)/i, 'Trespassing & Unauthorized Entry'],
+  [/pick[\s_]?pocket/i, 'Pick Pocketing'],
+  [/\bstabbing\b/i, 'Stabbing'],
+  [/\bburglary\b/i, 'Theft / Burglary'],
+  [/\btheft\b/i, 'Theft'],
+  [/altercation|assault|physical\s*fight/i, 'Assault / Physical Altercations'],
+  [/\bfight(ing)?\b/i, 'Fight'],
+  [/harass/i, 'Harassment'],
+  [/threat/i, 'Threats'],
+  [/weapon/i, 'Possession of Weapons'],
+  [/impersonat/i, 'Impersonation'],
+  [/forg(e|ing|ery)/i, 'Forging'],
+  [/suspicious\s*activit/i, 'Suspicious Activity'],
+  [/suspicious\s*person|loitering/i, 'Suspicious Person'],
+  [/suspicious\s*item|unattended\s*(bag|item|package)/i, 'Suspicious Items'],
+  [/drug/i, 'Drugs / Suspected Drugs'],
+  [/drunk|alcohol/i, 'Drunkenness and Alcohol'],
+  [/\bprostitution\b/i, 'Prostitution'],
+  [/immoral\s*activit/i, 'Immoral Activity'],
+  [/\blgbtq\b/i, 'LGBTQ'],
+  [/begging/i, 'Begging'],
+  [/political\s*slogan/i, 'Political Slogans'],
+  [/\bflag\b/i, 'Flag Related'],
+  [/illegal\s*marketing/i, 'Illegal Marketing'],
+  [/illegal\s*sell/i, 'Illegal Selling'],
+  // Traffic & Vehicles
+  [/traffic\s*accident|vehicle\s*collision|car\s*accident|minor\s*collision|road\s*accident/i, 'Traffic Accident'],
+  [/traffic\s*(jam|congestion|blockage)|speeding|illegal\s*u-?turn|road\s*block/i, 'Traffic Accident'],
+  [/ev[\s_-]?charg|electric\s*vehicle\s*charg/i, 'EV-Charging Violation'],
+  [/long[\s_-]?time\s*park|parked\s*for\s*(a\s*)?long/i, 'Long-Time Parking Violation'],
+  [/parking\s*slot|slot\s*(no|number|#|\d)|parked\s*in\s*(visitor|reserved|wrong)\s*slot|double\s*park/i, 'Parking Violation'],
+  [/park(ing)?\s*violation|illegal\s*park/i, 'Parking Violation'],
+  [/wrong[\s_-]?way\s*driv/i, 'Driveway Violation'],
+  [/electric\s*scooter|e[\s-]?scooter/i, 'Electric Scooter Violation'],
+  [/vehicle\s*break[\s-]?down|broke\s*down|stalled\s*vehicle/i, 'Vehicle Breakdown'],
+  // Community violations
+  [/unauthori[zs]ed\s*charg.*corridor|charging\s*(in|at)\s*corridor/i, 'Corridor Violation'],
+  [/corridor\s*violation/i, 'Corridor Violation'],
+  [/balcony/i, 'Balcony Violation'],
   [/community\s*violation|violating\s*community\s*rules?|breach\s*of\s*community/i, 'Community Violation'],
-
-  // ── EXISTING RULES BELOW (preserved exactly) ──
-  [/active\s*fire|fire\s*smoke/, 'Active Fire/Smoke'],
-  [/fire\s*drill/, 'Fire Drill'],
-  [/\bfire\b/, 'Fire'],
-  [/trespass|unauthoriz(ed)?\s*(entry|access)|access\s*control/, 'Trespassing & Unauthorized Entry'],
-  [/park(ing)?\s*violation|illegal\s*park|double\s*park|park(ed|ing)?\s*(in|at)\s*(no|restricted|fire\s*lane)/, 'Parking Violation'],
-  [/lost\s*(&|and)?\s*(found|property)/, 'Lost & Found'],
-  [/suspicious\s*(activity)/, 'Suspicious Activity'],
-  [/suspicious\s*person|loitering|unknown\s*(individual|person)\s*(seen|spotted|observed)/, 'Suspicious Person'],
-  [/suspicious\s*item|unattended\s*(bag|item|package)/, 'Suspicious Items'],
-  [/altercation|assault|physical\s*fight/, 'Assault / Physical Altercations'],
-  [/\bfight(ing)?\b/, 'Fight'],
-  [/burglary/, 'Theft / Burglary'],
-  [/\btheft\b/, 'Theft'],
-  [/gas\s*(&|and)?\s*fuel\s*leak|fuel\s*leak/, 'Gas & Fuel Leak'],
-  [/water\s*leak/, 'Water Leak'],
-  [/drown|pool\s*incident|swimming\s*pool/, 'Drowning / Pool Incident'],
-  [/medical\s*distress/, 'Medical Distress'],
-  [/medical|ambulance/, 'Medical / Ambulance Only'],
-  [/elevator\s*entrapment|lift\s*entrapment/, 'Elevator Entrapment'],
-  [/severe\s*weather/, 'Severe Weather Impact'],
-  [/corridor\s*violation/, 'Corridor Violation'],
-  [/amenit(y|ies)\s*(area)?\s*violation/, 'Amenities Area Violation'],
-  [/pet\s*(rule)?\s*violation/, 'Pet Rule Violation'],
-  [/harass/, 'Harassment'],
-  [/threat/, 'Threats'],
-  [/weapon/, 'Possession of Weapons'],
-  [/drug/, 'Drugs / Suspected Drugs'],
-  [/drunk|alcohol/, 'Drunkenness and Alcohol'],
-  [/drone/, 'Unauthorized Drone Activity'],
-  [/media\s*shoot/, 'Unauthorized Media Shoot'],
-  [/fatal/, 'Fatality'],
-  [/natural\s*death/, 'Natural Death'],
-  [/suicide\s*attempt/, 'Suicide Attempt'],
-  [/suicide/, 'Suicide'],
-  [/pick\s*pocket/, 'Pick Pocketing'],
-  [/stabbing/, 'Stabbing'],
-  [/impersonat/, 'Impersonation'],
-  [/forg(e|ing|ery)/, 'Forging'],
-  [/illegal\s*marketing/, 'Illegal Marketing'],
-  [/illegal\s*sell/, 'Illegal Selling'],
-  [/begging/, 'Begging'],
-  [/political\s*slogan/, 'Political Slogans'],
-  [/flag/, 'Flag Related'],
-  [/sub-?contractor|delivery|deliveries/, 'Uncontrolled Sub-Contractors/Deliveries'],
-  [/traffic\s*accident|vehicle\s*collision|car\s*accident/, 'Traffic Accident'],
-  [/traffic\s*(jam|congestion|blockage)|speeding|illegal\s*u-?turn|road\s*block(ed|age)?/, 'Traffic Accident'],
-  [/prostitution/, 'Prostitution'],
-  [/entrapment/, 'Entrapment'],
-  [/ev[\s-]?charg|electric\s*vehicle\s*charg/, 'EV-Charging Violation'],
-  [/long[\s-]?time\s*park|parked\s*for\s*(a\s*)?long/, 'Long-Time Parking Violation'],
-  [/balcony/, 'Balcony Violation'],
-  [/storage/, 'Storage Violation'],
-  [/vehicle\s*break\s*-?down|broke\s*down/, 'Vehicle Breakdown'],
-  [/wrong[\s-]?way\s*driv/, 'Driveway Violation'],
-  [/electric\s*scooter|e-?scooter/, 'Electric Scooter Violation'],
-  [/move[\s-]?in/, 'Resident Move-In'],
-  [/move[\s-]?out/, 'Resident Move-Out'],
-  [/amenity\s*violation/, 'Amenities Violation'],
-  [/hygiene/, 'Hygiene Related'],
-  [/noise/, 'Noise Violation'],
-  [/common\s*area/, 'Common Area Violation'],
-  [/break(\s|-)?down|broken\s*down|stalled\s*vehicle/, 'Vehicle Breakdown'],
-  [/damaged?\s*(vehicle|car)|scratch(ed)?\s*(vehicle|car)|dent(ed)?\s*(vehicle|car)/, 'Property Damage'],
-  [/smell|odo(u)?r|leak(ing)?\s*gas|gas\s*smell/, 'Maintenance | Gas Related'],
-  [/water\s*leak|pipe\s*(burst|leak)|flooding/, 'Water Leak'],
-  [/unsafe\s*condition|safety\s*hazard|hazardous/, 'External & Environmental Factors'],
+  [/common\s*area/i, 'Common Area Violation'],
+  [/amenit(y|ies)\s*(area)?\s*violation/i, 'Amenities Area Violation'],
+  [/pet\s*(rule)?\s*violation/i, 'Pet Rule Violation'],
+  [/\bstorage\b/i, 'Storage Violation'],
+  [/hygiene/i, 'Hygiene Related'],
+  [/noise/i, 'Noise Violation'],
+  // Property / Residential
+  [/damaged?\s*(vehicle|car|property)|scratch(ed)?\s*(vehicle|car)|dent(ed)?\s*(vehicle|car)|graffiti/i, 'Property Damage'],
+  [/lost\s*(&|and)?\s*(found|property)/i, 'Lost & Found'],
+  [/sub[\s-]?contractor|uncontrolled\s*deliver/i, 'Uncontrolled Sub-Contractors/Deliveries'],
+  [/move[\s_-]?in/i, 'Resident Move-In'],
+  [/move[\s_-]?out/i, 'Resident Move-Out'],
+  // Drone / Media
+  [/drone/i, 'Unauthorized Drone Activity'],
+  [/media\s*shoot/i, 'Unauthorized Media Shoot'],
+  // Events
+  [/\bevent(s)?\b/i, 'Events'],
+  // Local Authority
+  [/\bpolice\b.*\bcid\b|\bcid\b.*\bpolice\b/i, 'Local Authority (Police & CID Related)'],
+  [/\bpolice\b.*\bambulance\b|\bambulance\b.*\bpolice\b/i, 'Local Authority (Police & Ambulance)'],
+  [/\bpolice\b/i, 'Local Authority (Police Related Only)'],
+  [/\bcid\b/i, 'Local Authority (CID Related Only)'],
+  [/\bdcd\b|\brescue\b/i, 'Local Authority (DCD & Rescue)'],
+  // Safety / environmental
+  [/unsafe\s*condition|safety\s*hazard|hazardous/i, 'External & Environmental Factors'],
+  [/\bentrapment\b/i, 'Entrapment'],
 ];
 
-// Maintenance_Security is an umbrella raw label that actually covers three distinct
-// failure types. We sub-classify it by scanning the incident's summary/raw_message
-// for content signals, ordered most-specific-first.
+// ── MAINTENANCE SUBTYPE RULES ─────────────────────────────────────────────────
+// Applied when raw incident_type is "Maintenance_Security" or similar umbrella.
 const MAINTENANCE_SUBTYPE_RULES = [
-  [/access\s*control|door\s*controller|gate\s*sensor|access\s*gate|card\s*reader|turnstile|lock\s*(malfunction|fault|fail)/, 'Maintenance | Access Control System Failure'],
-  [/cctv|camera|surveillance|playback|dvr|nvr|video\s*(feed|footage|loss)/, 'Maintenance | Surveillance System Failure'],
-  [/\bgas\b/, 'Maintenance | Gas Related'],
-  [/\bmep\b|mechanical|electrical|plumbing/, 'Maintenance | MEP Related'],
-  [/housekeeping|\bhk\b|waste\s*bin|garbage|trash|janitorial|cleaning\s*(staff|team|crew)|refuse/, 'Maintenance | House Keeping Related'],
+  [/access[\s_]?control|door[\s_]?controller|gate[\s_]?sensor|access[\s_]?gate|card[\s_]?reader|turnstile|lock\s*(malfunction|fault|fail)|barrier\s*(malfunction|fault|fail|not\s*working)/i, 'Maintenance | Access Control System Failure'],
+  [/cctv|surveillance|camera\s*(malfunction|fault|fail|offline|not\s*working|broken)|playback|dvr|nvr|video\s*(feed|footage|loss)|recording\s*(issue|fail|missing)/i, 'Maintenance | Surveillance System Failure'],
+  [/gas[\s_]?(smell|leak|malfunction|sensor|alarm)|smell\s*of\s*gas/i, 'Maintenance | Gas Related'],
+  [/\bmep\b|mechanical|electrical|plumbing|hvac|a[\/\s]?c|air[\s_]?condition|intercom|lift\s*(malfunction|fault|fail|stuck|not\s*working)|elevator\s*(malfunction|fault|fail)|pump\s*(malfunction|fault)|generator|power\s*(outage|failure|cut)|lights?\s*(malfunction|fault|fail|not\s*working|out|broken)|lighting\s*(issue|fault|failure)/i, 'Maintenance | MEP Related'],
+  [/housekeeping|\bhk\b|waste[\s_]?bin|garbage|trash|janitorial|cleaning\s*(staff|team|crew)|refuse|rubbish|litter/i, 'Maintenance | House Keeping Related'],
 ];
+
+// ── CONTENT-DRIVEN UMBRELLA LABELS ───────────────────────────────────────────
+// These raw AI labels have no single fixed mapping — content must be read.
+const CONTENT_DRIVEN_KEYS = new Set([
+  'maintenancesecurity','patrolreport','communityviolations','other','minor',
+  'unauthorizedactivity','misuseoffacilities','healthsafetyrelated',
+  'safetyrelatedconcern','vehicledamage','information','traffic','safetyconcern',
+  '__content_classify__'
+]);
 
 function classifyMaintenanceSecurity(incident) {
-  const text = `${incident.summary || ''} ${incident.raw_message || ''}`.toLowerCase();
+  const text = `${incident.summary||''} ${incident.raw_message||''} ${incident.location_zone||''}`.toLowerCase();
   for (const [re, cat] of MAINTENANCE_SUBTYPE_RULES) {
     if (re.test(text)) return cat;
   }
-  // Not a recognised maintenance subtype — the AI may have mislabeled a
-  // genuine security/operational incident as "Maintenance_Security".
-  // Fall through to the full keyword list before giving up.
+  // Not a maintenance subtype — maybe a real incident mislabelled — try full keyword scan
   for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
     if (re.test(text)) return cat;
   }
-  return 'Uncategorized — Review';
+  return 'Maintenance | MEP Related'; // safest fallback — better than Uncategorized
 }
 
-// Patrol_Report / Community_Violation / Other / Minor / Unauthorized_Activity / Misuse_of_Facilities /
-// Health_Safety_Related / Safety_related / Vehicle_Damage / Information all instruct "categorize based
-// on keywords inside the report" rather than mapping to one fixed bucket — scan summary+raw_message
-// against the full keyword fallback list (most specific patterns first) before giving up.
 function classifyByContentKeywords(incident) {
-  const text = `${incident.summary || ''} ${incident.raw_message || ''} ${incident.location_zone || ''}`.toLowerCase();
+  const text = `${incident.summary||''} ${incident.raw_message||''} ${incident.location_zone||''}`.toLowerCase();
+  const raw = (incident.incident_type||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
   for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
     if (re.test(text)) return cat;
   }
-  // If incident_type was 'other', default to Gift & Tips Related rather than Uncategorized
-  const raw = (incident.incident_type || '').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  if (raw === 'other') return 'Gift & Tips Related';
-  return 'Uncategorized — Review';
+  // Typed fallbacks when content yields nothing
+  if (raw === 'traffic') return 'Traffic Accident';
+  if (raw === 'patrolreport') return 'Suspicious Activity';
+  if (raw === 'unauthorizedactivity') return 'Trespassing & Unauthorized Entry';
+  if (raw === 'misuseoffacilities') return 'Common Area Violation';
+  if (raw === 'minor') return 'Community Violation';
+  if (raw === 'vehicledamage') return 'Property Damage';
+  if (raw === 'safetyconcern' || raw === 'safetyrelatedconcern' || raw === 'healthsafetyrelated') return 'External & Environmental Factors';
+  return 'Community Violation'; // last resort — community is better than Uncategorized
 }
 
 function normalizeIncidentCategory(incidentOrRaw) {
-  // Accept either a full incident record or a bare raw string (legacy calls).
-  const incident = (typeof incidentOrRaw === 'string') ? { incident_type: incidentOrRaw } : (incidentOrRaw || {});
+  const incident = (typeof incidentOrRaw === 'string') ? {incident_type: incidentOrRaw} : (incidentOrRaw || {});
   const raw = incident.incident_type;
-  if (!raw) return 'Uncategorized — Review';
+  if (!raw || raw.trim() === '' || raw === '—' || raw === '-') return 'Uncategorized — Review';
+
   const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+
+  // 1. Maintenance_Security umbrella → content-based sub-classification
   if (key === 'maintenancesecurity') return classifyMaintenanceSecurity(incident);
-  // Location-based rules override everything — check before type-based lookup
-  const locText = `${incident.summary || ''} ${incident.raw_message || ''} ${incident.location_zone || ''}`.toLowerCase();
-  const LOCATION_RULES = [
-    [/sales\s*pavilion|emaar\s*sales|sales\s*centre|sales\s*center|sales\s*office/i, 'EMAAR Sales Centre'],
-    [/marina\s*parking|marina\s*car\s*park/i, 'Marina Parking'],
-    [/plot\s*(no|number|#|num)|\bplot\s*\d|\bconstruction\s*(site|area|work)|\bhse\s*(officer|team|inspection|compliance)\b|project\s*site|dch\s*project/i, 'DCH Project Sites'],
-    [/dubai\s*court|court\s*representative|court\s*visit|court\s*order/i, 'Dubai Court Visits'],
-    [/tip\s*money|tips?\s*(submission|handed|given|offer|receiv)|bribe|gift\s*(of\s*money|money|cash)|aed\s*(tip|gift|bribe)|tip\s*&\s*bribe/i, 'Gift & Tips Related'],
-    [/improper\s*disposal|illegal\s*dumping|dumping\s*waste|disposing?\s*(waste|garbage|trash|rubbish)\s*(illegally|improperly)|abandoned\s*(rubbish|garbage|waste|trash)/i, 'Improper Disposal'],
-    [/lights?\s*(malfunction|fault|fail|not\s*working|out|broken|damage|issue)|lamp\s*(malfunction|fault|fail|broken)|lighting\s*(issue|problem|fault|failure)/i, 'Maintenance | MEP Related'],
-    [/community\s*violation|violating\s*community\s*rules?|breach\s*of\s*community/i, 'Community Violation'],
-    [/unauthoriz(ed)?\s*charging.*corridor|charging\s*(in|inside|at)\s*corridor|corridor.*unauthoriz(ed)?\s*charging/i, 'Corridor Violation'],
-    [/unauthoriz(ed)?\s*charging.*park|charging\s*(in|inside|at)\s*park|park.*unauthoriz(ed)?\s*charging/i, 'Parking Violation'],
-    [/parking\s*slot|slot\s*(no|number|#|\d)|parked\s*in\s*(visitor|reserved|wrong)\s*slot/i, 'Parking Violation'],
-  ];
-  for (const [re, cat] of LOCATION_RULES) {
-    if (re.test(locText)) return cat;
+
+  // 2. Exact / synonym lookup
+  const mapped = CATEGORY_NORM[key];
+  if (mapped && mapped !== '__CONTENT_CLASSIFY__') return mapped;
+
+  // 3. Content-driven umbrella types → keyword scan
+  if (CONTENT_DRIVEN_KEYS.has(key) || mapped === '__CONTENT_CLASSIFY__') {
+    return classifyByContentKeywords(incident);
   }
-  const CONTENT_DRIVEN_KEYS = new Set([
-    'patrolreport','communityviolation','other','minor','unauthorizedactivity',
-    'misuseoffacilities','healthsafetyrelated','safetyrelatedconcern','vehicledamage','information',
-    'traffic','safetyconcern'
-  ]);
-  if (CONTENT_DRIVEN_KEYS.has(key)) return classifyByContentKeywords(incident);
-  if (CATEGORY_NORM[key]) return CATEGORY_NORM[key];
+
+  // 4. Keyword scan against raw incident_type string itself
   const lower = raw.trim().toLowerCase();
   for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
     if (re.test(lower)) return cat;
   }
+
+  // 5. Final pass: keyword scan across all incident text
   return classifyByContentKeywords(incident);
 }
+
 
 // Returns [rawValue, count] pairs for every distinct raw incident_type string
 // that still falls through to "Uncategorized — Review", so it's possible to see
