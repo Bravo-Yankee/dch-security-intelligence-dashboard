@@ -1492,8 +1492,8 @@ const CATEGORY_NORM = {
   'handicapviolation':                   'Parking Violation',
   'longtimeparking':                     'Long-Time Parking Violation',
   'longtimeparkingviolation':            'Long-Time Parking Violation',
-  'evchargingviolation':                 'EV-Charging Violation',
-  'evcharging':                          'EV-Charging Violation',
+  'evchargingviolation':                 'Parking Violation',
+  'evcharging':                          'Parking Violation',
   'drivewayviolation':                   'Driveway Violation',
   'wrongwaydriving':                     'Driveway Violation',
   'electricscooterviolation':            'Electric Scooter Violation',
@@ -1698,7 +1698,7 @@ const CATEGORY_KEYWORD_FALLBACK = [
   // Traffic & Vehicles
   [/traffic\s*accident|vehicle\s*collision|car\s*accident|minor\s*collision|road\s*accident/i, 'Traffic Accident'],
   [/traffic\s*(jam|congestion|blockage)|speeding|illegal\s*u-?turn|road\s*block/i, 'Traffic Accident'],
-  [/ev[\s_-]?charg|electric\s*vehicle\s*charg/i, 'EV-Charging Violation'],
+  [/ev[\s_-]?charg|electric\s*vehicle\s*charg|unauthori[zs]ed\s*(vehicle\s*)?charg|vehicle\s*charging\s*(at|in|observation)/i, 'Parking Violation'],
   [/long[\s_-]?time\s*park|parked\s*for\s*(a\s*)?long/i, 'Long-Time Parking Violation'],
   [/parking\s*slot|slot\s*(no|number|#|\d)|parked\s*in\s*(visitor|reserved|wrong)\s*slot|double\s*park/i, 'Parking Violation'],
   [/park(ing)?\s*violation|illegal\s*park/i, 'Parking Violation'],
@@ -1786,6 +1786,20 @@ function classifyByContentKeywords(incident) {
   return 'Community Violation'; // last resort — community is better than Uncategorized
 }
 
+// ── PARKING SIGNAL DETECTOR ──────────────────────────────────────────────────
+// Used to downgrade Traffic_Accident to Parking Violation when content reveals
+// this is actually a parking incident (old AI had no Parking_Violation option).
+const PARKING_CONTENT_RE = /wrongful[\s_]?park|wrong[\s_]?park|parking[\s_]?(violation|complaint|issue|problem|slot|space|bay)|parked\s*(in|at|on)\s*(wrong|undesignated|unauthorized|resident|visitor|reserved|another|other)\s*(slot|space|bay|area|parking)|undesignated[\s_]?(park|area)|park(ed|ing)?\s*in\s*resident|double[\s_]?park|illegally\s*park|parking\s*complaint|unsecured\s*vehicle|vehicle\s*(observed|found|parked)\s*(in|at|on)\s*(parking|basement|podium|pod|slot)|parking\s*(block|obstruct)|blocking\s*(parking|slot|access|driveway|entrance)|ps\s*\(?\d|parking\s*slot\s*[(\d]|pod\s*parking|handicap\s*(bay|slot|space)|resident.*park.*violation|park.*resident.*slot|unauthori[zs]ed\s*(vehicle\s*)?(charging|ev\s*charg|electric.*charg)|vehicle\s*charging\s*(at|in|observation)|ev[\s_-]?charg|electric[\s_]?vehicle[\s_]?charg|charging\s*(station|point|bay)\s*(violation|misuse|occupied|unauthorized|unauthorised)/i;
+
+const LONG_PARKING_CONTENT_RE = /long[\s_-]?time\s*park|parked\s*(for\s*(a\s*)?long|since\s*(yesterday|last\s*(night|week|month)))|abandoned\s*vehicle|unattended\s*vehicle\s*(for|since)/i;
+
+function verifyTrafficOrParking(incident, defaultCat) {
+  const text = `${incident.summary||''} ${incident.raw_message||''} ${incident.location_zone||''}`;
+  if (LONG_PARKING_CONTENT_RE.test(text)) return 'Long-Time Parking Violation';
+  if (PARKING_CONTENT_RE.test(text))      return 'Parking Violation';
+  return defaultCat;
+}
+
 function normalizeIncidentCategory(incidentOrRaw) {
   const incident = (typeof incidentOrRaw === 'string') ? {incident_type: incidentOrRaw} : (incidentOrRaw || {});
   const raw = incident.incident_type;
@@ -1796,22 +1810,28 @@ function normalizeIncidentCategory(incidentOrRaw) {
   // 1. Maintenance_Security umbrella → content-based sub-classification
   if (key === 'maintenancesecurity') return classifyMaintenanceSecurity(incident);
 
-  // 2. Exact / synonym lookup
+  // 2. Traffic_Accident / Traffic — verify content isn't actually a parking incident
+  //    Old AI had no Parking_Violation type so it defaulted vehicle incidents to Traffic.
+  if (key === 'trafficaccident' || key === 'traffic' || key === 'vehiclecollision') {
+    return verifyTrafficOrParking(incident, key === 'traffic' ? classifyByContentKeywords(incident) : 'Traffic Accident');
+  }
+
+  // 3. Exact / synonym lookup
   const mapped = CATEGORY_NORM[key];
   if (mapped && mapped !== '__CONTENT_CLASSIFY__') return mapped;
 
-  // 3. Content-driven umbrella types → keyword scan
+  // 4. Content-driven umbrella types → keyword scan
   if (CONTENT_DRIVEN_KEYS.has(key) || mapped === '__CONTENT_CLASSIFY__') {
     return classifyByContentKeywords(incident);
   }
 
-  // 4. Keyword scan against raw incident_type string itself
+  // 5. Keyword scan against raw incident_type string itself
   const lower = raw.trim().toLowerCase();
   for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
     if (re.test(lower)) return cat;
   }
 
-  // 5. Final pass: keyword scan across all incident text
+  // 6. Final pass: keyword scan across all incident text
   return classifyByContentKeywords(incident);
 }
 
