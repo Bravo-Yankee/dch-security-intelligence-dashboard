@@ -1558,18 +1558,18 @@ const CATEGORY_NORM = {
   'suicideattempt':                      'Suicide Attempt',
   // Maintenance (direct AI outputs from expanded prompt)
   'maintenancesecurity':                 '__CONTENT_CLASSIFY__', // handled by classifyMaintenanceSecurity()
-  'maintenanceaccesscontrolfailure':     'Maintenance | Access Control System Failure',
-  'maintenanceaccesscontrol':            'Maintenance | Access Control System Failure',
-  'maintenancesurveillancefailure':      'Maintenance | Surveillance System Failure',
-  'maintenancesurveillance':             'Maintenance | Surveillance System Failure',
-  'maintenancecctv':                     'Maintenance | Surveillance System Failure',
-  'maintenancehousekeeping':             'Maintenance | House Keeping Related',
-  'maintenancehk':                       'Maintenance | House Keeping Related',
-  'housekeeping':                        'Maintenance | House Keeping Related',
-  'maintenancegasrelated':               'Maintenance | Gas Related',
-  'maintenancegas':                      'Maintenance | Gas Related',
-  'maintenancemeprelated':               'Maintenance | MEP Related',
-  'maintenancemep':                      'Maintenance | MEP Related',
+  'maintenanceaccesscontrolfailure':     '__MAINTENANCE_CLASSIFY__',
+  'maintenanceaccesscontrol':            '__MAINTENANCE_CLASSIFY__',
+  'maintenancesurveillancefailure':      '__MAINTENANCE_CLASSIFY__',
+  'maintenancesurveillance':             '__MAINTENANCE_CLASSIFY__',
+  'maintenancecctv':                     '__MAINTENANCE_CLASSIFY__',
+  'maintenancehousekeeping':             '__MAINTENANCE_CLASSIFY__',
+  'maintenancehk':                       '__MAINTENANCE_CLASSIFY__',
+  'housekeeping':                        '__MAINTENANCE_CLASSIFY__',
+  'maintenancegasrelated':               '__MAINTENANCE_CLASSIFY__',
+  'maintenancegas':                      '__MAINTENANCE_CLASSIFY__',
+  'maintenancemeprelated':               '__MAINTENANCE_CLASSIFY__',
+  'maintenancemep':                      '__MAINTENANCE_CLASSIFY__',
   'mep':                                 'Maintenance | MEP Related',
   // Local Authority
   'localauthoritypolice':                'Local Authority (Police Related Only)',
@@ -1741,11 +1741,17 @@ const CATEGORY_KEYWORD_FALLBACK = [
 // ── MAINTENANCE SUBTYPE RULES ─────────────────────────────────────────────────
 // Applied when raw incident_type is "Maintenance_Security" or similar umbrella.
 const MAINTENANCE_SUBTYPE_RULES = [
+  // Access Control — checked first, most specific
   [/access[\s_]?control|door[\s_]?controller|gate[\s_]?sensor|access[\s_]?gate|card[\s_]?reader|turnstile|lock\s*(malfunction|fault|fail)|barrier\s*(malfunction|fault|fail|not\s*working)/i, 'Maintenance | Access Control System Failure'],
+  // Surveillance
   [/cctv|surveillance|camera\s*(malfunction|fault|fail|offline|not\s*working|broken)|playback|dvr|nvr|video\s*(feed|footage|loss)|recording\s*(issue|fail|missing)/i, 'Maintenance | Surveillance System Failure'],
+  // Gas — before MEP so gas smell/leak doesn't get swallowed by general MEP
   [/gas[\s_]?(smell|leak|malfunction|sensor|alarm)|smell\s*of\s*gas/i, 'Maintenance | Gas Related'],
-  [/\bmep\b|mechanical|electrical|plumbing|hvac|a[\/\s]?c|air[\s_]?condition|intercom|lift\s*(malfunction|fault|fail|stuck|not\s*working)|elevator\s*(malfunction|fault|fail)|pump\s*(malfunction|fault)|generator|power\s*(outage|failure|cut)|lights?\s*(malfunction|fault|fail|not\s*working|out|broken)|lighting\s*(issue|fault|failure)/i, 'Maintenance | MEP Related'],
-  [/housekeeping|\bhk\b|waste[\s_]?bin|garbage|trash|janitorial|cleaning\s*(staff|team|crew)|refuse|rubbish|litter/i, 'Maintenance | House Keeping Related'],
+  // MEP — expanded with user-requested keywords; runs BEFORE housekeeping
+  // Any of these signals means it's a physical/structural/trade maintenance job, not cleaning
+  [/\bmep\b|mechanical|electrical|plumbing|hvac|a[\/\s]?c\b|air[\s_]?condition|intercom|lift\s*(malfunction|fault|fail|stuck|not\s*working)|elevator\s*(malfunction|fault|fail)|pump\s*(malfunction|fault)|generator|power\s*(outage|failure|cut)|lights?\s*(malfunction|fault|fail|not\s*working|out|broken)|lighting\s*(issue|fault|failure)|contractor|\bwork[\s_]?permit\b|\bptw\b|permit[\s_]?to[\s_]?work|detach(ed)?|pavement|rectif(y|ied|ication)|structural|ceiling|tile|crack(ed)?|damp(ness)?|leak(age)?|seepage|paint(ing|ed)?|broken\s*(pipe|tile|railing|step|gutter)|damaged?\s*(pavement|railing|step|tile|pipe|wall|ceiling|floor|gate|fence|gutter|edge|surface|ramp)|civil\s*work|infrastructure|repair\s*(work|team|crew)|construction\s*(defect|issue)|snagging/i, 'Maintenance | MEP Related'],
+  // Housekeeping — only if no MEP signal was found above
+  [/housekeeping|\bhk\b|waste[\s_]?bin|garbage|trash|janitorial|cleaning\s*(staff|team|crew)|refuse|rubbish|litter|sanitation|pest\s*control/i, 'Maintenance | House Keeping Related'],
 ];
 
 // ── CONTENT-DRIVEN UMBRELLA LABELS ───────────────────────────────────────────
@@ -1754,7 +1760,7 @@ const CONTENT_DRIVEN_KEYS = new Set([
   'maintenancesecurity','patrolreport','communityviolations','other','minor',
   'unauthorizedactivity','misuseoffacilities','healthsafetyrelated',
   'safetyrelatedconcern','vehicledamage','information','traffic','safetyconcern',
-  '__content_classify__'
+  '__content_classify__','__maintenance_classify__'
 ]);
 
 function classifyMaintenanceSecurity(incident) {
@@ -1807,8 +1813,13 @@ function normalizeIncidentCategory(incidentOrRaw) {
 
   const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
 
-  // 1. Maintenance_Security umbrella → content-based sub-classification
-  if (key === 'maintenancesecurity') return classifyMaintenanceSecurity(incident);
+  // 1. Maintenance_Security umbrella OR any specific Maintenance_* type → content-based sub-classification
+  //    This ensures MEP signals (work permit, PTW, contractor, pavement, detached…) always win
+  //    even when the AI already guessed a specific subtype like Maintenance_House_Keeping.
+  const mapped = CATEGORY_NORM[key];
+  if (key === 'maintenancesecurity' || mapped === '__MAINTENANCE_CLASSIFY__') {
+    return classifyMaintenanceSecurity(incident);
+  }
 
   // 2. Traffic_Accident / Traffic — verify content isn't actually a parking incident
   //    Old AI had no Parking_Violation type so it defaulted vehicle incidents to Traffic.
@@ -1817,7 +1828,6 @@ function normalizeIncidentCategory(incidentOrRaw) {
   }
 
   // 3. Exact / synonym lookup
-  const mapped = CATEGORY_NORM[key];
   if (mapped && mapped !== '__CONTENT_CLASSIFY__') return mapped;
 
   // 4. Content-driven umbrella types → keyword scan
