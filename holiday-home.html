@@ -2287,6 +2287,21 @@ const COMMUNITY_IMAGES = {
   'South Residence': 'https://bravo-yankee.github.io/dch-assets/south-residence.jpg',
 };
 
+// ── Auto-calculate unique HHO apartments per community from all check-in history ──
+function _hhoCalcAutoUnits() {
+  const autoMap = {};
+  HHO.filter(r => getET(r) === 'in').forEach(r => {
+    const c = (r.community||'').trim();
+    const apt = (r.apt_number||'').trim();
+    if (!c || !apt || apt === 'N/A') return;
+    if (!autoMap[c]) autoMap[c] = new Set();
+    autoMap[c].add(apt.toLowerCase().replace(/\s+/g,' '));
+  });
+  const result = {};
+  Object.entries(autoMap).forEach(([c, s]) => { result[c] = s.size; });
+  return result;
+}
+
 function _hhoUnitsLoad() {
   try { return JSON.parse(localStorage.getItem(HHO_UNITS_KEY) || '{}'); }
   catch(e) { return {}; }
@@ -2297,22 +2312,40 @@ function _hhoUnitsSave(data) {
 }
 
 function _hhoUnitsGetCommunities() {
-  // Start from communities seen in live HHO data
   const fromData = [...new Set(HHO.map(r => (r.community||'').trim()).filter(Boolean))].sort();
   const saved = _hhoUnitsLoad();
-  // Merge: any community in saved register but not in live data is still shown
-  const fromSaved = Object.keys(saved).filter(c => !fromData.includes(c));
+  const fromSaved = Object.keys(saved).filter(c => c !== '_lastSaved' && !fromData.includes(c));
   return [...fromData, ...fromSaved.sort()];
+}
+
+function _hhoUnitsResetAuto(community) {
+  const register = _hhoUnitsLoad();
+  if (register[community]) {
+    delete register[community].units;
+    delete register[community].units_manual;
+  }
+  _hhoUnitsSave(register);
+  _anHHOUnits(document.getElementById('analyticsBody'));
 }
 
 function _anHHOUnits(body) {
   const register = _hhoUnitsLoad();
   const communities = _hhoUnitsGetCommunities();
-  const totalUnits = Object.values(register).reduce((s, v) => s + (parseInt(v.units)||0), 0);
+  const autoUnits = _hhoCalcAutoUnits();
+
+  // Resolve effective unit count: manual override wins, else auto-calculated
+  const getEffectiveUnits = c => {
+    const saved = register[c] || {};
+    if (saved.units_manual === true && saved.units !== '' && saved.units !== undefined) {
+      return { count: parseInt(saved.units)||0, isManual: true };
+    }
+    return { count: autoUnits[c] || 0, isManual: false };
+  };
+
+  const totalUnits = communities.reduce((s, c) => s + getEffectiveUnits(c).count, 0);
   const totalCap = Object.values(register).reduce((s, v) => s + (parseInt(v.capacity)||0), 0);
   const currentlyActive = [...new Set(HHO.filter(r=>getET(r)==='in').map(r=>(r.community||'').trim()).filter(Boolean))].length;
 
-  // Compute active guests per community for occupancy rate
   const activeByComm = {};
   HHO.filter(r => getET(r) === 'in').forEach(r => {
     const c = (r.community||'').trim();
@@ -2332,7 +2365,7 @@ function _anHHOUnits(body) {
       [currentlyActive, 'Communities Active Now', '#a855f7']
     ])}
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
       <div class="an-section-title" style="margin-bottom:0;">HHO Unit Register</div>
       <div style="display:flex;gap:6px;">
         <button onclick="_hhoUnitsAddRow()" style="font-size:10px;padding:5px 12px;border-radius:4px;border:1px solid rgba(6,182,212,.4);background:rgba(6,182,212,.08);color:#06b6d4;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;">+ ADD COMMUNITY</button>
@@ -2340,9 +2373,13 @@ function _anHHOUnits(body) {
       </div>
     </div>
 
-    <div style="font-size:9px;color:var(--text-faint);margin-bottom:10px;">
-      Edit unit counts and capacity directly in the table. Changes are saved to your browser and persist across restarts.
-      <strong style="color:var(--amber);">Last updated: ${register._lastSaved ? new Date(register._lastSaved).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Never saved'}</strong>
+    <div style="font-size:9px;color:var(--text-faint);margin-bottom:10px;line-height:1.5;">
+      <span style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:3px;padding:1px 5px;color:#10b981;font-family:'JetBrains Mono',monospace;">AUTO</span>
+      HHO Units are auto-calculated from unique apartments seen in check-in history.
+      Click the unit count to override manually (e.g. if a unit converts back to leased).
+      <span style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:3px;padding:1px 5px;color:#f59e0b;font-family:'JetBrains Mono',monospace;">MANUAL</span>
+      = overridden. Click ↺ to revert to auto.
+      <strong style="color:var(--amber);margin-left:6px;">Last saved: ${register._lastSaved ? new Date(register._lastSaved).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Never'}</strong>
     </div>
 
     <div style="overflow-x:auto;">
@@ -2351,6 +2388,7 @@ function _anHHOUnits(body) {
         <tr style="border-bottom:1px solid var(--border);">
           <th style="text-align:left;padding:7px 8px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">COMMUNITY</th>
           <th style="text-align:center;padding:7px 8px;color:#f59e0b;font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">HHO UNITS</th>
+          <th style="text-align:center;padding:7px 8px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">UNIQUE APTS</th>
           <th style="text-align:center;padding:7px 8px;color:#10b981;font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">CAPACITY</th>
           <th style="text-align:center;padding:7px 8px;color:#06b6d4;font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">ACTIVE GUESTS</th>
           <th style="text-align:center;padding:7px 8px;color:#a855f7;font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">CHECK-INS</th>
@@ -2360,25 +2398,37 @@ function _anHHOUnits(body) {
         </tr>
       </thead>
       <tbody>
-        ${communities.map((c,i) => {
+        ${communities.map((c, i) => {
           const saved = register[c] || {};
-          const units = saved.units || '';
+          const { count: effectiveUnits, isManual } = getEffectiveUnits(c);
+          const autoCount = autoUnits[c] || 0;
           const cap = saved.capacity || '';
           const notes = saved.notes || '';
           const guests = activeByComm[c] || 0;
           const cins = checkinsByComm[c] || 0;
-          const occPct = units ? Math.min(100, Math.round((cins / parseInt(units)) * 100)) : null;
+          const occPct = effectiveUnits ? Math.min(100, Math.round((cins / effectiveUnits) * 100)) : null;
           const occColor = occPct === null ? 'var(--text-faint)' : occPct > 80 ? 'var(--red)' : occPct > 50 ? '#f59e0b' : '#10b981';
+          const modeBadge = isManual
+            ? `<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-family:'JetBrains Mono',monospace;vertical-align:middle;">MANUAL</span>`
+            : `<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:#10b981;font-family:'JetBrains Mono',monospace;vertical-align:middle;">AUTO</span>`;
+
           return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);" id="urow_${i}">
             <td style="padding:7px 8px;font-weight:600;">${c}</td>
             <td style="padding:4px 8px;text-align:center;">
-              <input type="number" min="0" data-community="${c}" data-field="units"
-                style="width:64px;text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:#f59e0b;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:3px 6px;"
-                value="${units}" placeholder="—" oninput="_hhoUnitsMarkDirty()">
+              <div style="display:flex;align-items:center;justify-content:center;gap:5px;">
+                <input type="number" min="0" data-community="${c}" data-field="units"
+                  style="width:56px;text-align:center;background:var(--surface2);border:1px solid ${isManual?'rgba(245,158,11,.5)':'var(--border)'};border-radius:4px;color:#f59e0b;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:3px 6px;"
+                  value="${isManual ? (saved.units||'') : ''}"
+                  placeholder="${autoCount||'—'}"
+                  oninput="_hhoUnitsMarkManual('${c}', this)">
+                ${modeBadge}
+                ${isManual ? `<button onclick="_hhoUnitsResetAuto('${c}')" title="Revert to auto-calculated value (${autoCount} unique apts)" style="background:transparent;border:none;color:#06b6d4;cursor:pointer;font-size:14px;line-height:1;opacity:.7;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">↺</button>` : ''}
+              </div>
             </td>
+            <td style="padding:7px 8px;text-align:center;color:var(--text-faint);font-size:10px;font-family:'JetBrains Mono',monospace;">${autoCount || '—'}</td>
             <td style="padding:4px 8px;text-align:center;">
               <input type="number" min="0" data-community="${c}" data-field="capacity"
-                style="width:64px;text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:#10b981;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:3px 6px;"
+                style="width:56px;text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:#10b981;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;padding:3px 6px;"
                 value="${cap}" placeholder="—" oninput="_hhoUnitsMarkDirty()">
             </td>
             <td style="padding:7px 8px;text-align:center;color:#06b6d4;font-weight:700;">${guests || '—'}</td>
@@ -2422,6 +2472,16 @@ function _hhoUnitsMarkDirty() {
   if (b) b.style.display = 'flex';
 }
 
+// Called when user types in the units field — marks this community as manually overridden
+function _hhoUnitsMarkManual(community, input) {
+  const register = _hhoUnitsLoad();
+  if (!register[community]) register[community] = {};
+  register[community].units = input.value.trim();
+  register[community].units_manual = input.value.trim() !== '';
+  _hhoUnitsSave(register);
+  _hhoUnitsMarkDirty();
+}
+
 function _hhoUnitsSaveAll() {
   const register = _hhoUnitsLoad();
   document.querySelectorAll('#hhoUnitsTable input').forEach(inp => {
@@ -2429,7 +2489,12 @@ function _hhoUnitsSaveAll() {
     const f = inp.dataset.field;
     if (!c || !f) return;
     if (!register[c]) register[c] = {};
-    register[c][f] = inp.value.trim();
+    if (f === 'units') {
+      register[c].units = inp.value.trim();
+      register[c].units_manual = inp.value.trim() !== '';
+    } else {
+      register[c][f] = inp.value.trim();
+    }
   });
   register._lastSaved = Date.now();
   _hhoUnitsSave(register);
@@ -2437,7 +2502,6 @@ function _hhoUnitsSaveAll() {
   if (dirty) dirty.style.display = 'none';
   const saved = document.getElementById('hhoUnitsSavedMsg');
   if (saved) { saved.style.display = 'block'; setTimeout(() => saved.style.display = 'none', 2500); }
-  // Re-render to update occupancy % and last-saved timestamp
   setTimeout(() => _anHHOUnits(document.getElementById('analyticsBody')), 300);
 }
 
