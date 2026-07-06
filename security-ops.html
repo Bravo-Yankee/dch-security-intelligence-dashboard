@@ -597,8 +597,8 @@ border-radius:20px;}
         <div class="panel-title">Operations Summary &amp; Timings</div>
         <div class="ops-tabs">
           <div class="otab active" onclick="setOpsTab('ALL',this)">ALL</div>
-          <div class="otab" onclick="setOpsTab('AM',this)">AM</div>
-          <div class="otab" onclick="setOpsTab('PM',this)">PM</div>
+          <div class="otab" onclick="setOpsTab('AM',this)">Day</div>
+          <div class="otab" onclick="setOpsTab('PM',this)">Night</div>
         </div>
       </div>
       <table class="ops-table" id="opsTable"></table>
@@ -2635,8 +2635,8 @@ function closeModal(e){
 // ═══════════════════════════════════════════════════════════════════
 function renderDist(data){
   const types={};
-  data.forEach(i=>{const t=i.incident_type.replace(/_/g,' ');types[t]=(types[t]||0)+1;});
-  const sorted=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  data.forEach(i=>{const t=normalizeIncidentCategory(i);types[t]=(types[t]||0)+1;});
+  const sorted=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,10);
   if(!sorted.length){document.getElementById('distList').innerHTML='<div class="empty-state">No type data</div>';return;}
   const max=sorted[0][1];
   document.getElementById('distList').innerHTML=sorted.map(([label,count],i)=>`
@@ -2699,13 +2699,13 @@ const opsStaticAll=[
 ];
 const opsStaticAM=[
   ['Shift Start','07:00 GST'],['Shift End','19:00 GST'],
-  ['AM Supervisor','Senior Security Supervisor'],
-  ['AM Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
+  ['Day Supervisor','Senior Security Supervisor'],
+  ['Day Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
 ];
 const opsStaticPM=[
   ['Shift Start','19:00 GST'],['Shift End','07:00 GST'],
   ['Night Supervisor','Senior Security Supervisor'],
-  ['PM Patrol Areas','Creek Rise, Horizon, Creekside 18, Icon Bay'],
+  ['Night Patrol Areas','Creek Rise, Horizon, Creekside 18, Icon Bay'],
 ];
 
 function renderOps(tab){
@@ -2713,8 +2713,8 @@ function renderOps(tab){
   let rows;
   if(tab==='AM'){
     rows=[...opsStaticAM,
-      ['AM Incidents',data.filter(i=>i.shift&&i.shift.startsWith('Morning')).length],
-      ['AM Critical',data.filter(i=>i.shift&&i.shift.startsWith('Morning')&&i.severity==='Critical').length],
+      ['Day Incidents',data.filter(i=>i.shift&&i.shift.startsWith('Morning')).length],
+      ['Day Critical',data.filter(i=>i.shift&&i.shift.startsWith('Morning')&&i.severity==='Critical').length],
     ];
   }else if(tab==='PM'){
     rows=[...opsStaticPM,
