@@ -597,8 +597,8 @@ border-radius:20px;}
         <div class="panel-title">Operations Summary &amp; Timings</div>
         <div class="ops-tabs">
           <div class="otab active" onclick="setOpsTab('ALL',this)">ALL</div>
-          <div class="otab" onclick="setOpsTab('AM',this)">Day</div>
-          <div class="otab" onclick="setOpsTab('PM',this)">Night</div>
+          <div class="otab" onclick="setOpsTab('AM',this)">AM</div>
+          <div class="otab" onclick="setOpsTab('PM',this)">PM</div>
         </div>
       </div>
       <table class="ops-table" id="opsTable"></table>
@@ -743,6 +743,7 @@ border-radius:20px;}
           <option>Gas & Fuel Leak</option>
           <option>Medical / Ambulance Only</option>
           <option>Medical Distress</option>
+          <option>Minor Injury</option>
           <option>Drowning / Pool Incident</option>
           <option>Elevator Entrapment</option>
           <option>Natural Death</option>
@@ -771,6 +772,7 @@ border-radius:20px;}
           <option>Suspicious Items</option>
           <option>Trespassing & Unauthorized Entry</option>
           <option>Entrapment</option>
+          <option>Apartment Entrapment</option>
         </optgroup>
         <optgroup label="── Vice & Moral Conduct ──">
           <option>Drugs / Suspected Drugs</option>
@@ -1204,9 +1206,9 @@ function renderKPIs(data){
   document.getElementById('kpiHandover').textContent=data.length;
   // Analytics card — quick summary line
   const topZoneEntry=Object.entries(data.reduce((m,i)=>{const z=i.location_zone||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
-  const topTypeEntry=Object.entries(data.reduce((m,i)=>{const t=normalizeIncidentCategory(i);m[t]=(m[t]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
+  const topTypeEntry=Object.entries(data.reduce((m,i)=>{const t=i.incident_type||'Other';m[t]=(m[t]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('kpiAnalyticsTotal').textContent=data.length;
-  document.getElementById('kpiAnalyticsSub').textContent=(topZoneEntry?topZoneEntry[0]:'—')+' · '+(topTypeEntry?topTypeEntry[0]:'—');
+  document.getElementById('kpiAnalyticsSub').textContent=(topZoneEntry?topZoneEntry[0]:'—')+' · '+(topTypeEntry?topTypeEntry[0].replace(/_/g,' '):'—');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1314,7 +1316,7 @@ function _kpiRender() {
     if (sortBy==='severity')     return (_SEV_ORDER[a.severity]??4)-(_SEV_ORDER[b.severity]??4);
     if (sortBy==='severity_asc') return (_SEV_ORDER[b.severity]??4)-(_SEV_ORDER[a.severity]??4);
     if (sortBy==='zone')         return (a.location_zone||'').localeCompare(b.location_zone||'');
-    if (sortBy==='type')         return normalizeIncidentCategory(a).localeCompare(normalizeIncidentCategory(b));
+    if (sortBy==='type')         return (a.incident_type||'').localeCompare(b.incident_type||'');
     return 0;
   });
   const activeFilters=[search&&'Search',category&&'Category',severity&&'Severity',shift&&'Shift',(dateFrom||dateTo||_kpiSelectedDay)&&'Date'].filter(Boolean);
@@ -1330,7 +1332,7 @@ function _kpiRender() {
     return `<div class="feed-item" onclick="document.getElementById('kpiModal').classList.remove('show');showIncidentModal(${idx})">
       <div class="feed-dot ${dotClass}"></div>
       <div class="feed-body" style="flex:1">
-        <div class="feed-title">${normalizeIncidentCategory(inc)} <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:5px;">${isAm?'AM':'NIGHT'}</span></div>
+        <div class="feed-title">${inc.incident_type.replace(/_/g,' ')} <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:5px;">${isAm?'Day':'NIGHT'}</span></div>
         <div class="feed-desc">${(inc.summary||'—').substring(0,100)}${(inc.summary||'').length>100?'…':''}</div>
         <div class="feed-meta">
           <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
@@ -1384,7 +1386,7 @@ const OFFICIAL_CATEGORIES = [
   'Local Authority (Police Related Only)','Local Authority (CID Related Only)',
   'Local Authority (Police & CID Related)','Local Authority (Police & Ambulance)',
   'Local Authority (Police, Ambulance & CID Related)','Local Authority (DCD & Rescue)',
-  'Entrapment','Suspicious Items','Suspicious Person','Medical / Ambulance Only',
+  'Entrapment','Apartment Entrapment','Suspicious Items','Suspicious Person','Medical / Ambulance Only',
   'Government (Police & DCD, Rescue, CID, CSD)','Fire','Unauthorized Drone Activity',
   'Authorized Drone Activity','Authorized Media Shoot','Unauthorized Media Shoot','Lost & Found',
   'Fire Drill','Fight','Impersonation','Forging','Illegal Marketing','External & Environmental Factors',
@@ -1400,7 +1402,7 @@ const OFFICIAL_CATEGORIES = [
   'EV-Charging Violation','Long-Time Parking Violation','Noise Violation','Balcony Violation',
   'Common Area Violation','Storage Violation','Vehicle Breakdown','Pet Violation',
   'Driveway Violation','Electric Scooter Violation','Resident Move-In','Resident Move-Out',
-  'Property Damage','Amenities Violation','Hygiene Related',
+  'Property Damage','Amenities Violation','Hygiene Related','Minor Injury',
   // DCH-specific operational categories
   'Gift & Tips Related',
   'EMAAR Sales Centre',
@@ -1476,7 +1478,10 @@ const CATEGORY_NORM = {
   'illegalselling':                      'Illegal Selling',
   'politicalslogans':                    'Political Slogans',
   'flagrelated':                         'Flag Related',
-  'entrapment':                          'Entrapment',
+  'entrapment':                          '__ENTRAPMENT_CLASSIFY__',
+  'elevatorentrapment':                  '__ENTRAPMENT_CLASSIFY__',
+  'liftentrapment':                      '__ENTRAPMENT_CLASSIFY__',
+  'apartmententrapment':                 '__ENTRAPMENT_CLASSIFY__',
   // Traffic & Vehicles
   'trafficaccident':                     'Traffic Accident',
   'vehiclecollision':                    'Traffic Accident',
@@ -1545,8 +1550,6 @@ const CATEGORY_NORM = {
   'medicalambulanceonly':                'Medical / Ambulance Only',
   'ambulance':                           'Medical / Ambulance Only',
   'medicaldistress':                     'Medical Distress',
-  'elevatorentrapment':                  'Elevator Entrapment',
-  'liftentrapment':                      'Elevator Entrapment',
   'severeweather':                       'Severe Weather Impact',
   'severeweatherimpact':                 'Severe Weather Impact',
   'weatherimpact':                       'Severe Weather Impact',
@@ -1634,6 +1637,10 @@ const CATEGORY_NORM = {
   'information':                         '__CONTENT_CLASSIFY__',
   'traffic':                             '__CONTENT_CLASSIFY__',
   'safetyconcern':                       '__CONTENT_CLASSIFY__',
+  'residentcomplaint':                   '__CONTENT_CLASSIFY__',
+  'residentcomplaints':                  '__CONTENT_CLASSIFY__',
+  'complaint':                           '__CONTENT_CLASSIFY__',
+  'complaints':                          '__CONTENT_CLASSIFY__',
 };
 
 // ── KEYWORD FALLBACK ──────────────────────────────────────────────────────────
@@ -1735,7 +1742,7 @@ const CATEGORY_KEYWORD_FALLBACK = [
   [/\bdcd\b|\brescue\b/i, 'Local Authority (DCD & Rescue)'],
   // Safety / environmental
   [/unsafe\s*condition|safety\s*hazard|hazardous/i, 'External & Environmental Factors'],
-  [/\bentrapment\b/i, 'Entrapment'],
+  [/\bentrapment\b/i, 'Apartment Entrapment'],
 ];
 
 // ── MAINTENANCE SUBTYPE RULES ─────────────────────────────────────────────────
@@ -1760,7 +1767,8 @@ const CONTENT_DRIVEN_KEYS = new Set([
   'maintenancesecurity','patrolreport','communityviolations','other','minor',
   'unauthorizedactivity','misuseoffacilities','healthsafetyrelated',
   'safetyrelatedconcern','vehicledamage','information','traffic','safetyconcern',
-  '__content_classify__','__maintenance_classify__'
+  'residentcomplaint','residentcomplaints','complaint','complaints',
+  '__content_classify__','__maintenance_classify__','__entrapment_classify__'
 ]);
 
 function classifyMaintenanceSecurity(incident) {
@@ -1806,43 +1814,100 @@ function verifyTrafficOrParking(incident, defaultCat) {
   return defaultCat;
 }
 
+// ── ENTRAPMENT LOCATION CLASSIFIER ────────────────────────────────────────────
+// Per ops directive: entrapment inside an apartment (any room — bedroom,
+// bathroom, washroom, living room, kitchen, balcony) must strictly fall under
+// "Apartment Entrapment". Only entrapment involving a lift/elevator falls
+// under "Elevator Entrapment" (aka Lift Entrapment). This runs on CONTENT,
+// not on whatever the AI happened to label it, since AI classifiers
+// frequently mislabel apartment entrapments as generic "Entrapment".
+const LIFT_ENTRAPMENT_RE = /\blift\b|\belevator\b/i;
+const APARTMENT_ROOM_RE = /\bbedroom\b|\bbathroom\b|\bwashroom\b|living\s*room|\bkitchen\b|\bbalcony\b|\bapartment\b|\bunit\s*\d|\bflat\b/i;
+
+function classifyEntrapmentLocation(incident) {
+  const text = `${incident.summary||''} ${incident.raw_message||''} ${incident.location_zone||''}`;
+  if (LIFT_ENTRAPMENT_RE.test(text)) return 'Elevator Entrapment';
+  if (APARTMENT_ROOM_RE.test(text)) return 'Apartment Entrapment';
+  // Genuinely ambiguous (e.g. entrapped in a storage room, gym, stairwell) — keep generic
+  return 'Entrapment';
+}
+
+// ── INJURY-WITHOUT-AMBULANCE OVERRIDE ─────────────────────────────────────────
+// Per ops directive: reports whose content mentions an injury but do NOT
+// involve an ambulance/DCD-rescue response should be logged as "Minor Injury"
+// regardless of what the AI originally guessed (e.g. "Assault" or
+// "Property Damage" for an accidental door-strike case). Genuinely severe
+// outcomes (fatality, suicide, stabbing, fire, drowning, DCD/rescue
+// involvement) are protected from this downgrade.
+const INJURY_PROTECTED_CATEGORIES = new Set([
+  'Fatality','Suicide','Suicide Attempt','Natural Death','Medical Distress',
+  'Medical / Ambulance Only','Stabbing','Fire','Active Fire/Smoke',
+  'Drowning / Pool Incident','Local Authority (DCD & Rescue)',
+  'Government (Police & DCD, Rescue, CID, CSD)',
+  'Local Authority (Police, Ambulance & CID Related)',
+  'Local Authority (Police & Ambulance)'
+]);
+
+function applyInjuryOverride(incident, category) {
+  const text = `${incident.summary||''} ${incident.raw_message||''}`.toLowerCase();
+  if (!/\binjur(y|ed|ies)\b/.test(text)) return category;
+  if (/\bambulance\b/.test(text)) return category;
+  if (INJURY_PROTECTED_CATEGORIES.has(category)) return category;
+  return 'Minor Injury';
+}
+
 function normalizeIncidentCategory(incidentOrRaw) {
   const incident = (typeof incidentOrRaw === 'string') ? {incident_type: incidentOrRaw} : (incidentOrRaw || {});
   const raw = incident.incident_type;
   if (!raw || raw.trim() === '' || raw === '—' || raw === '-') return 'Uncategorized — Review';
 
   const key = raw.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const mapped = CATEGORY_NORM[key];
+  let result;
 
-  // 1. Maintenance_Security umbrella OR any specific Maintenance_* type → content-based sub-classification
+  // 1. Entrapment (any variant) → content-based location classification.
+  //    Runs before anything else so a mislabeled "Elevator_Entrapment" for
+  //    an apartment bedroom case still gets corrected.
+  if (key === 'entrapment' || key === 'elevatorentrapment' || key === 'liftentrapment' ||
+      key === 'apartmententrapment' || mapped === '__ENTRAPMENT_CLASSIFY__') {
+    result = classifyEntrapmentLocation(incident);
+  }
+  // 2. Maintenance_Security umbrella OR any specific Maintenance_* type → content-based sub-classification
   //    This ensures MEP signals (work permit, PTW, contractor, pavement, detached…) always win
   //    even when the AI already guessed a specific subtype like Maintenance_House_Keeping.
-  const mapped = CATEGORY_NORM[key];
-  if (key === 'maintenancesecurity' || mapped === '__MAINTENANCE_CLASSIFY__') {
-    return classifyMaintenanceSecurity(incident);
+  else if (key === 'maintenancesecurity' || mapped === '__MAINTENANCE_CLASSIFY__') {
+    result = classifyMaintenanceSecurity(incident);
   }
-
-  // 2. Traffic_Accident / Traffic — verify content isn't actually a parking incident
+  // 3. Traffic_Accident / Traffic — verify content isn't actually a parking incident
   //    Old AI had no Parking_Violation type so it defaulted vehicle incidents to Traffic.
-  if (key === 'trafficaccident' || key === 'traffic' || key === 'vehiclecollision') {
-    return verifyTrafficOrParking(incident, key === 'traffic' ? classifyByContentKeywords(incident) : 'Traffic Accident');
+  else if (key === 'trafficaccident' || key === 'traffic' || key === 'vehiclecollision') {
+    result = verifyTrafficOrParking(incident, key === 'traffic' ? classifyByContentKeywords(incident) : 'Traffic Accident');
+  }
+  // 4. Exact / synonym lookup
+  else if (mapped && mapped !== '__CONTENT_CLASSIFY__') {
+    result = mapped;
+  }
+  // 5. Content-driven umbrella types (incl. resident complaints) → keyword scan,
+  //    which already checks area-specific violations (balcony/corridor/common
+  //    area/amenities/pet/storage/hygiene/noise) before falling back to the
+  //    generic "Community Violation" bucket.
+  else if (CONTENT_DRIVEN_KEYS.has(key) || mapped === '__CONTENT_CLASSIFY__') {
+    result = classifyByContentKeywords(incident);
+  }
+  else {
+    // 6. Keyword scan against raw incident_type string itself
+    const lower = raw.trim().toLowerCase();
+    let found = null;
+    for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
+      if (re.test(lower)) { found = cat; break; }
+    }
+    // 7. Final pass: keyword scan across all incident text
+    result = found || classifyByContentKeywords(incident);
   }
 
-  // 3. Exact / synonym lookup
-  if (mapped && mapped !== '__CONTENT_CLASSIFY__') return mapped;
-
-  // 4. Content-driven umbrella types → keyword scan
-  if (CONTENT_DRIVEN_KEYS.has(key) || mapped === '__CONTENT_CLASSIFY__') {
-    return classifyByContentKeywords(incident);
-  }
-
-  // 5. Keyword scan against raw incident_type string itself
-  const lower = raw.trim().toLowerCase();
-  for (const [re, cat] of CATEGORY_KEYWORD_FALLBACK) {
-    if (re.test(lower)) return cat;
-  }
-
-  // 6. Final pass: keyword scan across all incident text
-  return classifyByContentKeywords(incident);
+  // Final safety-net override: injury-without-ambulance → Minor Injury,
+  // applied regardless of which branch above produced the category.
+  return applyInjuryOverride(incident, result);
 }
 
 
@@ -1960,7 +2025,7 @@ function _iaHotspots(data, body) {
       const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
       return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
         <div style="display:flex;justify-content:space-between;">
-          <span style="font-size:12px;font-weight:600;">${normalizeIncidentCategory(inc)}</span>
+          <span style="font-size:12px;font-weight:600;">${inc.incident_type.replace(/_/g,' ')}</span>
           <span style="font-size:10px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
         </div>
         <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">${(inc.summary||'').substring(0,90)}…</div>
@@ -2081,7 +2146,7 @@ function _iaShiftCompare(data, body) {
   function sevBreak(arr){const s={Critical:0,High:0,Medium:0,Low:0};arr.forEach(i=>{if(s[i.severity]!==undefined)s[i.severity]++;});return s;}
   const amS=sevBreak(am), pmS=sevBreak(pm);
 
-  function topTypes(arr,n=6){const t={};arr.forEach(i=>{const c=normalizeIncidentCategory(i);t[c]=(t[c]||0)+1;});return Object.entries(t).sort((a,b)=>b[1]-a[1]).slice(0,n);}
+  function topTypes(arr,n=6){const t={};arr.forEach(i=>{t[i.incident_type]=(t[i.incident_type]||0)+1;});return Object.entries(t).sort((a,b)=>b[1]-a[1]).slice(0,n);}
   const amTypes=topTypes(am), pmTypes=topTypes(pm);
   const amMax=amTypes[0]?.[1]||1, pmMax=pmTypes[0]?.[1]||1;
 
@@ -2117,11 +2182,11 @@ function _iaShiftCompare(data, body) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div>
         <div class="an-section-title">🌅 AM Top Categories</div>
-        ${amTypes.length?_iaRows(amTypes.map(([t,c])=>[t,c]),amMax,'#06b6d4'):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
+        ${amTypes.length?_iaRows(amTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),amMax,'#06b6d4'):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
       </div>
       <div>
         <div class="an-section-title">🌙 Night Top Categories</div>
-        ${pmTypes.length?_iaRows(pmTypes.map(([t,c])=>[t,c]),pmMax,'#f59e0b'):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
+        ${pmTypes.length?_iaRows(pmTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),pmMax,'#f59e0b'):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
       </div>
     </div>`;
 }
@@ -2187,7 +2252,7 @@ function _iaLookupRender() {
       return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div style="flex:1">
-            <div style="font-size:12px;font-weight:600;margin-bottom:3px;">${normalizeIncidentCategory(inc)}</div>
+            <div style="font-size:12px;font-weight:600;margin-bottom:3px;">${inc.incident_type.replace(/_/g,' ')}</div>
             <div style="font-size:10px;color:var(--text-faint);">${(inc.summary||'').substring(0,90)}…</div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
@@ -2219,7 +2284,7 @@ function renderLiveFeed(data){
     return `<div class="feed-item ${i<3?'new-flash':''}" onclick="showIncidentModal(${idx})">
       <div class="feed-dot ${dotClass}"></div>
       <div class="feed-body" style="flex:1">
-        <div class="feed-title">${normalizeIncidentCategory(inc)}</div>
+        <div class="feed-title">${inc.incident_type.replace(/_/g,' ')}</div>
         <div class="feed-desc">${(inc.summary||'').substring(0,90)}${inc.summary&&inc.summary.length>90?'…':''}</div>
         <div class="feed-meta">
           <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
@@ -2331,8 +2396,8 @@ function _renderZpOverview(body,zoneIncs){
   const amIncs=zoneIncs.filter(i=>i.shift&&i.shift.startsWith('Morning'));
   const pmIncs=zoneIncs.filter(i=>i.shift&&i.shift.startsWith('Night'));
   const types={};
-  zoneIncs.forEach(i=>{const t=normalizeIncidentCategory(i);types[t]=(types[t]||0)+1;});
-  const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  zoneIncs.forEach(i=>{types[i.incident_type]=(types[i.incident_type]||0)+1;});
+  const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxT=topTypes[0]?.[1]||1;
 
   body.innerHTML=`
@@ -2349,7 +2414,7 @@ function _renderZpOverview(body,zoneIncs){
       <div class="slide-section-title">Primary Incident Types</div>
       ${topTypes.map(([t,c])=>`
         <div class="sp-row">
-          <div class="sp-label">${t}</div>
+          <div class="sp-label">${t.replace(/_/g,' ')}</div>
           <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/maxT*100)}%;background:var(--amber)"></div></div>
           <div class="sp-count">${c}</div>
         </div>`).join('')}
@@ -2363,7 +2428,7 @@ function _renderZpOverview(body,zoneIncs){
         return `<div class="feed-item" style="padding:8px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
           <div class="feed-dot ${dotClass}"></div>
           <div class="feed-body" style="flex:1">
-            <div class="feed-title" style="font-size:12px">${normalizeIncidentCategory(inc)}</div>
+            <div class="feed-title" style="font-size:12px">${inc.incident_type.replace(/_/g,' ')}</div>
             <div class="feed-desc" style="font-size:11px">${(inc.summary||'').substring(0,70)}…</div>
             <div class="feed-meta">
               ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
@@ -2390,7 +2455,7 @@ function _renderZpShifts(body,zoneIncs){
 
   // Top incident types per shift
   function topTypesFor(arr,n=5){
-    const t={};arr.forEach(i=>{const c=normalizeIncidentCategory(i);t[c]=(t[c]||0)+1;});
+    const t={};arr.forEach(i=>{t[i.incident_type]=(t[i.incident_type]||0)+1;});
     return Object.entries(t).sort((a,b)=>b[1]-a[1]).slice(0,n);
   }
   const amTypes=topTypesFor(am), pmTypes=topTypesFor(pm);
@@ -2460,21 +2525,21 @@ function _renderZpShifts(body,zoneIncs){
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div>
-        <div class="slide-section-title">🌅 Day Shift Top Type</div>
+        <div class="slide-section-title">🌅 AM Top Types</div>
         ${amTypes.length?amTypes.map(([t,c],i)=>`
           <div class="sp-row">
             <span class="sp-rank">${i+1}</span>
-            <div class="sp-label">${t}</div>
+            <div class="sp-label">${t.replace(/_/g,' ')}</div>
             <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/amMax*100)}%;background:#06b6d4"></div></div>
             <div class="sp-count">${c}</div>
           </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
       </div>
       <div>
-        <div class="slide-section-title">🌙 Night Shift Top Type</div>
+        <div class="slide-section-title">🌙 Night Top Types</div>
         ${pmTypes.length?pmTypes.map(([t,c],i)=>`
           <div class="sp-row">
             <span class="sp-rank">${i+1}</span>
-            <div class="sp-label">${t}</div>
+            <div class="sp-label">${t.replace(/_/g,' ')}</div>
             <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/pmMax*100)}%;background:#f59e0b"></div></div>
             <div class="sp-count">${c}</div>
           </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
@@ -2510,7 +2575,7 @@ function _renderZpSort(body,zoneIncs){
   if(_zpSortShift==='am') filtered=filtered.filter(i=>i.shift&&i.shift.startsWith('Morning'));
   if(_zpSortShift==='pm') filtered=filtered.filter(i=>i.shift&&i.shift.startsWith('Night'));
   if(_zpSortSev!=='all') filtered=filtered.filter(i=>i.severity===_zpSortSev);
-  if(_zpSortType!=='all') filtered=filtered.filter(i=>normalizeIncidentCategory(i)===_zpSortType);
+  if(_zpSortType!=='all') filtered=filtered.filter(i=>i.incident_type===_zpSortType);
 
   // Sort
   if(_zpSortBy==='count') sortIncidentsDesc(filtered);
@@ -2518,13 +2583,13 @@ function _renderZpSort(body,zoneIncs){
     const sOrd={Critical:0,High:1,Medium:2,Low:3};
     filtered.sort((a,b)=>(sOrd[a.severity]??4)-(sOrd[b.severity]??4));
   } else if(_zpSortBy==='type'){
-    filtered.sort((a,b)=>normalizeIncidentCategory(a).localeCompare(normalizeIncidentCategory(b)));
+    filtered.sort((a,b)=>a.incident_type.localeCompare(b.incident_type));
   } else if(_zpSortBy==='oldest'){
     filtered.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
   }
 
-  // Unique normalized categories for filter dropdown
-  const allTypes=[...new Set(zoneIncs.map(i=>normalizeIncidentCategory(i)))].sort();
+  // Unique types for filter dropdown
+  const allTypes=[...new Set(zoneIncs.map(i=>i.incident_type))].sort();
 
   const pill=(label,key,val,cur)=>`<button class="zp-pill${cur===val?' active':''}" onclick="_zpSet('${key}','${val}')">${label}</button>`;
 
@@ -2560,7 +2625,7 @@ function _renderZpSort(body,zoneIncs){
       <div class="slide-section-title">Filter by Type</div>
       <div class="zp-sort-row" style="flex-wrap:wrap;">
         ${pill('All Types','_zpSortType','all',_zpSortType)}
-        ${allTypes.map(t=>pill(t,'_zpSortType',t,_zpSortType)).join('')}
+        ${allTypes.map(t=>pill(t.replace(/_/g,' '),'_zpSortType',t,_zpSortType)).join('')}
       </div>
     </div>
     <div>
@@ -2573,8 +2638,8 @@ function _renderZpSort(body,zoneIncs){
           return `<div class="feed-item" style="padding:7px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
             <div class="feed-dot ${dotClass}"></div>
             <div class="feed-body" style="flex:1">
-              <div class="feed-title" style="font-size:11px">${normalizeIncidentCategory(inc)}
-                <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:4px;">${isAm?'AM':'PM'}</span>
+              <div class="feed-title" style="font-size:11px">${inc.incident_type.replace(/_/g,' ')}
+                <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:4px;">${isAm?'Day':'PM'}</span>
               </div>
               <div class="feed-desc" style="font-size:10px">${(inc.summary||'').substring(0,65)}…</div>
             </div>
@@ -2606,7 +2671,7 @@ function closeZonePanel(e){if(e.target===document.getElementById('slideBackdrop'
 function showIncidentModal(idx){
   const inc=allIncidents[idx];
   if(!inc)return;
-  document.getElementById('modalTitle').textContent=normalizeIncidentCategory(inc);
+  document.getElementById('modalTitle').textContent=inc.incident_type.replace(/_/g,' ');
   const timeOfInc=inc.time_of_incident||extractTimeFromRaw(inc.raw_message)||'—';
   const actions=inc.immediate_actions?inc.immediate_actions.split(';').filter(Boolean):[];
   const sevColors={Critical:'var(--red)',High:'var(--amber)',Medium:'var(--amber)',Low:'var(--green)'};
@@ -2635,8 +2700,8 @@ function closeModal(e){
 // ═══════════════════════════════════════════════════════════════════
 function renderDist(data){
   const types={};
-  data.forEach(i=>{const t=normalizeIncidentCategory(i);types[t]=(types[t]||0)+1;});
-  const sorted=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  data.forEach(i=>{const t=i.incident_type.replace(/_/g,' ');types[t]=(types[t]||0)+1;});
+  const sorted=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8);
   if(!sorted.length){document.getElementById('distList').innerHTML='<div class="empty-state">No type data</div>';return;}
   const max=sorted[0][1];
   document.getElementById('distList').innerHTML=sorted.map(([label,count],i)=>`
@@ -2675,9 +2740,9 @@ function generateRecommendations(data){
   const crit=data.filter(i=>i.severity==='Critical'||i.severity==='High');
   if(crit.length)recos.push({title:`ELEVATED THREAT POSTURE: ${crit.length} HIGH/CRITICAL`,action:'Reinforce defensive posture — verify all tactical units are on assigned sectors. Verbal briefing required on incoming shift line.'});
 
-  const types={};data.forEach(i=>{const t=normalizeIncidentCategory(i);types[t]=(types[t]||0)+1;});
+  const types={};data.forEach(i=>{if(i.incident_type)types[i.incident_type]=(types[i.incident_type]||0)+1;});
   const topType=Object.entries(types).sort((a,b)=>b[1]-a[1])[0];
-  if(topType)recos.push({title:`PATTERN ALERT: ${topType[0]} (${topType[1]} cases)`,action:'Review SOP response protocols. Brief all community supervisors on countermeasure deployment procedures.'});
+  if(topType)recos.push({title:`PATTERN ALERT: ${topType[0].replace(/_/g,' ')} (${topType[1]} cases)`,action:'Review SOP response protocols. Brief all community supervisors on countermeasure deployment procedures.'});
 
   const access=data.filter(i=>i.incident_type==='Access_Control'||i.incident_type==='Trespassing');
   if(access.length)recos.push({title:`PERIMETER BREACH: ${access.length} ACCESS VIOLATIONS`,action:'Audit all ANPR arrays and access control tracks. Cross-check DPA uploads and verify visitor management logs.'});
@@ -2699,13 +2764,13 @@ const opsStaticAll=[
 ];
 const opsStaticAM=[
   ['Shift Start','07:00 GST'],['Shift End','19:00 GST'],
-  ['Day Supervisor','Senior Security Supervisor'],
-  ['Day Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
+  ['AM Supervisor','Senior Security Supervisor'],
+  ['AM Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
 ];
 const opsStaticPM=[
   ['Shift Start','19:00 GST'],['Shift End','07:00 GST'],
   ['Night Supervisor','Senior Security Supervisor'],
-  ['Night Patrol Areas','Creek Rise, Horizon, Creekside 18, Icon Bay'],
+  ['PM Patrol Areas','Creek Rise, Horizon, Creekside 18, Icon Bay'],
 ];
 
 function renderOps(tab){
@@ -2713,8 +2778,8 @@ function renderOps(tab){
   let rows;
   if(tab==='AM'){
     rows=[...opsStaticAM,
-      ['Day Incidents',data.filter(i=>i.shift&&i.shift.startsWith('Morning')).length],
-      ['Day Critical',data.filter(i=>i.shift&&i.shift.startsWith('Morning')&&i.severity==='Critical').length],
+      ['AM Incidents',data.filter(i=>i.shift&&i.shift.startsWith('Morning')).length],
+      ['AM Critical',data.filter(i=>i.shift&&i.shift.startsWith('Morning')&&i.severity==='Critical').length],
     ];
   }else if(tab==='PM'){
     rows=[...opsStaticPM,
@@ -2895,7 +2960,7 @@ function renderHandover(data){
   const window12h=new Date(Date.now()-12*3600000);
   const recent=data.filter(i=>new Date(i.timestamp)>=window12h);
   const sev=s=>recent.filter(i=>i.severity===s).length;
-  const types={};recent.forEach(i=>{const t=normalizeIncidentCategory(i);types[t]=(types[t]||0)+1;});
+  const types={};recent.forEach(i=>{types[i.incident_type]=(types[i.incident_type]||0)+1;});
   const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const zones={};recent.forEach(i=>{if(i.location_zone)zones[i.location_zone]=(zones[i.location_zone]||0)+1;});
   const topZones=Object.entries(zones).sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -2916,7 +2981,7 @@ function renderHandover(data){
 • Open Actions    : ${recent.filter(i=>i.action_required==='TRUE').length}
 
 *📍 DOMINANT INCIDENT TYPES*
-${topTypes.map(([t,c])=>`• ${t.padEnd(30)} ${c} reports`).join('\n')||'• No incidents in window'}
+${topTypes.map(([t,c])=>`• ${t.replace(/_/g,' ').padEnd(30)} ${c} reports`).join('\n')||'• No incidents in window'}
 
 *🗺 PEAK HOTSPOT CLUSTERS*
 ${topZones.map(([z,c],i)=>`${i+1}. ${z.padEnd(35)} ${c} logs`).join('\n')||'• No zone data'}
