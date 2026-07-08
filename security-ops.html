@@ -597,8 +597,8 @@ border-radius:20px;}
         <div class="panel-title">Operations Summary &amp; Timings</div>
         <div class="ops-tabs">
           <div class="otab active" onclick="setOpsTab('ALL',this)">ALL</div>
-          <div class="otab" onclick="setOpsTab('AM',this)">AM</div>
-          <div class="otab" onclick="setOpsTab('PM',this)">PM</div>
+          <div class="otab" onclick="setOpsTab('AM',this)">Day</div>
+          <div class="otab" onclick="setOpsTab('PM',this)">Night</div>
         </div>
       </div>
       <table class="ops-table" id="opsTable"></table>
@@ -1332,7 +1332,7 @@ function _kpiRender() {
     return `<div class="feed-item" onclick="document.getElementById('kpiModal').classList.remove('show');showIncidentModal(${idx})">
       <div class="feed-dot ${dotClass}"></div>
       <div class="feed-body" style="flex:1">
-        <div class="feed-title">${inc.incident_type.replace(/_/g,' ')} <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:5px;">${isAm?'Day':'NIGHT'}</span></div>
+        <div class="feed-title">${inc.incident_type.replace(/_/g,' ')} <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:5px;">${isAm?'Day':'Night'}</span></div>
         <div class="feed-desc">${(inc.summary||'—').substring(0,100)}${(inc.summary||'').length>100?'…':''}</div>
         <div class="feed-meta">
           <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
@@ -2157,7 +2157,7 @@ function _iaShiftCompare(data, body) {
       <div style="width:${pmPct}%;background:#f59e0b;height:100%;display:flex;align-items:center;justify-content:center;"><span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${pmPct}%</span></div>
     </div>
     <div style="display:flex;gap:12px;margin-bottom:14px;">
-      <span class="shift-badge am">AM ${am.length}</span>
+      <span class="shift-badge am">Day ${am.length}</span>
       <span class="shift-badge pm">Night ${pm.length}</span>
       <span style="font-size:10px;color:var(--text-faint);margin-left:auto;">of ${total} total</span>
     </div>
@@ -2408,7 +2408,7 @@ function _renderZpOverview(body,zoneIncs){
       <div class="slide-stat-row"><span class="slide-stat-key">Open Action Items</span><span class="slide-stat-val" style="color:var(--amber)">${open}</span></div>
       <div class="slide-stat-row"><span class="slide-stat-key">Morning Shift (07:00-19:00)</span><span class="slide-stat-val" style="color:#06b6d4">${amIncs.length}</span></div>
       <div class="slide-stat-row"><span class="slide-stat-key">Night Shift (19:00-07:00)</span><span class="slide-stat-val" style="color:#f59e0b">${pmIncs.length}</span></div>
-      <div class="slide-stat-row"><span class="slide-stat-key">Dominant Shift</span><span class="slide-stat-val">${amIncs.length>=pmIncs.length?'<span class="shift-badge am">AM</span>':'<span class="shift-badge pm">NIGHT</span>'}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">Dominant Shift</span><span class="slide-stat-val">${amIncs.length>=pmIncs.length?'<span class="shift-badge am">Day</span>':'<span class="shift-badge pm">Night</span>'}</span></div>
     </div>
     <div>
       <div class="slide-section-title">Primary Incident Types</div>
@@ -2639,7 +2639,7 @@ function _renderZpSort(body,zoneIncs){
             <div class="feed-dot ${dotClass}"></div>
             <div class="feed-body" style="flex:1">
               <div class="feed-title" style="font-size:11px">${inc.incident_type.replace(/_/g,' ')}
-                <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:4px;">${isAm?'Day':'PM'}</span>
+                <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:4px;">${isAm?'Day':'Night'}</span>
               </div>
               <div class="feed-desc" style="font-size:10px">${(inc.summary||'').substring(0,65)}…</div>
             </div>
