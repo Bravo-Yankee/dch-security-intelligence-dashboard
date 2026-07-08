@@ -2181,12 +2181,12 @@ function _iaShiftCompare(data, body) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div>
-        <div class="an-section-title">🌅 AM Top Categories</div>
-        ${amTypes.length?_iaRows(amTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),amMax,'#06b6d4'):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
+        <div class="an-section-title">🌅 Day Shift Top Categories</div>
+        ${amTypes.length?_iaRows(amTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),amMax,'#06b6d4'):'<div class="empty-state" style="font-size:10px;">No Day Shift data</div>'}
       </div>
       <div>
-        <div class="an-section-title">🌙 Night Top Categories</div>
-        ${pmTypes.length?_iaRows(pmTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),pmMax,'#f59e0b'):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
+        <div class="an-section-title">🌙 Night Shift Top Categories</div>
+        ${pmTypes.length?_iaRows(pmTypes.map(([t,c])=>[t.replace(/_/g,' '),c]),pmMax,'#f59e0b'):'<div class="empty-state" style="font-size:10px;">No Night Shift data</div>'}
       </div>
     </div>`;
 }
@@ -2525,24 +2525,24 @@ function _renderZpShifts(body,zoneIncs){
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div>
-        <div class="slide-section-title">🌅 AM Top Types</div>
+        <div class="slide-section-title">🌅 Day Shift Top Types</div>
         ${amTypes.length?amTypes.map(([t,c],i)=>`
           <div class="sp-row">
             <span class="sp-rank">${i+1}</span>
             <div class="sp-label">${t.replace(/_/g,' ')}</div>
             <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/amMax*100)}%;background:#06b6d4"></div></div>
             <div class="sp-count">${c}</div>
-          </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No AM data</div>'}
+          </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No Day Shift data</div>'}
       </div>
       <div>
-        <div class="slide-section-title">🌙 Night Top Types</div>
+        <div class="slide-section-title">🌙 Night Shift Top Types</div>
         ${pmTypes.length?pmTypes.map(([t,c],i)=>`
           <div class="sp-row">
             <span class="sp-rank">${i+1}</span>
             <div class="sp-label">${t.replace(/_/g,' ')}</div>
             <div class="sp-bar-wrap"><div class="sp-bar" style="width:${Math.round(c/pmMax*100)}%;background:#f59e0b"></div></div>
             <div class="sp-count">${c}</div>
-          </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No Night data</div>'}
+          </div>`).join(''):'<div class="empty-state" style="font-size:10px;">No Night Shift data</div>'}
       </div>
     </div>
 
