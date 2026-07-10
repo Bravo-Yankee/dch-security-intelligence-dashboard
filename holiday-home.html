@@ -1053,7 +1053,12 @@ function renderKPIs(){
   document.getElementById('b-total').textContent=HHO.length;
   document.getElementById('b-ci').textContent=ci.length;
   document.getElementById('b-co').textContent=co.length;
-  document.getElementById('b-g').textContent=guests;
+  // "Active Guests" tab badge reflects guests CURRENTLY in-stay (booking not
+  // expired, no checkout confirmation received) — not the all-time check-in
+  // headcount total used by kpiGuests/Overview above.
+  const activeNow = getActiveHHOGuests();
+  const activeGuestHeadcount = activeNow.reduce((s,r)=>s+parseInt(r.guest_count||1),0);
+  document.getElementById('b-g').textContent=activeGuestHeadcount;
 }
 
 // ── COMMUNITY GRID ──
@@ -1401,6 +1406,38 @@ function renderCheckins(){
 }
 
 // ── CHECKOUTS TAB ──
+// ── SHARED MATCH KEY ──
+// Identifies the same guest stay across a check-in and its corresponding
+// check-out report (community + apartment + guest name).
+function hhoMatchKey(r){
+  return [
+    (r.community||'').trim().toLowerCase(),
+    (r.apt_number||'').trim().toLowerCase(),
+    (r.guest_name||'').trim().toLowerCase()
+  ].join('|');
+}
+
+// ── TRULY ACTIVE HHO GUESTS ──
+// A guest counts as "currently active" only if BOTH:
+//   1. Their checkout_date has not yet elapsed (booking not expired), AND
+//   2. No explicit check-out confirmation has already been received
+//      (i.e. they haven't already departed early).
+// This excludes expired-but-unconfirmed bookings (which belong in the
+// Check-Out tab's "Overdue" view) and guests who left before their
+// scheduled checkout_date.
+function getActiveHHOGuests(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const checkins = HHO.filter(r=>getET(r)==='in');
+  const checkouts = HHO.filter(r=>getET(r)==='out');
+  const checkoutKeys = new Set(checkouts.map(hhoMatchKey));
+  return checkins.filter(r=>{
+    if(checkoutKeys.has(hhoMatchKey(r))) return false; // already checked out
+    const d = parseDMY(r.checkout_date);
+    if(!d) return true; // no parseable checkout date — can't prove expired, keep as active
+    return d >= today;  // booking still within its stay window
+  });
+}
+
 // ── OVERDUE / UNCONFIRMED CHECK-OUTS ──
 // A guest's checkout_date (from their original check-in report) has already
 // passed, but no supervisor ever sent an explicit check-out confirmation
@@ -1412,17 +1449,12 @@ function getOverdueCheckins(){
   const today = new Date(); today.setHours(0,0,0,0);
   const checkins = HHO.filter(r=>getET(r)==='in');
   const checkouts = HHO.filter(r=>getET(r)==='out');
-  const matchKey = r => [
-    (r.community||'').trim().toLowerCase(),
-    (r.apt_number||'').trim().toLowerCase(),
-    (r.guest_name||'').trim().toLowerCase()
-  ].join('|');
-  const checkoutKeys = new Set(checkouts.map(matchKey));
+  const checkoutKeys = new Set(checkouts.map(hhoMatchKey));
   return checkins.filter(r=>{
     const d = parseDMY(r.checkout_date);
     if(!d) return false;              // no parseable checkout date — can't determine overdue status
     if(d >= today) return false;      // stay hasn't ended yet
-    return !checkoutKeys.has(matchKey(r));
+    return !checkoutKeys.has(hhoMatchKey(r));
   });
 }
 
@@ -1503,7 +1535,7 @@ function renderActiveGuests(){
   const sortBy=(document.getElementById('agSortBy')||{}).value||'checkin_date';
   const sortDir=(document.getElementById('agSortDir')||{}).value||'desc';
   const groupBy=(document.getElementById('agGroupBy')||{}).value||'';
-  let data=HHO.filter(r=>getET(r)==='in');
+  let data=getActiveHHOGuests();
   populateNatDropdown('agNat', data);
   if(q)data=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
   if(nat)data=data.filter(r=>normalizeNationality(r.guest_nationality)===nat);
