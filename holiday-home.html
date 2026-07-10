@@ -162,6 +162,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .ctag{font-size:10px;padding:2px 6px;border-radius:2px;font-weight:500;}
 .ctag-in{background:rgba(16,185,129,.15);color:var(--green);}
 .ctag-out{background:rgba(239,68,68,.13);color:var(--red);}
+.ctag-overdue{background:rgba(245,158,11,.15);color:var(--amber);font-weight:700;letter-spacing:.5px;}
 .ctag-com{background:var(--purple-dim);color:var(--purple);}
 .ctag-hho{background:var(--amber-dim);color:var(--amber);}
 .ctag-g{background:rgba(59,130,246,.12);color:var(--blue);}
@@ -481,9 +482,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
           </div>
           <button class="date-clear-btn" id="coDateClear" onclick="clearDateFilter('co')" title="Clear date filter">✕</button>
         </div>
+        <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-dim);cursor:pointer;white-space:nowrap;">
+          <input type="checkbox" id="coShowOverdue" onchange="renderCheckouts()" style="cursor:pointer;">
+          Show overdue (unconfirmed)
+        </label>
         <div class="ptag ptag-red" id="coCount">0 RECORDS</div>
       </div>
     </div>
+    <div style="padding:6px 16px 0;font-size:9px;color:var(--text-faint);" id="coOverdueHint"></div>
     <div class="scroll-box" style="max-height:560px;" id="coList"></div>
   </div>
 </div>
@@ -1395,6 +1401,57 @@ function renderCheckins(){
 }
 
 // ── CHECKOUTS TAB ──
+// ── OVERDUE / UNCONFIRMED CHECK-OUTS ──
+// A guest's checkout_date (from their original check-in report) has already
+// passed, but no supervisor ever sent an explicit check-out confirmation
+// message. These guests are invisible to the confirmed Check-Out Log by
+// design (it only shows explicit check_out event records) — this surfaces
+// them separately so ops can follow up with the relevant supervisor,
+// without conflating "confirmed departed" with "assumed departed".
+function getOverdueCheckins(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const checkins = HHO.filter(r=>getET(r)==='in');
+  const checkouts = HHO.filter(r=>getET(r)==='out');
+  const matchKey = r => [
+    (r.community||'').trim().toLowerCase(),
+    (r.apt_number||'').trim().toLowerCase(),
+    (r.guest_name||'').trim().toLowerCase()
+  ].join('|');
+  const checkoutKeys = new Set(checkouts.map(matchKey));
+  return checkins.filter(r=>{
+    const d = parseDMY(r.checkout_date);
+    if(!d) return false;              // no parseable checkout date — can't determine overdue status
+    if(d >= today) return false;      // stay hasn't ended yet
+    return !checkoutKeys.has(matchKey(r));
+  });
+}
+
+function renderOverdueList(data){
+  if(!data.length)return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  return data.map(r=>{
+    const idx=HHO.indexOf(r);
+    const flagged=isFlagged(r);
+    const d = parseDMY(r.checkout_date);
+    const daysOverdue = d ? Math.floor((today - d) / 86400000) : null;
+    return `<div class="ci-item${flagged?' flagged':''}" onclick="showModal(${idx})" style="border-left:3px solid var(--amber);">
+      <div class="ci-icon">⏰</div>
+      <div class="ci-body">
+        <div class="ci-title">${r.guest_name||'Unknown Guest'}</div>
+        <div class="ci-sub">${r.community||'—'} · ${r.apt_number||'—'} · ${r.guest_nationality||'—'}</div>
+        <div class="ci-meta">
+          <span class="ctag ctag-overdue">⏰ OVERDUE${daysOverdue!==null?` · ${daysOverdue}d`:''}</span>
+          <span class="ctag ctag-com">${r.community||'—'}</span>
+          <span class="ctag" style="background:var(--surface3);color:var(--text-dim);">Expected out: ${r.checkout_date||'—'}</span>
+          ${r.security_supervisor?`<span class="ctag" style="background:var(--surface3);color:var(--text-dim);">S/S: ${r.security_supervisor}</span>`:''}
+          ${flagged?`<span class="ctag ctag-alert">🚨 COMPLIANCE: ${r.compliance_flags||'FLAGGED'}</span>`:''}
+        </div>
+      </div>
+      <div class="ci-time">${fmtTime(r.timestamp)}</div>
+    </div>`;
+  }).join('');
+}
+
 function renderCheckouts(){
   const q=(document.getElementById('coSearch')||{}).value||'';
   const nat=(document.getElementById('coNat')||{}).value||'';
@@ -1415,8 +1472,28 @@ function renderCheckouts(){
   data=applyDateRangeFilter(data,'checkout_date',coDateFrom,coDateTo);
   data=applySortBy(data, sortBy, sortDir);
   const suffix = nat ? ` · 🌍 ${nat}` : '';
-  document.getElementById('coCount').textContent=data.length+' RECORDS'+suffix;
-  document.getElementById('coList').innerHTML = groupBy ? renderGroupedList(data, groupBy) : renderList(data);
+
+  const showOverdue = (document.getElementById('coShowOverdue')||{}).checked || false;
+  let overdueHtml = '';
+  let overdueCount = 0;
+  if(showOverdue){
+    let overdue = getOverdueCheckins();
+    if(q)overdue=overdue.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
+    if(nat)overdue=overdue.filter(r=>normalizeNationality(r.guest_nationality)===nat);
+    overdueCount = overdue.length;
+    if(overdueCount){
+      overdueHtml = `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-left:3px solid var(--amber);margin:10px 0 4px;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;color:var(--amber);flex:1;">⏰ OVERDUE — NO CHECK-OUT CONFIRMATION RECEIVED</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);">${overdueCount} guest${overdueCount!==1?'s':''}</span>
+      </div>` + renderOverdueList(overdue);
+    }
+  }
+  document.getElementById('coOverdueHint').textContent = showOverdue
+    ? `Showing ${data.length} confirmed check-out${data.length!==1?'s':''} + ${overdueCount} overdue (checkout date passed, no confirmation ever received)`
+    : `Only explicit check-out confirmations are shown by default. Enable "Show overdue" to see guests whose stay has ended with no confirmation on file.`;
+
+  document.getElementById('coCount').textContent=(data.length+overdueCount)+' RECORDS'+suffix;
+  document.getElementById('coList').innerHTML = (groupBy ? renderGroupedList(data, groupBy) : renderList(data)) + overdueHtml || '<div class="empty-state">No records found</div>';
 }
 
 // ── ACTIVE GUESTS TAB ──
