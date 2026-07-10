@@ -456,7 +456,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         <input class="search-input" id="coSearch" placeholder="Search…" oninput="renderCheckouts()">
         <select class="filter-sel" id="coNat" onchange="renderCheckouts()"><option value="">All Nationalities</option></select>
         <select class="filter-sel" id="coSortBy" onchange="renderCheckouts()">
-          <option value="date">Sort: Date</option>
+          <option value="checkout_date">Sort: Date</option>
           <option value="nationality">Sort: Nationality A–Z</option>
           <option value="nationality_desc">Sort: Nationality Z–A</option>
           <option value="guests_desc">Sort: Most Guests</option>
@@ -1398,7 +1398,7 @@ function renderCheckins(){
 function renderCheckouts(){
   const q=(document.getElementById('coSearch')||{}).value||'';
   const nat=(document.getElementById('coNat')||{}).value||'';
-  const sortBy=(document.getElementById('coSortBy')||{}).value||'date';
+  const sortBy=(document.getElementById('coSortBy')||{}).value||'checkout_date';
   const sortDir=(document.getElementById('coSortDir')||{}).value||'desc';
   const groupBy=(document.getElementById('coGroupBy')||{}).value||'';
   const monthFilter=(document.getElementById('coMonth')||{}).value||'';
