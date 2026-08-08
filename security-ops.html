@@ -687,6 +687,7 @@ border-radius:20px;}
     <div class="zp-tabs" id="zpTabs">
       <button class="zp-tab active" onclick="zpSwitchTab('overview')">Overview</button>
       <button class="zp-tab" onclick="zpSwitchTab('shifts')">Shift Performance</button>
+      <button class="zp-tab" onclick="zpSwitchTab('search')">🔍 Search</button>
       <button class="zp-tab" onclick="zpSwitchTab('sort')">Sort & Filter</button>
     </div>
     <div class="slide-body" id="slideZoneBody"></div>
@@ -2226,29 +2227,209 @@ function _iaTrend(data, body) {
     </div>`;
 }
 
-// ── LOOKUP: free-text search across all incidents ──
+// ── Authoritative tower/building structure per community ──
+// Source: official DCH Communities tower register.
+// Empty array = single-tower community or common-area-only community (no tower selector needed).
+const COMMUNITY_TOWERS = {
+  'The Cove': ['Tower 1','Tower 2','Tower 3'],
+  'North Residence': ['Tower 1','Tower 2','Tower 3'],
+  'South Residence': ['Tower 1','Tower 2','Tower 3'],
+  'The Grand': [], // Only One Tower
+  'Creek Edge': ['Tower 1','Tower 2'],
+  'Creek Crescent': ['Tower 1','Tower 2'],
+  '17 Icon Bay': [], // Only One Tower
+  'Creek Gate': ['Tower 1','Tower 2'],
+  'Harbour Gate': ['Tower 1','Tower 2'],
+  'Creek Rise': ['Tower 1','Tower 2'],
+  'Creek Horizon': ['Tower 1','Tower 2'],
+  'Harbour Views': ['Tower 1','Tower 2'],
+  'Creekside 18': ['Tower A','Tower B'],
+  'Master Community': [], // No towers — shared common areas & public parking only
+  'Creek Beach': null, // Managed by Emrill Security (different company) — tower search not applicable
+};
+
+// ── Extract tower/building reference from raw_message or location_zone ──
+// Normalizes to the official "Tower N" / "Tower X" naming from COMMUNITY_TOWERS
+// wherever possible, falling back to raw pattern extraction only for communities
+// with no entry in the map at all (truly unmapped).
+function extractTower(inc){
+  const text = `${inc.location_zone||''} ${inc.raw_message||''}`;
+  const zone = inc.location_zone;
+  const isKnownZone = Object.prototype.hasOwnProperty.call(COMMUNITY_TOWERS, zone);
+  const officialList = COMMUNITY_TOWERS[zone];
+
+  // Known zone with an actual tower list (multi-tower community) — match against it
+  if (isKnownZone && Array.isArray(officialList) && officialList.length) {
+    for (const t of officialList) {
+      const num = t.match(/\d+|[A-Z]$/i)?.[0];
+      if (!num) continue;
+      const re = new RegExp(`Tower\\s*\\(?\\s*0*${num}\\b\\)?`, 'i');
+      if (re.test(text)) return t;
+    }
+    return null; // community has known towers but this incident doesn't mention one
+  }
+
+  // Known zone with null (not applicable — different security company) or empty
+  // array (single-tower / no-tower community) — never attempt extraction
+  if (isKnownZone) return null;
+
+  // Truly unmapped zone — fall back to generic pattern extraction
+  let m = text.match(/Tower\s*\(?\s*([A-Za-z0-9]{1,3})\s*\)?/i);
+  if (m) return `Tower ${m[1].toUpperCase()}`;
+  m = text.match(/\bT[\/\-]?\s?(\d{1,2})\b/);
+  if (m) return `Tower ${m[1]}`;
+  m = text.match(/Block\s*\(?\s*([A-Za-z0-9]{1,3})\s*\)?/i);
+  if (m) return `Block ${m[1].toUpperCase()}`;
+  return null;
+}
+
+// ── COMPREHENSIVE LOOKUP: multi-parameter search across all incidents ──
+let _iaLookupFilters = { q:'', community:'', tower:'', severity:'', shift:'', category:'' };
+
 function _iaLookup(data, body) {
+  const allZoneIncs = getFilteredIncidents();
+  const communities = [...new Set(allZoneIncs.map(i=>i.location_zone).filter(Boolean))].sort();
+
   body.innerHTML = `
-    <div style="margin-bottom:4px;font-size:10px;color:var(--text-faint);">Search by category, zone, supervisor, or summary text</div>
-    <input class="an-lookup-input" id="iaLookupInput" placeholder="e.g. Theft, Creek Edge, Mr. Ahmed, parking…"
-      oninput="_iaLookupRender()" autofocus>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+      <input class="an-lookup-input" id="iaLookupInput" placeholder="Search by category, zone, tower, supervisor, or summary text…"
+        oninput="_iaLookupRender()" autofocus style="margin-bottom:8px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <select id="iaFCommunity" onchange="_iaLookupCommunityChange()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:130px;">
+          <option value="">All Communities</option>
+          ${communities.map(c=>`<option value="${c}">${c}</option>`).join('')}
+        </select>
+        <select id="iaFTower" onchange="_iaLookupRender()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:110px;">
+          <option value="">All Towers</option>
+        </select>
+        <select id="iaFSeverity" onchange="_iaLookupRender()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:100px;">
+          <option value="">All Severities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <select id="iaFShift" onchange="_iaLookupRender()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:100px;">
+          <option value="">All Shifts</option>
+          <option value="Morning">Day Shift</option>
+          <option value="Night">Night Shift</option>
+        </select>
+        <select id="iaFCategory" onchange="_iaLookupRender()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:130px;">
+          <option value="">All Categories</option>
+          ${OFFICIAL_CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('')}
+        </select>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input type="date" id="iaFDateFrom" onchange="_iaLookupRender()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;">
+          <span style="font-size:9px;color:var(--text-faint);">to</span>
+          <input type="date" id="iaFDateTo" onchange="_iaLookupRender()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;">
+        </div>
+        <button onclick="_iaLookupClear()" style="font-size:9px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer;" id="iaClearBtn">CLEAR ALL</button>
+      </div>
+      <div id="iaFilterChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;"></div>
+    </div>
+    <div id="iaLookupCount" style="font-size:9px;color:var(--text-faint);margin-bottom:6px;font-family:'JetBrains Mono',monospace;"></div>
     <div id="iaLookupResults"></div>`;
   setTimeout(()=>document.getElementById('iaLookupInput')?.focus(), 100);
+  _iaLookupRender();
+}
+
+// Repopulate the Tower dropdown based on the currently selected community
+function _iaLookupCommunityChange(){
+  _iaLookupRender();
+}
+
+function _iaPopulateTowers(community){
+  const towerSel = document.getElementById('iaFTower');
+  const prevVal = towerSel.value;
+  const isKnown = Object.prototype.hasOwnProperty.call(COMMUNITY_TOWERS, community);
+  const officialList = COMMUNITY_TOWERS[community];
+
+  let towers;
+  if (community && isKnown) {
+    towers = Array.isArray(officialList) ? officialList : [];
+  } else {
+    // No community selected, or an unmapped community — derive from data as before
+    const pool = getFilteredIncidents().filter(i => !community || i.location_zone===community);
+    towers = [...new Set(pool.map(extractTower).filter(Boolean))].sort();
+  }
+
+  if (community && isKnown && towers.length === 0) {
+    towerSel.innerHTML = officialList === null
+      ? '<option value="">N/A — managed by Emrill Security</option>'
+      : '<option value="">N/A — single tower / no towers</option>';
+    towerSel.disabled = true;
+  } else {
+    towerSel.disabled = false;
+    towerSel.innerHTML = '<option value="">All Towers</option>' + towers.map(t=>`<option value="${t}">${t}</option>`).join('');
+    if (towers.includes(prevVal)) towerSel.value = prevVal;
+  }
+}
+
+function _iaLookupClear(){
+  document.getElementById('iaLookupInput').value = '';
+  ['iaFCommunity','iaFTower','iaFSeverity','iaFShift','iaFCategory','iaFDateFrom','iaFDateTo'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  _iaLookupRender();
 }
 
 function _iaLookupRender() {
   const q = (document.getElementById('iaLookupInput')?.value||'').toLowerCase().trim();
+  const community = document.getElementById('iaFCommunity')?.value || '';
+  const tower = document.getElementById('iaFTower')?.value || '';
+  const severity = document.getElementById('iaFSeverity')?.value || '';
+  const shift = document.getElementById('iaFShift')?.value || '';
+  const category = document.getElementById('iaFCategory')?.value || '';
+  const dateFrom = document.getElementById('iaFDateFrom')?.value || '';
+  const dateTo = document.getElementById('iaFDateTo')?.value || '';
+
+  // Repopulate tower list whenever community changes (must happen before reading tower filter)
+  _iaPopulateTowers(community);
+
   const out = document.getElementById('iaLookupResults');
-  if (!q) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">Start typing to search incidents…</div>'; return; }
-  const data = getFilteredIncidents();
-  const results = data.filter(i =>
-    [i.incident_type, i.summary, i.location_zone, i.sender, i.raw_message]
-      .map(f=>(f||'').toLowerCase()).some(f=>f.includes(q))
-  ).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,20);
-  if (!results.length) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">No incidents match your search.</div>'; return; }
-  out.innerHTML = `<div style="font-size:9px;color:var(--text-faint);margin-bottom:8px;">${results.length} result${results.length!==1?'s':''}</div>` +
-    results.map(inc=>{
+  let data = getFilteredIncidents();
+
+  if (community) data = data.filter(i => i.location_zone === community);
+  if (tower)     data = data.filter(i => extractTower(i) === tower);
+  if (severity)  data = data.filter(i => i.severity === severity);
+  if (shift)     data = data.filter(i => i.shift && i.shift.startsWith(shift));
+  if (category)  data = data.filter(i => normalizeIncidentCategory(i) === category);
+  if (dateFrom)  { const from = new Date(dateFrom+'T00:00:00'); data = data.filter(i => i.timestamp && new Date(i.timestamp) >= from); }
+  if (dateTo)    { const to = new Date(dateTo+'T23:59:59'); data = data.filter(i => i.timestamp && new Date(i.timestamp) <= to); }
+  if (q) {
+    data = data.filter(i =>
+      [i.incident_type, i.summary, i.location_zone, i.sender, i.raw_message]
+        .map(f=>(f||'').toLowerCase()).some(f=>f.includes(q))
+    );
+  }
+
+  // Filter chips
+  const chips = [];
+  if (community) chips.push(['community', community]);
+  if (tower) chips.push(['tower', tower]);
+  if (severity) chips.push(['severity', severity]);
+  if (shift) chips.push(['shift', shift==='Morning'?'Day Shift':'Night Shift']);
+  if (category) chips.push(['category', category]);
+  if (dateFrom || dateTo) chips.push(['dateRange', `${dateFrom||'…'} → ${dateTo||'…'}`]);
+  document.getElementById('iaFilterChips').innerHTML = chips.map(([key,val])=>
+    `<span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:#06b6d4;font-family:'JetBrains Mono',monospace;">
+      ${val}<span onclick="_iaRemoveFilter('${key}')" style="cursor:pointer;opacity:.7;">✕</span>
+    </span>`
+  ).join('');
+  const clearBtn = document.getElementById('iaClearBtn');
+  if (clearBtn) { clearBtn.style.color = chips.length ? '#06b6d4' : ''; clearBtn.style.borderColor = chips.length ? 'rgba(6,182,212,.5)' : ''; }
+
+  const total = getFilteredIncidents().length;
+  document.getElementById('iaLookupCount').textContent = (chips.length||q)
+    ? `Showing ${data.length} of ${total} incidents` : `${total} incidents total — refine with search or filters above`;
+
+  if (!q && !chips.length) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">Start typing or apply filters to search incidents…</div>'; return; }
+  if (!data.length) { out.innerHTML = '<div class="empty-state" style="font-size:10px;">No incidents match your search.</div>'; return; }
+
+  const results = data.slice(0,30);
+  out.innerHTML = results.map(inc=>{
       const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
+      const twr = extractTower(inc);
       return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div style="flex:1">
@@ -2257,12 +2438,25 @@ function _iaLookupRender() {
           </div>
           <div style="text-align:right;flex-shrink:0;">
             <div style="font-size:10px;${sevTagStyle(inc.severity)}">${inc.severity}</div>
-            <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">${inc.location_zone||'—'}</div>
+            <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">${inc.location_zone||'—'}${twr?' · '+twr:''}</div>
             <div style="font-size:9px;color:var(--text-faint);">${formatTime(inc.timestamp)}</div>
           </div>
         </div>
       </div>`;
-    }).join('');
+    }).join('') + (data.length>30?`<div style="font-size:10px;color:var(--text-faint);text-align:center;padding:8px 0;">+${data.length-30} more — refine your search to narrow down</div>`:'');
+}
+
+function _iaRemoveFilter(key){
+  if (key === 'dateRange') {
+    const from = document.getElementById('iaFDateFrom'); if (from) from.value = '';
+    const to = document.getElementById('iaFDateTo'); if (to) to.value = '';
+    _iaLookupRender();
+    return;
+  }
+  const idMap = { community:'iaFCommunity', tower:'iaFTower', severity:'iaFSeverity', shift:'iaFShift', category:'iaFCategory' };
+  const el = document.getElementById(idMap[key]);
+  if (el) el.value = '';
+  _iaLookupRender();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2354,11 +2548,12 @@ function renderZoneHeatmap(data){
 // ═══════════════════════════════════════════════════════════════════
 // ── Zone panel state ──
 let _zpZone='', _zpTab='overview', _zpSortBy='count', _zpSortShift='both', _zpSortSev='all', _zpSortType='all';
+let _zpSearchQ='', _zpSearchTower='', _zpSearchSev='all', _zpSearchShift='both', _zpSearchDateFrom='', _zpSearchDateTo='';
 
 function zpSwitchTab(tab){
   _zpTab=tab;
   document.querySelectorAll('.zp-tab').forEach((b,i)=>{
-    b.classList.toggle('active',['overview','shifts','sort'][i]===tab);
+    b.classList.toggle('active',['overview','shifts','search','sort'][i]===tab);
   });
   _renderZpBody();
 }
@@ -2366,6 +2561,7 @@ function zpSwitchTab(tab){
 function showZonePanel(zoneName){
   _zpZone=zoneName;
   _zpTab='overview';
+  _zpSearchQ=''; _zpSearchTower=''; _zpSearchDateFrom=''; _zpSearchDateTo='';
   document.querySelectorAll('.zp-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('slideZoneName').textContent=zoneName.toUpperCase()+' — ZONE PROFILE';
   document.getElementById('slideBackdrop').classList.add('show');
@@ -2385,6 +2581,7 @@ function _renderZpBody(){
   }
   if(_zpTab==='overview') _renderZpOverview(body,zoneIncs);
   else if(_zpTab==='shifts') _renderZpShifts(body,zoneIncs);
+  else if(_zpTab==='search') _renderZpSearch(body,zoneIncs);
   else _renderZpSort(body,zoneIncs);
 }
 
@@ -2567,6 +2764,133 @@ function _renderZpShifts(body,zoneIncs){
         <span style="font-size:9px;color:#f59e0b">■ Night shift</span>
       </div>
     </div>`;
+}
+
+function _renderZpSearch(body,zoneIncs){
+  // Use authoritative tower structure for this community when known; otherwise
+  // fall back to whatever towers are actually mentioned in this zone's incidents.
+  const isKnown = Object.prototype.hasOwnProperty.call(COMMUNITY_TOWERS, _zpZone);
+  const officialList = COMMUNITY_TOWERS[_zpZone];
+  const towers = isKnown
+    ? (Array.isArray(officialList) ? officialList : [])
+    : [...new Set(zoneIncs.map(extractTower).filter(Boolean))].sort();
+  const isDifferentCompany = isKnown && officialList === null;
+  const noTowerStructure = isKnown && !isDifferentCompany && towers.length === 0;
+
+  let filtered=[...zoneIncs];
+  if(_zpSearchTower) filtered=filtered.filter(i=>extractTower(i)===_zpSearchTower);
+  if(_zpSearchShift==='am') filtered=filtered.filter(i=>i.shift&&i.shift.startsWith('Morning'));
+  if(_zpSearchShift==='pm') filtered=filtered.filter(i=>i.shift&&i.shift.startsWith('Night'));
+  if(_zpSearchSev!=='all') filtered=filtered.filter(i=>i.severity===_zpSearchSev);
+  if(_zpSearchDateFrom){ const from=new Date(_zpSearchDateFrom+'T00:00:00'); filtered=filtered.filter(i=>i.timestamp&&new Date(i.timestamp)>=from); }
+  if(_zpSearchDateTo){ const to=new Date(_zpSearchDateTo+'T23:59:59'); filtered=filtered.filter(i=>i.timestamp&&new Date(i.timestamp)<=to); }
+  if(_zpSearchQ){
+    const q=_zpSearchQ.toLowerCase();
+    filtered=filtered.filter(i=>
+      [i.incident_type,i.summary,i.sender,i.raw_message].map(f=>(f||'').toLowerCase()).some(f=>f.includes(q))
+    );
+  }
+  sortIncidentsDesc(filtered);
+
+  const pill=(label,key,val,cur)=>`<button class="zp-pill${cur===val?' active':''}" onclick="_zpSearchSet('${key}','${val}')">${label}</button>`;
+
+  body.innerHTML=`
+    <div>
+      <div class="slide-section-title">Quick Search — ${_zpZone}</div>
+      <input class="an-lookup-input" id="zpSearchInput" value="${_zpSearchQ.replace(/"/g,'&quot;')}"
+        placeholder="Search category, apartment, supervisor, summary…" oninput="_zpSearchSet('_zpSearchQ', this.value)" style="margin-bottom:10px;">
+    </div>
+    <div>
+      <div class="slide-section-title">Date Range</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <input type="date" id="zpDateFrom" value="${_zpSearchDateFrom}" onchange="_zpSearchSet('_zpSearchDateFrom', this.value)"
+          style="font-size:10px;padding:5px 8px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);flex:1;">
+        <span style="font-size:9px;color:var(--text-faint);">to</span>
+        <input type="date" id="zpDateTo" value="${_zpSearchDateTo}" onchange="_zpSearchSet('_zpSearchDateTo', this.value)"
+          style="font-size:10px;padding:5px 8px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);flex:1;">
+      </div>
+    </div>
+    ${towers.length ? `
+    <div>
+      <div class="slide-section-title">Tower / Building</div>
+      <div class="zp-sort-row" style="flex-wrap:wrap;">
+        ${pill('All Towers','_zpSearchTower','',_zpSearchTower)}
+        ${towers.map(t=>pill(t,'_zpSearchTower',t,_zpSearchTower)).join('')}
+      </div>
+    </div>` : isDifferentCompany ? `
+    <div>
+      <div class="slide-section-title">Tower / Building</div>
+      <div style="font-size:10px;color:var(--text-faint);">Creek Beach is managed by Emrill Security — tower search not applicable here.</div>
+    </div>` : noTowerStructure ? `
+    <div>
+      <div class="slide-section-title">Tower / Building</div>
+      <div style="font-size:10px;color:var(--text-faint);">${_zpZone==='Master Community'?'No towers — covers shared common areas and public parking only.':'Single tower community — no tower filter needed.'}</div>
+    </div>` : ''}
+    <div>
+      <div class="slide-section-title">Shift</div>
+      <div class="zp-sort-row">
+        ${pill('All Shifts','_zpSearchShift','both',_zpSearchShift)}
+        ${pill('Day','_zpSearchShift','am',_zpSearchShift)}
+        ${pill('Night','_zpSearchShift','pm',_zpSearchShift)}
+      </div>
+    </div>
+    <div>
+      <div class="slide-section-title">Severity</div>
+      <div class="zp-sort-row" style="flex-wrap:wrap;">
+        ${pill('All','_zpSearchSev','all',_zpSearchSev)}
+        ${pill('Critical','_zpSearchSev','Critical',_zpSearchSev)}
+        ${pill('High','_zpSearchSev','High',_zpSearchSev)}
+        ${pill('Medium','_zpSearchSev','Medium',_zpSearchSev)}
+        ${pill('Low','_zpSearchSev','Low',_zpSearchSev)}
+      </div>
+    </div>
+    <div>
+      <div class="slide-section-title">Results (${filtered.length} of ${zoneIncs.length} incidents)</div>
+      ${filtered.length===0?'<div class="empty-state">No results match current search.</div>':
+        filtered.slice(0,25).map(inc=>{
+          const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
+          const isAm=inc.shift&&inc.shift.startsWith('Morning');
+          const dotClass=inc.severity==='Critical'?'red':(inc.severity==='High'||inc.severity==='Medium')?'amber':'green';
+          const twr=extractTower(inc);
+          return `<div class="feed-item" style="padding:7px 0;" onclick="hideZonePanel();showIncidentModal(${idx})">
+            <div class="feed-dot ${dotClass}"></div>
+            <div class="feed-body" style="flex:1">
+              <div class="feed-title" style="font-size:11px">${inc.incident_type.replace(/_/g,' ')}
+                <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:4px;">${isAm?'Day':'Night'}</span>
+                ${twr?`<span style="font-size:9px;color:var(--text-faint);margin-left:6px;">${twr}</span>`:''}
+              </div>
+              <div class="feed-desc" style="font-size:10px">${(inc.summary||'').substring(0,65)}…</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="feed-time" style="font-size:9px">${formatTime(inc.timestamp)}</div>
+              <span style="font-size:9px;${sevTagStyle(inc.severity)}">${inc.severity}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      ${filtered.length>25?`<div style="font-size:10px;color:var(--text-faint);text-align:center;padding:8px 0;">+${filtered.length-25} more — refine search to narrow down</div>`:''}
+    </div>`;
+}
+
+// Called by search pills/input to update state and re-render, preserving input focus/cursor
+function _zpSearchSet(key,val){
+  if(key==='_zpSearchQ') _zpSearchQ=val;
+  else if(key==='_zpSearchTower') _zpSearchTower=val;
+  else if(key==='_zpSearchSev') _zpSearchSev=val;
+  else if(key==='_zpSearchShift') _zpSearchShift=val;
+  else if(key==='_zpSearchDateFrom') _zpSearchDateFrom=val;
+  else if(key==='_zpSearchDateTo') _zpSearchDateTo=val;
+
+  if(key==='_zpSearchQ'){
+    // Re-render only the results/pills, not the input itself, to avoid losing focus/cursor
+    const body=document.getElementById('slideZoneBody');
+    const zoneIncs=_getZoneIncs();
+    const scrollTop=document.querySelector('.slide-panel')?.scrollTop||0;
+    _renderZpSearch(body,zoneIncs);
+    const input=document.getElementById('zpSearchInput');
+    if(input){ input.focus(); input.setSelectionRange(input.value.length,input.value.length); }
+  } else {
+    _renderZpBody();
+  }
 }
 
 function _renderZpSort(body,zoneIncs){
@@ -2764,8 +3088,8 @@ const opsStaticAll=[
 ];
 const opsStaticAM=[
   ['Shift Start','07:00 GST'],['Shift End','19:00 GST'],
-  ['AM Supervisor','Senior Security Supervisor'],
-  ['AM Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
+  ['Day Supervisor','Senior Security Supervisor'],
+  ['Day Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
 ];
 const opsStaticPM=[
   ['Shift Start','19:00 GST'],['Shift End','07:00 GST'],
@@ -2778,8 +3102,8 @@ function renderOps(tab){
   let rows;
   if(tab==='AM'){
     rows=[...opsStaticAM,
-      ['AM Incidents',data.filter(i=>i.shift&&i.shift.startsWith('Morning')).length],
-      ['AM Critical',data.filter(i=>i.shift&&i.shift.startsWith('Morning')&&i.severity==='Critical').length],
+      ['Day Incidents',data.filter(i=>i.shift&&i.shift.startsWith('Morning')).length],
+      ['Day Critical',data.filter(i=>i.shift&&i.shift.startsWith('Morning')&&i.severity==='Critical').length],
     ];
   }else if(tab==='PM'){
     rows=[...opsStaticPM,
