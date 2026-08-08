@@ -2045,7 +2045,7 @@ function iaSwitch(idx) {
 function _iaHotspots(data, body) {
   const zoneMap = {}, zoneCrit = {};
   data.forEach(i => {
-    const z = normalizeZone(i.location_zone);
+    const z = normalizeZone(i.location_zone, i.sender);
     if (!z) return;
     zoneMap[z] = (zoneMap[z]||0) + 1;
     if (i.severity==='Critical'||i.severity==='High') zoneCrit[z] = (zoneCrit[z]||0) + 1;
@@ -2072,7 +2072,7 @@ function _iaHotspots(data, body) {
         <span class="an-pct">${zoneCrit[z]?zoneCrit[z]+' crit/high':''}</span>
       </div>`).join('')}
     <div class="an-section-title">Most Recent in Top Zone — ${sorted[0]?.[0]||'—'}</div>
-    ${data.filter(i=>normalizeZone(i.location_zone)===sorted[0]?.[0]).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,6).map(inc=>{
+    ${data.filter(i=>normalizeZone(i.location_zone, i.sender)===sorted[0]?.[0]).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,6).map(inc=>{
       const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
       return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
         <div style="display:flex;justify-content:space-between;">
@@ -2299,6 +2299,7 @@ const DEFAULT_COMMUNITY_TOWERS = {
   'Island Park': ['Island Park 1','Island Park 2'],
   'RYM Seagate': ['Building 01','Building 02','Building 03'],
   'Master Community': [], // No towers — shared common areas & public parking only
+  'DCH Project': [], // Future communities under construction — no tower structure yet
   'Creek Beach': null, // Managed by Emrill Security (different company) — tower search not applicable
 };
 // Custom note shown when a community is marked "Not Applicable" (null). Falls back
@@ -2506,34 +2507,57 @@ const ZONE_SYNONYMS = [
   [/the\s*grand|^grand\b/i, 'The Grand'],
   [/the\s*cove|^cove\b/i, 'The Cove'],
   [/island\s*park/i, 'Island Park'],
+  [/dch\s*project\s*site(s)?|dch\s*project\b|construction\s*site|project\s*site/i, 'DCH Project'],
   [/master\s*communit(y|ies)/i, 'Master Community'],
 ];
 
-function normalizeZone(raw){
-  if (!raw || raw.trim()==='' || raw==='Unknown') return null;
+// Ambiguous catch-all buckets — when a report resolves to one of these purely from
+// its location text, we check the sender/supervisor field for a more specific
+// community reference (e.g. "Harbour Gate Duty Mobile") before settling on the catch-all.
+const AMBIGUOUS_ZONES = new Set(['Master Community', 'DCH Project']);
+
+function _refineWithSender(resolvedZone, sender){
+  if (!AMBIGUOUS_ZONES.has(resolvedZone) || !sender || !sender.trim()) return resolvedZone;
+  for (const [re, community] of ZONE_SYNONYMS) {
+    if (re.test(sender)) return community;
+  }
+  return resolvedZone;
+}
+
+function normalizeZone(raw, sender){
+  if (!raw || raw.trim()==='' || raw==='Unknown') {
+    // No location text at all — try to infer purely from the sender/supervisor field
+    if (sender && sender.trim()) {
+      for (const [re, community] of ZONE_SYNONYMS) {
+        if (re.test(sender)) return community;
+      }
+    }
+    return null;
+  }
   const trimmed = raw.trim();
   const liveNames = Object.keys(COMMUNITY_TOWERS);
 
   // 1. Exact match against the live registry (handles already-clean values,
   //    including any custom communities added via the Admin Panel)
   const exact = liveNames.find(n => n.toLowerCase() === trimmed.toLowerCase());
-  if (exact) return exact;
+  if (exact) return _refineWithSender(exact, sender);
 
   // 2. Keyword/synonym matching against messy raw text
   for (const [re, community] of ZONE_SYNONYMS) {
-    if (re.test(trimmed)) return community;
+    if (re.test(trimmed)) return _refineWithSender(community, sender);
   }
 
   // 3. Substring match against any live registry name (covers admin-added
   //    communities that don't have an explicit synonym rule yet)
   const sortedLive = [...liveNames].sort((a,b)=>b.length-a.length); // longer/more-specific names first
   for (const name of sortedLive) {
-    if (trimmed.toLowerCase().includes(name.toLowerCase())) return name;
+    if (trimmed.toLowerCase().includes(name.toLowerCase())) return _refineWithSender(name, sender);
   }
 
   // 4. Nothing matched — bucket into Master Community as the shared/common-area catch-all
-  //    (covers cases like "DCH/Sales Pavilion" that aren't tied to a residential tower)
-  return 'Master Community';
+  //    (covers cases like "DCH/Sales Pavilion" that aren't tied to a residential tower),
+  //    still refined by sender if that reveals a more specific community
+  return _refineWithSender('Master Community', sender);
 }
 
 // ── Extract tower/building reference from raw_message or location_zone ──
@@ -2542,7 +2566,7 @@ function normalizeZone(raw){
 // with no entry in the map at all (truly unmapped).
 function extractTower(inc){
   const text = `${inc.location_zone||''} ${inc.raw_message||''}`;
-  const zone = normalizeZone(inc.location_zone);
+  const zone = normalizeZone(inc.location_zone, inc.sender);
   const isKnownZone = zone !== null && Object.prototype.hasOwnProperty.call(COMMUNITY_TOWERS, zone);
   const officialList = isKnownZone ? COMMUNITY_TOWERS[zone] : undefined;
 
@@ -2586,7 +2610,7 @@ let _iaLookupFilters = { q:'', community:'', tower:'', severity:'', shift:'', ca
 
 function _iaLookup(data, body) {
   const allZoneIncs = getFilteredIncidents();
-  const communities = [...new Set(allZoneIncs.map(i=>normalizeZone(i.location_zone)).filter(Boolean))].sort();
+  const communities = [...new Set(allZoneIncs.map(i=>normalizeZone(i.location_zone, i.sender)).filter(Boolean))].sort();
 
   body.innerHTML = `
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
@@ -2647,7 +2671,7 @@ function _iaPopulateTowers(community){
     towers = Array.isArray(officialList) ? officialList : [];
   } else {
     // No community selected, or an unmapped community — derive from data as before
-    const pool = getFilteredIncidents().filter(i => !community || normalizeZone(i.location_zone)===community);
+    const pool = getFilteredIncidents().filter(i => !community || normalizeZone(i.location_zone, i.sender)===community);
     towers = [...new Set(pool.map(extractTower).filter(Boolean))].sort();
   }
 
@@ -2687,7 +2711,7 @@ function _iaLookupRender() {
   const out = document.getElementById('iaLookupResults');
   let data = getFilteredIncidents();
 
-  if (community) data = data.filter(i => normalizeZone(i.location_zone) === community);
+  if (community) data = data.filter(i => normalizeZone(i.location_zone, i.sender) === community);
   if (tower)     data = data.filter(i => extractTower(i) === tower);
   if (severity)  data = data.filter(i => i.severity === severity);
   if (shift)     data = data.filter(i => i.shift && i.shift.startsWith(shift));
@@ -2808,7 +2832,7 @@ function renderZoneHeatmap(data){
   const el=document.getElementById('zoneKpiGrid');
   const zones={};
   data.forEach(i=>{
-    const z=normalizeZone(i.location_zone);
+    const z=normalizeZone(i.location_zone, i.sender);
     if(z) zones[z]=(zones[z]||0)+1;
   });
   const sorted=Object.entries(zones).sort((a,b)=>b[1]-a[1]);
@@ -2870,7 +2894,7 @@ function showZonePanel(zoneName){
 }
 
 function _getZoneIncs(){
-  return getFilteredIncidents().filter(i=>normalizeZone(i.location_zone)===_zpZone);
+  return getFilteredIncidents().filter(i=>normalizeZone(i.location_zone, i.sender)===_zpZone);
 }
 
 function _renderZpBody(){
