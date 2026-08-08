@@ -486,6 +486,7 @@ border-radius:20px;}
   </div>
   <div class="header-right">
     <a href="holiday-home.html" class="btn btn-hh">🏠 HOLIDAY HOMES</a>
+    <button class="btn btn-theme" onclick="openAdminPanel()" title="Community & Tower Admin">⚙ ADMIN</button>
     <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
     <div style="text-align:right">
       <div class="clock" id="clock">--:--:--</div>
@@ -882,6 +883,53 @@ border-radius:20px;}
     <div id="kpiDayStrip" style="padding:8px 16px;border-bottom:1px solid var(--border);display:flex;gap:4px;overflow-x:auto;background:var(--surface2);"></div>
 
     <div class="modal-body" id="kpiModalBody" style="max-height:60vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL MODAL — Community & Tower Management -->
+<div class="modal-backdrop" id="adminPanelModal" onclick="if(event.target===this)closeAdminPanel()">
+  <div class="modal" style="max-width:780px;width:96vw;max-height:88vh;display:flex;flex-direction:column;">
+    <div class="modal-header" style="flex-shrink:0;">
+      <div>
+        <div class="modal-title">⚙ ADMIN PANEL — COMMUNITY & TOWER REGISTER</div>
+        <div style="font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-top:2px;">Changes save to this browser and apply immediately across all search tools</div>
+      </div>
+      <button class="modal-close" onclick="closeAdminPanel()">✕</button>
+    </div>
+    <div class="modal-body" style="flex:1;overflow-y:auto;padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:10px;color:var(--text-faint);line-height:1.5;max-width:480px;">
+          <b style="color:var(--text-dim);">Multi-tower:</b> comma-separated list, e.g. <code>Tower 1, Tower 2, Tower 3</code> or <code>Island Park 1, Island Park 2</code>.<br>
+          <b style="color:var(--text-dim);">Single/No towers:</b> leave the towers field blank.<br>
+          <b style="color:var(--text-dim);">Different company:</b> tick "Not applicable" — hides the tower filter entirely with a note.
+        </div>
+        <button onclick="_adminAddRow()" style="font-size:10px;padding:6px 14px;border-radius:5px;border:1px solid rgba(6,182,212,.4);background:rgba(6,182,212,.08);color:#06b6d4;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px;white-space:nowrap;">+ ADD COMMUNITY</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;" id="adminTowerTable">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:7px 8px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">COMMUNITY</th>
+              <th style="text-align:left;padding:7px 8px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">TOWERS / BUILDINGS</th>
+              <th style="text-align:center;padding:7px 8px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">NOT APPLICABLE</th>
+              <th style="text-align:left;padding:7px 8px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10px;letter-spacing:1px;font-weight:700;">NOTE</th>
+              <th style="padding:7px 4px;"></th>
+            </tr>
+          </thead>
+          <tbody id="adminTowerTbody"></tbody>
+        </table>
+      </div>
+      <div id="adminDirtyBanner" style="display:none;margin-top:14px;padding:8px 14px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:6px;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:#f59e0b;font-family:'Rajdhani',sans-serif;font-weight:600;">⚠ UNSAVED CHANGES</span>
+        <button onclick="_adminSaveAll()" style="font-size:10px;padding:5px 16px;border-radius:4px;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.1);color:#10b981;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;">SAVE CHANGES</button>
+      </div>
+      <div id="adminSavedMsg" style="display:none;margin-top:10px;padding:8px 14px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:6px;">
+        <span style="font-size:11px;color:#10b981;font-family:'Rajdhani',sans-serif;font-weight:600;">✓ SAVED — CHANGES APPLIED TO SEARCH TOOLS</span>
+      </div>
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
+        <button onclick="_adminResetDefaults()" style="font-size:9px;padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer;">↺ Reset all communities to default register</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2230,7 +2278,9 @@ function _iaTrend(data, body) {
 // ── Authoritative tower/building structure per community ──
 // Source: official DCH Communities tower register.
 // Empty array = single-tower community or common-area-only community (no tower selector needed).
-const COMMUNITY_TOWERS = {
+// This is the SEED/DEFAULT data — never mutated directly. Live overrides from the
+// Admin Panel are layered on top of this via _rebuildCommunityTowers().
+const DEFAULT_COMMUNITY_TOWERS = {
   'The Cove': ['Tower 1','Tower 2','Tower 3'],
   'North Residence': ['Tower 1','Tower 2','Tower 3'],
   'South Residence': ['Tower 1','Tower 2','Tower 3'],
@@ -2244,9 +2294,190 @@ const COMMUNITY_TOWERS = {
   'Creek Horizon': ['Tower 1','Tower 2'],
   'Harbour Views': ['Tower 1','Tower 2'],
   'Creekside 18': ['Tower A','Tower B'],
+  'Island Park': ['Island Park 1','Island Park 2'],
   'Master Community': [], // No towers — shared common areas & public parking only
   'Creek Beach': null, // Managed by Emrill Security (different company) — tower search not applicable
 };
+// Custom note shown when a community is marked "Not Applicable" (null). Falls back
+// to a generic message if a community has no specific note set.
+const DEFAULT_COMMUNITY_NOTES = {
+  'Creek Beach': 'Creek Beach is managed by Emrill Security — tower search not applicable here.',
+};
+
+// ── Live registers used everywhere in the app ──
+// Populated by _rebuildCommunityTowers() from DEFAULT_* + Admin Panel localStorage
+// overrides. Kept as the SAME object references (properties mutated in place, not
+// reassigned) so every function that captured a reference to these objects stays in sync.
+const COMMUNITY_TOWERS = {};
+const COMMUNITY_NOTES = {};
+const ADMIN_TOWERS_KEY = 'dch-community-towers-overrides';
+
+function _adminLoadOverrides(){
+  try { return JSON.parse(localStorage.getItem(ADMIN_TOWERS_KEY) || '{}'); }
+  catch(e){ return {}; }
+}
+function _adminSaveOverrides(data){
+  try { localStorage.setItem(ADMIN_TOWERS_KEY, JSON.stringify(data)); } catch(e){}
+}
+
+// Rebuilds the live COMMUNITY_TOWERS / COMMUNITY_NOTES objects from defaults + overrides.
+// Call after any Admin Panel save so search tools immediately reflect the change.
+function _rebuildCommunityTowers(){
+  Object.keys(COMMUNITY_TOWERS).forEach(k => delete COMMUNITY_TOWERS[k]);
+  Object.keys(COMMUNITY_NOTES).forEach(k => delete COMMUNITY_NOTES[k]);
+  Object.assign(COMMUNITY_TOWERS, DEFAULT_COMMUNITY_TOWERS);
+  Object.assign(COMMUNITY_NOTES, DEFAULT_COMMUNITY_NOTES);
+
+  const overrides = _adminLoadOverrides();
+  Object.entries(overrides).forEach(([community, entry]) => {
+    if (!entry || entry.deleted) { delete COMMUNITY_TOWERS[community]; delete COMMUNITY_NOTES[community]; return; }
+    COMMUNITY_TOWERS[community] = entry.towers; // array, [] , or null
+    if (entry.note) COMMUNITY_NOTES[community] = entry.note;
+    else delete COMMUNITY_NOTES[community];
+  });
+}
+_rebuildCommunityTowers();
+
+// ══════════════════════════════════════════════════════════════════
+//  ADMIN PANEL — Community & Tower Register management
+// ══════════════════════════════════════════════════════════════════
+let _adminRows = []; // working copy while panel is open: [{name, towersStr, notApplicable, note, isDefault}]
+
+function openAdminPanel(){
+  _adminBuildRowsFromLive();
+  document.getElementById('adminPanelModal').classList.add('show');
+  _adminRenderTable();
+}
+function closeAdminPanel(){
+  document.getElementById('adminPanelModal').classList.remove('show');
+}
+
+function _adminBuildRowsFromLive(){
+  const names = [...new Set([...Object.keys(DEFAULT_COMMUNITY_TOWERS), ...Object.keys(COMMUNITY_TOWERS)])];
+  _adminRows = names.map(name => {
+    const val = COMMUNITY_TOWERS[name];
+    return {
+      name,
+      towersStr: Array.isArray(val) ? val.join(', ') : '',
+      notApplicable: val === null,
+      note: COMMUNITY_NOTES[name] || '',
+      isDefault: Object.prototype.hasOwnProperty.call(DEFAULT_COMMUNITY_TOWERS, name)
+    };
+  });
+}
+
+function _adminRenderTable(){
+  const tbody = document.getElementById('adminTowerTbody');
+  tbody.innerHTML = _adminRows.map((row, i) => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+      <td style="padding:5px 8px;">
+        ${row.isDefault
+          ? `<span style="font-weight:600;">${row.name}</span>`
+          : `<input type="text" value="${row.name.replace(/"/g,'&quot;')}" oninput="_adminSetField(${i},'name',this.value)"
+               style="width:130px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:4px 6px;" placeholder="Community name">`
+        }
+      </td>
+      <td style="padding:5px 8px;">
+        <input type="text" value="${row.towersStr.replace(/"/g,'&quot;')}" ${row.notApplicable?'disabled':''}
+          oninput="_adminSetField(${i},'towersStr',this.value)"
+          style="width:220px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;padding:4px 6px;${row.notApplicable?'opacity:.4;':''}"
+          placeholder="e.g. Tower 1, Tower 2 (blank = single/no tower)">
+      </td>
+      <td style="padding:5px 8px;text-align:center;">
+        <input type="checkbox" ${row.notApplicable?'checked':''} onchange="_adminSetField(${i},'notApplicable',this.checked)" style="cursor:pointer;">
+      </td>
+      <td style="padding:5px 8px;">
+        <input type="text" value="${row.note.replace(/"/g,'&quot;')}" ${row.notApplicable?'':'disabled'}
+          oninput="_adminSetField(${i},'note',this.value)"
+          style="width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text-dim);font-size:10px;padding:4px 6px;${row.notApplicable?'':'opacity:.4;'}"
+          placeholder="Note shown instead of tower filter">
+      </td>
+      <td style="padding:5px 4px;text-align:center;">
+        ${row.isDefault
+          ? `<span title="Default community — cannot be deleted, only reset" style="color:var(--text-faint);font-size:11px;">🔒</span>`
+          : `<button onclick="_adminDeleteRow(${i})" title="Remove community" style="background:transparent;border:none;color:var(--red);cursor:pointer;font-size:13px;opacity:.6;">✕</button>`
+        }
+      </td>
+    </tr>`).join('');
+}
+
+function _adminSetField(i, field, value){
+  _adminRows[i][field] = value;
+  if (field === 'notApplicable') _adminRenderTable(); // re-render to enable/disable dependent fields
+  _adminMarkDirty();
+}
+
+function _adminAddRow(){
+  _adminRows.push({ name:'', towersStr:'', notApplicable:false, note:'', isDefault:false });
+  _adminRenderTable();
+  _adminMarkDirty();
+}
+
+function _adminDeleteRow(i){
+  _adminRows.splice(i, 1);
+  _adminRenderTable();
+  _adminMarkDirty();
+}
+
+function _adminMarkDirty(){
+  const b = document.getElementById('adminDirtyBanner');
+  if (b) b.style.display = 'flex';
+  const s = document.getElementById('adminSavedMsg');
+  if (s) s.style.display = 'none';
+}
+
+function _adminSaveAll(){
+  const overrides = {};
+  // Default communities: only write an override if the admin actually changed something
+  // from its default, so untouched defaults keep tracking DEFAULT_COMMUNITY_TOWERS.
+  _adminRows.forEach(row => {
+    const name = row.name.trim();
+    if (!name) return; // skip blank rows
+    const towers = row.notApplicable ? null : row.towersStr.split(',').map(t=>t.trim()).filter(Boolean);
+
+    if (row.isDefault) {
+      const defaultVal = DEFAULT_COMMUNITY_TOWERS[name];
+      const defaultStr = Array.isArray(defaultVal) ? defaultVal.join(', ') : '';
+      const defaultNote = DEFAULT_COMMUNITY_NOTES[name] || '';
+      const unchanged = row.notApplicable === (defaultVal===null) &&
+                         (row.notApplicable || row.towersStr.trim() === defaultStr) &&
+                         row.note.trim() === defaultNote;
+      if (!unchanged) overrides[name] = { towers, note: row.note.trim() || undefined };
+    } else {
+      overrides[name] = { towers, note: row.note.trim() || undefined };
+    }
+  });
+
+  // Mark deleted custom communities (existed live before, not present in _adminRows anymore)
+  const currentNames = new Set(_adminRows.map(r=>r.name.trim()).filter(Boolean));
+  Object.keys(COMMUNITY_TOWERS).forEach(name => {
+    if (!Object.prototype.hasOwnProperty.call(DEFAULT_COMMUNITY_TOWERS, name) && !currentNames.has(name)) {
+      overrides[name] = { deleted: true };
+    }
+  });
+
+  _adminSaveOverrides(overrides);
+  _rebuildCommunityTowers();
+
+  document.getElementById('adminDirtyBanner').style.display = 'none';
+  const saved = document.getElementById('adminSavedMsg');
+  saved.style.display = 'block';
+  setTimeout(()=>{ saved.style.display='none'; }, 3000);
+
+  // Refresh any currently-open search UI so changes are visible immediately
+  const iaCommunitySel = document.getElementById('iaFCommunity');
+  if (iaCommunitySel) _iaLookupRender();
+}
+
+function _adminResetDefaults(){
+  if (!confirm('Reset all communities to the default register? This clears any custom communities and edits you have made.')) return;
+  localStorage.removeItem(ADMIN_TOWERS_KEY);
+  _rebuildCommunityTowers();
+  _adminBuildRowsFromLive();
+  _adminRenderTable();
+  _adminMarkDirty();
+  _adminSaveAll();
+}
 
 // ── Extract tower/building reference from raw_message or location_zone ──
 // Normalizes to the official "Tower N" / "Tower X" naming from COMMUNITY_TOWERS
@@ -2261,10 +2492,20 @@ function extractTower(inc){
   // Known zone with an actual tower list (multi-tower community) — match against it
   if (isKnownZone && Array.isArray(officialList) && officialList.length) {
     for (const t of officialList) {
-      const num = t.match(/\d+|[A-Z]$/i)?.[0];
-      if (!num) continue;
-      const re = new RegExp(`Tower\\s*\\(?\\s*0*${num}\\b\\)?`, 'i');
-      if (re.test(text)) return t;
+      // Standard "Tower N" / "Tower X" naming — flexible bracket/zero-pad matching
+      // e.g. "Tower 1" also matches "Tower (01)", "Tower(1)", "Tower01"
+      const towerMatch = t.match(/^Tower\s+(\d+|[A-Za-z])$/i);
+      if (towerMatch) {
+        const num = towerMatch[1];
+        const re = new RegExp(`Tower\\s*\\(?\\s*0*${num}\\b\\)?`, 'i');
+        if (re.test(text)) return t;
+        continue;
+      }
+      // Custom naming (e.g. "Island Park 1") that doesn't use the word "Tower" —
+      // match the literal building name directly, with flexible whitespace
+      const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+      const re2 = new RegExp(`\\b${escaped}\\b`, 'i');
+      if (re2.test(text)) return t;
     }
     return null; // community has known towers but this incident doesn't mention one
   }
@@ -2355,7 +2596,7 @@ function _iaPopulateTowers(community){
 
   if (community && isKnown && towers.length === 0) {
     towerSel.innerHTML = officialList === null
-      ? '<option value="">N/A — managed by Emrill Security</option>'
+      ? '<option value="">N/A — Not Applicable</option>'
       : '<option value="">N/A — single tower / no towers</option>';
     towerSel.disabled = true;
   } else {
@@ -2820,7 +3061,7 @@ function _renderZpSearch(body,zoneIncs){
     </div>` : isDifferentCompany ? `
     <div>
       <div class="slide-section-title">Tower / Building</div>
-      <div style="font-size:10px;color:var(--text-faint);">Creek Beach is managed by Emrill Security — tower search not applicable here.</div>
+      <div style="font-size:10px;color:var(--text-faint);">${COMMUNITY_NOTES[_zpZone] || 'This community is managed separately — tower search not applicable here.'}</div>
     </div>` : noTowerStructure ? `
     <div>
       <div class="slide-section-title">Tower / Building</div>
