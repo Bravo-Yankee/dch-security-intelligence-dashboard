@@ -2045,7 +2045,8 @@ function iaSwitch(idx) {
 function _iaHotspots(data, body) {
   const zoneMap = {}, zoneCrit = {};
   data.forEach(i => {
-    const z = i.location_zone || 'Unknown';
+    const z = normalizeZone(i.location_zone);
+    if (!z) return;
     zoneMap[z] = (zoneMap[z]||0) + 1;
     if (i.severity==='Critical'||i.severity==='High') zoneCrit[z] = (zoneCrit[z]||0) + 1;
   });
@@ -2071,7 +2072,7 @@ function _iaHotspots(data, body) {
         <span class="an-pct">${zoneCrit[z]?zoneCrit[z]+' crit/high':''}</span>
       </div>`).join('')}
     <div class="an-section-title">Most Recent in Top Zone — ${sorted[0]?.[0]||'—'}</div>
-    ${data.filter(i=>i.location_zone===sorted[0]?.[0]).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,6).map(inc=>{
+    ${data.filter(i=>normalizeZone(i.location_zone)===sorted[0]?.[0]).sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0)).slice(0,6).map(inc=>{
       const idx=allIncidents.findIndex(i=>i.message_id===inc.message_id);
       return `<div class="an-guest-card" onclick="_iaOpen(${idx})">
         <div style="display:flex;justify-content:space-between;">
@@ -2296,6 +2297,7 @@ const DEFAULT_COMMUNITY_TOWERS = {
   'Harbour Views': ['Tower 1','Tower 2'],
   'Creekside 18': ['Tower A','Tower B'],
   'Island Park': ['Island Park 1','Island Park 2'],
+  'RYM Seagate': ['Building 01','Building 02','Building 03'],
   'Master Community': [], // No towers — shared common areas & public parking only
   'Creek Beach': null, // Managed by Emrill Security (different company) — tower search not applicable
 };
@@ -2480,15 +2482,69 @@ function _adminResetDefaults(){
   _adminSaveAll();
 }
 
+// ── ZONE NORMALIZATION ──────────────────────────────────────────────────────
+// Raw location_zone values from the AI classifier / raw messages are often
+// noisy full paths (e.g. "RYM Seagate Buildings/Building 03/Level-08",
+// "DCH/Sales Pavilion") rather than a clean community name. This buckets any
+// raw value into exactly one of the official EMAAR communities so the Zone
+// Heatmap and every zone-scoped tool only ever show those cards.
+const ZONE_SYNONYMS = [
+  // Ordered most-specific-first to avoid partial-name collisions (e.g. Harbour Gate vs Harbour Views).
+  [/rym[\s-]?seagate|seagate/i, 'RYM Seagate'],
+  [/17\s*icon\s*bay|icon\s*bay/i, '17 Icon Bay'],
+  [/creek\s*beach\s*surroundings|creek\s*beach/i, 'Creek Beach'],
+  [/creek\s*edge/i, 'Creek Edge'],
+  [/creek\s*crescent/i, 'Creek Crescent'],
+  [/creek\s*gate/i, 'Creek Gate'],
+  [/creek\s*rise/i, 'Creek Rise'],
+  [/creek\s*horizon/i, 'Creek Horizon'],
+  [/creekside\s*18|creekside18/i, 'Creekside 18'],
+  [/harbou?r\s*gate/i, 'Harbour Gate'],
+  [/harbou?r\s*views?/i, 'Harbour Views'],
+  [/north\s*residence/i, 'North Residence'],
+  [/south\s*residence/i, 'South Residence'],
+  [/the\s*grand|^grand\b/i, 'The Grand'],
+  [/the\s*cove|^cove\b/i, 'The Cove'],
+  [/island\s*park/i, 'Island Park'],
+  [/master\s*communit(y|ies)/i, 'Master Community'],
+];
+
+function normalizeZone(raw){
+  if (!raw || raw.trim()==='' || raw==='Unknown') return null;
+  const trimmed = raw.trim();
+  const liveNames = Object.keys(COMMUNITY_TOWERS);
+
+  // 1. Exact match against the live registry (handles already-clean values,
+  //    including any custom communities added via the Admin Panel)
+  const exact = liveNames.find(n => n.toLowerCase() === trimmed.toLowerCase());
+  if (exact) return exact;
+
+  // 2. Keyword/synonym matching against messy raw text
+  for (const [re, community] of ZONE_SYNONYMS) {
+    if (re.test(trimmed)) return community;
+  }
+
+  // 3. Substring match against any live registry name (covers admin-added
+  //    communities that don't have an explicit synonym rule yet)
+  const sortedLive = [...liveNames].sort((a,b)=>b.length-a.length); // longer/more-specific names first
+  for (const name of sortedLive) {
+    if (trimmed.toLowerCase().includes(name.toLowerCase())) return name;
+  }
+
+  // 4. Nothing matched — bucket into Master Community as the shared/common-area catch-all
+  //    (covers cases like "DCH/Sales Pavilion" that aren't tied to a residential tower)
+  return 'Master Community';
+}
+
 // ── Extract tower/building reference from raw_message or location_zone ──
 // Normalizes to the official "Tower N" / "Tower X" naming from COMMUNITY_TOWERS
 // wherever possible, falling back to raw pattern extraction only for communities
 // with no entry in the map at all (truly unmapped).
 function extractTower(inc){
   const text = `${inc.location_zone||''} ${inc.raw_message||''}`;
-  const zone = inc.location_zone;
-  const isKnownZone = Object.prototype.hasOwnProperty.call(COMMUNITY_TOWERS, zone);
-  const officialList = COMMUNITY_TOWERS[zone];
+  const zone = normalizeZone(inc.location_zone);
+  const isKnownZone = zone !== null && Object.prototype.hasOwnProperty.call(COMMUNITY_TOWERS, zone);
+  const officialList = isKnownZone ? COMMUNITY_TOWERS[zone] : undefined;
 
   // Known zone with an actual tower list (multi-tower community) — match against it
   if (isKnownZone && Array.isArray(officialList) && officialList.length) {
@@ -2530,7 +2586,7 @@ let _iaLookupFilters = { q:'', community:'', tower:'', severity:'', shift:'', ca
 
 function _iaLookup(data, body) {
   const allZoneIncs = getFilteredIncidents();
-  const communities = [...new Set(allZoneIncs.map(i=>i.location_zone).filter(Boolean))].sort();
+  const communities = [...new Set(allZoneIncs.map(i=>normalizeZone(i.location_zone)).filter(Boolean))].sort();
 
   body.innerHTML = `
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
@@ -2591,7 +2647,7 @@ function _iaPopulateTowers(community){
     towers = Array.isArray(officialList) ? officialList : [];
   } else {
     // No community selected, or an unmapped community — derive from data as before
-    const pool = getFilteredIncidents().filter(i => !community || i.location_zone===community);
+    const pool = getFilteredIncidents().filter(i => !community || normalizeZone(i.location_zone)===community);
     towers = [...new Set(pool.map(extractTower).filter(Boolean))].sort();
   }
 
@@ -2631,7 +2687,7 @@ function _iaLookupRender() {
   const out = document.getElementById('iaLookupResults');
   let data = getFilteredIncidents();
 
-  if (community) data = data.filter(i => i.location_zone === community);
+  if (community) data = data.filter(i => normalizeZone(i.location_zone) === community);
   if (tower)     data = data.filter(i => extractTower(i) === tower);
   if (severity)  data = data.filter(i => i.severity === severity);
   if (shift)     data = data.filter(i => i.shift && i.shift.startsWith(shift));
@@ -2751,7 +2807,10 @@ function formatTime(ts){
 function renderZoneHeatmap(data){
   const el=document.getElementById('zoneKpiGrid');
   const zones={};
-  data.forEach(i=>{if(i.location_zone&&i.location_zone!=='Unknown') zones[i.location_zone]=(zones[i.location_zone]||0)+1;});
+  data.forEach(i=>{
+    const z=normalizeZone(i.location_zone);
+    if(z) zones[z]=(zones[z]||0)+1;
+  });
   const sorted=Object.entries(zones).sort((a,b)=>b[1]-a[1]);
   if(!sorted.length){el.innerHTML='<div class="empty-state">No zone data compiled</div>';return;}
   const max=sorted[0][1];
@@ -2811,7 +2870,7 @@ function showZonePanel(zoneName){
 }
 
 function _getZoneIncs(){
-  return getFilteredIncidents().filter(i=>i.location_zone===_zpZone);
+  return getFilteredIncidents().filter(i=>normalizeZone(i.location_zone)===_zpZone);
 }
 
 function _renderZpBody(){
