@@ -1255,7 +1255,7 @@ function renderKPIs(data){
   document.getElementById('kpiAction').textContent=data.filter(i=>i.action_required==='TRUE').length;
   document.getElementById('kpiHandover').textContent=data.length;
   // Analytics card — quick summary line
-  const topZoneEntry=Object.entries(data.reduce((m,i)=>{const z=i.location_zone||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
+  const topZoneEntry=Object.entries(data.reduce((m,i)=>{const z=normalizeZone(i.location_zone,i.sender)||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
   const topTypeEntry=Object.entries(data.reduce((m,i)=>{const t=i.incident_type||'Other';m[t]=(m[t]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('kpiAnalyticsTotal').textContent=data.length;
   document.getElementById('kpiAnalyticsSub').textContent=(topZoneEntry?topZoneEntry[0]:'—')+' · '+(topTypeEntry?topTypeEntry[0].replace(/_/g,' '):'—');
@@ -1385,7 +1385,7 @@ function _kpiRender() {
         <div class="feed-title">${inc.incident_type.replace(/_/g,' ')} <span class="shift-badge ${isAm?'am':'pm'}" style="margin-left:5px;">${isAm?'Day':'Night'}</span></div>
         <div class="feed-desc">${(inc.summary||'—').substring(0,100)}${(inc.summary||'').length>100?'…':''}</div>
         <div class="feed-meta">
-          <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
+          <span class="feed-tag tag-loc">${normalizeZone(inc.location_zone,inc.sender)||'—'}</span>
           <span class="feed-tag tag-type" style="${sevTagStyle(inc.severity)}">${inc.severity}</span>
           ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
           <span class="feed-tag tag-sup" style="color:var(--text-faint);font-size:9px;">${tsDate}</span>
@@ -2020,7 +2020,7 @@ function _iaOpen(idx){
 
 function openIncidentAnalytics() {
   const data = getFilteredIncidents();
-  const topZone = Object.entries(data.reduce((m,i)=>{const z=i.location_zone||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
+  const topZone = Object.entries(data.reduce((m,i)=>{const z=normalizeZone(i.location_zone,i.sender)||'Unknown';m[z]=(m[z]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('iaSubtitle').textContent = data.length+' incidents in current range'+(topZone?'  ·  Hotspot: '+topZone[0]+' ('+topZone[1]+')':'');
   document.getElementById('incidentAnalyticsModal').classList.add('show');
   iaSwitch(0);
@@ -2760,7 +2760,7 @@ function _iaLookupRender() {
           </div>
           <div style="text-align:right;flex-shrink:0;">
             <div style="font-size:10px;${sevTagStyle(inc.severity)}">${inc.severity}</div>
-            <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">${inc.location_zone||'—'}${twr?' · '+twr:''}</div>
+            <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">${normalizeZone(inc.location_zone,inc.sender)||'—'}${twr?' · '+twr:''}</div>
             <div style="font-size:9px;color:var(--text-faint);">${formatTime(inc.timestamp)}</div>
           </div>
         </div>
@@ -2803,7 +2803,7 @@ function renderLiveFeed(data){
         <div class="feed-title">${inc.incident_type.replace(/_/g,' ')}</div>
         <div class="feed-desc">${(inc.summary||'').substring(0,90)}${inc.summary&&inc.summary.length>90?'…':''}</div>
         <div class="feed-meta">
-          <span class="feed-tag tag-loc">${inc.location_zone||'—'}</span>
+          <span class="feed-tag tag-loc">${normalizeZone(inc.location_zone,inc.sender)||'—'}</span>
           <span class="feed-tag tag-type" style="${sevTagStyle(inc.severity)}">${inc.severity}</span>
           ${timeOfInc?`<span class="feed-tag tag-time-of-inc">⏱ ${timeOfInc}</span>`:''}
           <span class="feed-tag tag-sup">${inc.sender||'—'}</span>
@@ -3326,7 +3326,7 @@ function showIncidentModal(idx){
   const sevColors={Critical:'var(--red)',High:'var(--amber)',Medium:'var(--amber)',Low:'var(--green)'};
   document.getElementById('modalBody').innerHTML=`
     <div class="modal-field"><label>Severity</label><p style="color:${sevColors[inc.severity]||'var(--text)'};font-weight:700;font-size:14px;">${inc.severity}</p></div>
-    <div class="modal-field"><label>Location Zone</label><p>${inc.location_zone||'—'}</p></div>
+    <div class="modal-field"><label>Location Zone</label><p>${normalizeZone(inc.location_zone,inc.sender)||'—'}</p></div>
     <div class="modal-field"><label>Time of Incident (extracted)</label><p style="font-family:'JetBrains Mono',monospace;color:var(--green);font-weight:600;">${timeOfInc}</p></div>
     <div class="modal-field"><label>Reported By</label><p>${inc.sender||'—'}</p></div>
     <div class="modal-field"><label>Timestamp (GST)</label><p style="font-family:'JetBrains Mono',monospace;">${inc.timestamp?getGSTNow(inc.timestamp).toLocaleString('en-AE'):'—'}</p></div>
@@ -3379,7 +3379,7 @@ function renderThreats(data){
 function generateRecommendations(data){
   if(!data.length)return[];
   const recos=[];
-  const zones={};data.forEach(i=>{if(i.location_zone&&i.location_zone!=='Unknown')zones[i.location_zone]=(zones[i.location_zone]||0)+1;});
+  const zones={};data.forEach(i=>{const z=normalizeZone(i.location_zone,i.sender);if(z)zones[z]=(zones[z]||0)+1;});
   const topZone=Object.entries(zones).sort((a,b)=>b[1]-a[1])[0];
   if(topZone)recos.push({title:`HOTSPOT MITIGATION: ${topZone[0]}`,action:`Deploy targeted patrol sweep — ${topZone[1]} incidents logged. Command CCTV array to continuously monitor local perimeters.`});
 
@@ -3611,7 +3611,7 @@ function renderHandover(data){
   const sev=s=>recent.filter(i=>i.severity===s).length;
   const types={};recent.forEach(i=>{types[i.incident_type]=(types[i.incident_type]||0)+1;});
   const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const zones={};recent.forEach(i=>{if(i.location_zone)zones[i.location_zone]=(zones[i.location_zone]||0)+1;});
+  const zones={};recent.forEach(i=>{const z=normalizeZone(i.location_zone,i.sender);if(z)zones[z]=(zones[z]||0)+1;});
   const topZones=Object.entries(zones).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const recos=generateRecommendations(data).map((r,i)=>`${i+1}. ${r.title}: ${r.action}`).join('\n');
   const t=getTrafficAdvisory();
