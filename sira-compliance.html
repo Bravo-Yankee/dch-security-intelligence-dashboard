@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIRA Compliance Tracker — Dubai Creek Harbour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090f;
+  --surface: #0f1117;
+  --surface2: #161923;
+  --surface3: #1c2130;
+  --border: #1e2535;
+  --border2: #252d40;
+  --text: #e2e8f0;
+  --text-dim: #8895aa;
+  --text-faint: #4a5568;
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.12);
+  --blue: #06b6d4;
+  --purple: #a855f7;
+}
+[data-theme="light"] {
+  --bg: #f0f2f7;
+  --surface: #ffffff;
+  --surface2: #f8f9fc;
+  --surface3: #eef0f6;
+  --border: #d1d9e8;
+  --border2: #c0cbe0;
+  --text: #0f172a;
+  --text-dim: #475569;
+  --text-faint: #94a3b8;
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.12);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.1);
+  --green: #059669;
+  --green-dim: rgba(5,150,105,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.rajdhani{font-family:'Rajdhani',sans-serif;}
+
+/* ── HEADER ── */
+.header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-wrap:wrap;gap:10px;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.header-logo{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#d97706);display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Rajdhani',sans-serif;font-size:15px;color:#0f0f0f;flex-shrink:0;}
+.header-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;letter-spacing:0.5px;}
+.header-subtitle{font-size:11px;color:var(--text-faint);margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.btn{padding:7px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;}
+.btn:hover{background:var(--surface3);border-color:var(--amber);}
+.btn-main{border-color:rgba(245,158,11,.5);background:var(--amber-dim);color:var(--amber);}
+.btn-theme{padding:7px 10px;}
+.btn-admin{padding:7px 10px;}
+.clock{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--amber);}
+.clock-date{font-size:10px;color:var(--text-faint);text-align:right;}
+
+/* ── LAYOUT ── */
+.container{max-width:1600px;margin:0 auto;padding:20px 24px 60px;}
+
+/* ── DATA SOURCE BAR ── */
+.source-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:18px;}
+.source-bar label{font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:1px;white-space:nowrap;}
+.source-bar input[type=text]{flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;}
+.source-status{font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;border-top:3px solid var(--border2);cursor:pointer;transition:transform .15s,border-color .15s;}
+.kpi-card:hover{transform:translateY(-2px);}
+.kpi-card.active{border-color:var(--amber);}
+.kpi-val{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+.kpi-label{font-size:10px;color:var(--text-faint);margin-top:6px;text-transform:uppercase;letter-spacing:.5px;}
+.kpi-card.c-expired{border-top-color:var(--red);} .kpi-card.c-expired .kpi-val{color:var(--red);}
+.kpi-card.c-critical{border-top-color:#f97316;} .kpi-card.c-critical .kpi-val{color:#f97316;}
+.kpi-card.c-warning{border-top-color:var(--amber);} .kpi-card.c-warning .kpi-val{color:var(--amber);}
+.kpi-card.c-acting{border-top-color:var(--purple);} .kpi-card.c-acting .kpi-val{color:var(--purple);}
+.kpi-card.c-leave{border-top-color:var(--blue);} .kpi-card.c-leave .kpi-val{color:var(--blue);}
+.kpi-card.c-total{border-top-color:var(--green);} .kpi-card.c-total .kpi-val{color:var(--green);}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;}
+.filter-bar input[type=text],.filter-bar select{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:11.5px;font-family:inherit;}
+.filter-bar input[type=text]{flex:1;min-width:180px;}
+.filter-chips{display:flex;flex-wrap:wrap;gap:5px;width:100%;margin-top:6px;}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--amber);font-family:'JetBrains Mono',monospace;}
+.chip span{cursor:pointer;opacity:.7;}
+.chip span:hover{opacity:1;}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;}
+.table-title{padding:12px 16px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{text-align:left;padding:9px 12px;background:var(--surface2);color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;}
+thead th:hover{color:var(--amber);}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background .1s;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:9px 12px;vertical-align:middle;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:5px;font-weight:600;white-space:nowrap;}
+.badge.expired{background:var(--red-dim);color:var(--red);}
+.badge.critical{background:rgba(249,115,22,.15);color:#f97316;}
+.badge.warning{background:var(--amber-dim);color:var(--amber);}
+.badge.notice{background:rgba(6,182,212,.12);color:var(--blue);}
+.badge.ok{background:var(--green-dim);color:var(--green);}
+.badge.acting{background:rgba(168,85,247,.15);color:var(--purple);}
+.badge.leave{background:rgba(6,182,212,.12);color:var(--blue);}
+.badge.unknown{background:var(--surface3);color:var(--text-faint);}
+.name-cell{font-weight:600;}
+.subtext{font-size:10px;color:var(--text-faint);}
+
+/* ── MODAL ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;}
+.modal-backdrop.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 20px;border-bottom:1px solid var(--border);}
+.modal-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;}
+.modal-close{background:transparent;border:none;color:var(--text-faint);font-size:18px;cursor:pointer;}
+.modal-body{padding:16px 20px;}
+.modal-field{margin-bottom:14px;}
+.modal-field label{display:block;font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;}
+.modal-field p{font-size:13px;}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 10px;color:var(--text);font-size:12.5px;font-family:inherit;}
+.modal-field textarea{resize:vertical;min-height:60px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+.btn-primary{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.5);color:var(--amber);}
+.btn-danger{background:var(--red-dim);border:1px solid rgba(239,68,68,.5);color:var(--red);}
+
+.empty-state{text-align:center;padding:36px 20px;color:var(--text-faint);font-size:12px;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">SI</div>
+    <div>
+      <div class="header-title">SIRA COMPLIANCE TRACKER</div>
+      <div class="header-subtitle">Dubai Creek Harbour · Zone D Security Licensing</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="security-ops.html" class="btn">🛡 SECURITY OPS</a>
+    <a href="holiday-home.html" class="btn">🏠 HOLIDAY HOMES</a>
+    <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
+    <div style="text-align:right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-date" id="clockDate">---</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- DATA SOURCE -->
+  <div class="source-bar">
+    <label>TOWERS CSV</label>
+    <input type="text" id="csvTowers" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjqvAg0SdPBt4TpbumNY-hrgaOMoAURL-tGSAmk5N_ISFLyKD5TKr6AEZSqMkkmj-TRhJ-r2X5aAhg/pub?gid=0&single=true&output=csv" placeholder="Paste published CSV URL for the Towers tab…">
+    <label>MASTER COMMUNITY CSV</label>
+    <input type="text" id="csvMC" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjqvAg0SdPBt4TpbumNY-hrgaOMoAURL-tGSAmk5N_ISFLyKD5TKr6AEZSqMkkmj-TRhJ-r2X5aAhg/pub?gid=488270598&single=true&output=csv" placeholder="Paste published CSV URL for the Master Community tab…">
+    <label>PROJECT CSV</label>
+    <input type="text" id="csvProject" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTjqvAg0SdPBt4TpbumNY-hrgaOMoAURL-tGSAmk5N_ISFLyKD5TKr6AEZSqMkkmj-TRhJ-r2X5aAhg/pub?gid=1567117480&single=true&output=csv" placeholder="Paste published CSV URL for the Project tab…">
+    <button class="btn btn-main" onclick="loadAllData()">LOAD DATA</button>
+    <span class="source-status mono" id="sourceStatus">Not connected</span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <input type="text" id="fSearch" placeholder="Search name, employee ID, location…" oninput="renderTable()">
+    <select id="fSegment" onchange="renderTable()">
+      <option value="">All Segments</option>
+      <option value="Towers">Towers</option>
+      <option value="Master Community">Master Community</option>
+      <option value="Project">Project</option>
+    </select>
+    <select id="fLocation" onchange="renderTable()"><option value="">All Locations</option></select>
+    <select id="fDesignation" onchange="renderTable()"><option value="">All Designations</option></select>
+    <select id="fUrgency" onchange="renderTable()">
+      <option value="">All Statuses</option>
+      <option value="expired">🔴 Expired</option>
+      <option value="critical">🟠 Critical (≤30d)</option>
+      <option value="warning">🟡 Warning (31-60d)</option>
+      <option value="notice">🔵 Notice (61-90d)</option>
+      <option value="ok">🟢 OK</option>
+    </select>
+    <select id="fActing" onchange="renderTable()">
+      <option value="">All</option>
+      <option value="yes">⚠ Acting Above License</option>
+    </select>
+    <button class="btn" onclick="clearFilters()">CLEAR</button>
+    <div class="filter-chips" id="filterChips"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-title">
+      <span>STAFF LICENSE REGISTER</span>
+      <span class="subtext mono" id="tableCount">0 records</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('name')">Name</th>
+            <th onclick="sortBy('empId')">ID</th>
+            <th onclick="sortBy('segment')">Segment</th>
+            <th onclick="sortBy('location')">Location</th>
+            <th onclick="sortBy('designation')">Designation</th>
+            <th onclick="sortBy('days')">Expiry</th>
+            <th>Status</th>
+            <th>Flags</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- AMENDMENT MODAL -->
+<div class="modal-backdrop" id="amendModal" onclick="if(event.target===this)closeAmendModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Record Amendment</div>
+        <div class="subtext" id="amendSubtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeAmendModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Amendment Type</label>
+        <select id="amendType" onchange="onAmendTypeChange()">
+          <option value="location_change">Location Swap / Change</option>
+          <option value="promotion">Promotion</option>
+          <option value="removed">Removed from Location</option>
+          <option value="resigned">Resigned</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="modal-field" id="fieldNewLocation">
+        <label>New Location</label>
+        <input type="text" id="amendNewLocation" placeholder="e.g. Harbour Gate">
+      </div>
+      <div class="modal-field" id="fieldNewDesignation">
+        <label>New Designation</label>
+        <input type="text" id="amendNewDesignation" placeholder="e.g. Security Supervisor">
+      </div>
+      <div class="modal-field">
+        <label>Effective Date</label>
+        <input type="date" id="amendEffectiveDate">
+      </div>
+      <div class="modal-field">
+        <label>Notes</label>
+        <textarea id="amendNotes" placeholder="Any additional context…"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>Amended By</label>
+        <input type="text" id="amendedBy" placeholder="Your name">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeAmendModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAmendment()">Save Amendment</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-backdrop" id="detailModal" onclick="if(event.target===this)closeDetailModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailTitle">Staff Detail</div>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="openAmendFromDetail()">✎ Record Amendment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════════════════════════
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'light' ? 'dark' : 'light';
+  if (next === 'light') document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem('sira-theme', next);
+  document.querySelector('.btn-theme').textContent = next === 'light' ? '🌙' : '☀';
+}
+(function initTheme(){
+  const saved = localStorage.getItem('sira-theme') || 'dark';
+  if (saved === 'light') document.documentElement.setAttribute('data-theme','light');
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('.btn-theme').textContent = saved === 'light' ? '🌙' : '☀';
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════════════════════════════
+function updateClock(){
+  const now = new Date();
+  const gst = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Dubai'}));
+  document.getElementById('clock').textContent = gst.toLocaleTimeString('en-GB');
+  document.getElementById('clockDate').textContent = gst.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' GST';
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ══════════════════════════════════════════════════════════════
+// CSV PARSING (handles quoted fields with embedded commas)
+// ══════════════════════════════════════════════════════════════
+// Full single-pass CSV parser — handles quoted fields that contain embedded
+// commas, escaped quotes ("" inside a quoted field), AND literal newlines
+// inside a quoted field (common in real exports where a header cell has
+// wrapped/multi-line text, e.g. "Sl \nNo"). Splitting the raw text into
+// lines before parsing quotes — the naive approach — breaks on exactly
+// this case, so this parses the whole text in one pass instead.
+function parseCSV(text){
+  const rows = [];
+  let row = [];
+  let cur = '';
+  let inQuotes = false;
+  let i = 0;
+  const n = text.length;
+
+  while (i < n) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i+1] === '"') { cur += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      cur += c; i++; continue;
+    } else {
+      if (c === '"') { inQuotes = true; i++; continue; }
+      if (c === ',') { row.push(cur); cur = ''; i++; continue; }
+      if (c === '\r') { i++; continue; } // normalize CRLF, handled by \n below
+      if (c === '\n') {
+        row.push(cur); cur = '';
+        if (row.some(f => f.trim() !== '')) rows.push(row);
+        row = []; i++; continue;
+      }
+      cur += c; i++; continue;
+    }
+  }
+  // final field/row if the text doesn't end with a newline
+  if (cur !== '' || row.length > 0) {
+    row.push(cur);
+    if (row.some(f => f.trim() !== '')) rows.push(row);
+  }
+
+  if (rows.length < 2) return [];
+  // Header cells may themselves contain a literal newline (e.g. "Sl \nNo") —
+  // normalize whitespace so lookups by header name are reliable.
+  const headers = rows[0].map(h => h.replace(/\s+/g, ' ').trim());
+  const dataRows = [];
+  for (let r = 1; r < rows.length; r++) {
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = (rows[r][idx] || '').trim());
+    dataRows.push(obj);
+  }
+  return dataRows;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NORMALIZATION
+// ══════════════════════════════════════════════════════════════
+function normalizeStatus(raw){
+  if (!raw) return 'Unknown';
+  const s = String(raw).trim().toLowerCase();
+  if (s.startsWith('valid') || s.startsWith('vaild')) return 'Valid';
+  if (s === 'expired') return 'Expired';
+  return String(raw).trim();
+}
+
+const PROMOTION_PENDING_RE = /promot(ed|ion)|pending\s*(training|supervisor|update)|training\s*pending/i;
+const ON_LEAVE_RE = /\bALO\b|annual\s*leave|on\s*leave/i;
+const REMOVED_RE = /removed\s*from\s*location/i;
+const RESIGNED_RE = /resigned/i;
+
+function parseFlexibleDate(val){
+  if (!val) return null;
+  if (val instanceof Date) return val;
+  // Try native parse first (handles YYYY-MM-DD, ISO strings)
+  let d = new Date(val);
+  if (!isNaN(d.getTime())) return d;
+  // Try DD/MM/YYYY
+  const m = String(val).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (m) {
+    let [, dd, mm, yyyy] = m;
+    if (yyyy.length === 2) yyyy = '20' + yyyy;
+    d = new Date(`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
+function daysUntil(expiryVal){
+  const exp = parseFlexibleDate(expiryVal);
+  if (!exp) return null;
+  const now = new Date();
+  exp.setHours(0,0,0,0); now.setHours(0,0,0,0);
+  return Math.round((exp - now) / 86400000);
+}
+
+function urgencyBucket(days){
+  if (days === null) return 'unknown';
+  if (days < 0) return 'expired';
+  if (days <= 30) return 'critical';
+  if (days <= 60) return 'warning';
+  if (days <= 90) return 'notice';
+  return 'ok';
+}
+
+const BUCKET_LABELS = { expired:'Expired', critical:'Critical', warning:'Warning', notice:'Notice', ok:'Valid', unknown:'Unknown' };
+
+// ══════════════════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════════════════
+let allStaff = [];
+
+async function fetchCSV(url){
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  return await resp.text();
+}
+
+function mapRow(row, segment){
+  // Towers sheet has Location/Designation swapped relative to its own headers —
+  // Location column actually holds the job title, Designation holds the community name.
+  // Master Community and Project sheets are correctly ordered.
+  const rawLocation = row['Location'] || '';
+  const rawDesignation = row['Designation'] || '';
+  const location = segment === 'Towers' ? rawDesignation : rawLocation;
+  const designation = segment === 'Towers' ? rawLocation : rawDesignation;
+
+  const empId = row['Employee ID'] || '';
+  const name = (row['NAME'] || '').trim();
+  if (!empId || !name) return null;
+
+  const expiredDateRaw = row['Expired Date'] || '';
+  const remarks = (row['Remarks'] || '').trim();
+  const days = daysUntil(expiredDateRaw);
+  const bucket = urgencyBucket(days);
+
+  return {
+    segment,
+    empId: String(empId).trim(),
+    name,
+    location: location || 'Unknown',
+    designation: designation || 'Unknown',
+    licenseNo: row['SIRA License No.'] || '',
+    expiredDateRaw,
+    days,
+    bucket,
+    status: normalizeStatus(row['Vaild / Expired / Without Licence/Traning'] || ''),
+    remarks,
+    actingAboveLicense: PROMOTION_PENDING_RE.test(remarks),
+    onLeave: ON_LEAVE_RE.test(remarks),
+    removed: REMOVED_RE.test(remarks) || REMOVED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Traning']||'')),
+    resigned: RESIGNED_RE.test(remarks) || RESIGNED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Traning']||'')),
+  };
+}
+
+async function loadAllData(){
+  const urls = {
+    Towers: document.getElementById('csvTowers').value.trim(),
+    'Master Community': document.getElementById('csvMC').value.trim(),
+    Project: document.getElementById('csvProject').value.trim(),
+  };
+  const status = document.getElementById('sourceStatus');
+  status.textContent = 'Loading…';
+
+  const results = [];
+  let anyLoaded = false;
+  for (const [segment, url] of Object.entries(urls)) {
+    if (!url) continue;
+    try {
+      const text = await fetchCSV(url);
+      const rows = parseCSV(text);
+      rows.forEach(r => { const m = mapRow(r, segment); if (m) results.push(m); });
+      anyLoaded = true;
+    } catch(e) {
+      console.error(`Failed to load ${segment}:`, e);
+    }
+  }
+
+  if (!anyLoaded) {
+    status.textContent = 'No valid CSV URLs — paste at least one above';
+    return;
+  }
+
+  allStaff = results;
+  status.textContent = `✓ ${allStaff.length} records loaded · ${new Date().toLocaleTimeString('en-GB')}`;
+  try { localStorage.setItem('sira-csv-towers', urls.Towers); localStorage.setItem('sira-csv-mc', urls['Master Community']); localStorage.setItem('sira-csv-project', urls.Project); } catch(e){}
+
+  populateFilterOptions();
+  renderKPIs();
+  renderTable();
+}
+
+// Restore saved CSV URLs on load (localStorage overrides the built-in defaults if present)
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const t = localStorage.getItem('sira-csv-towers'); if (t) document.getElementById('csvTowers').value = t;
+    const m = localStorage.getItem('sira-csv-mc'); if (m) document.getElementById('csvMC').value = m;
+    const p = localStorage.getItem('sira-csv-project'); if (p) document.getElementById('csvProject').value = p;
+  } catch(e){}
+  // Auto-load on open — the CSV fields ship with real default URLs, so data
+  // should load immediately without requiring a manual click.
+  loadAllData();
+});
+
+// ══════════════════════════════════════════════════════════════
+// KPIs
+// ══════════════════════════════════════════════════════════════
+let activeKpiFilter = '';
+
+function renderKPIs(){
+  const active = allStaff.filter(s => !s.removed && !s.resigned);
+  const counts = {
+    total: active.length,
+    expired: active.filter(s => s.bucket === 'expired').length,
+    critical: active.filter(s => s.bucket === 'critical').length,
+    warning: active.filter(s => s.bucket === 'warning').length,
+    acting: active.filter(s => s.actingAboveLicense).length,
+    leave: active.filter(s => s.onLeave).length,
+  };
+
+  const cards = [
+    ['total','Total Tracked',counts.total,'c-total'],
+    ['expired','Expired',counts.expired,'c-expired'],
+    ['critical','Critical ≤30d',counts.critical,'c-critical'],
+    ['warning','Warning 31-60d',counts.warning,'c-warning'],
+    ['acting','Acting Above License',counts.acting,'c-acting'],
+    ['leave','On Leave',counts.leave,'c-leave'],
+  ];
+
+  document.getElementById('kpiGrid').innerHTML = cards.map(([key,label,val,cls]) => `
+    <div class="kpi-card ${cls} ${activeKpiFilter===key?'active':''}" onclick="toggleKpiFilter('${key}')">
+      <div class="kpi-val">${val}</div>
+      <div class="kpi-label">${label}</div>
+    </div>`).join('');
+}
+
+function toggleKpiFilter(key){
+  activeKpiFilter = activeKpiFilter === key ? '' : key;
+  renderKPIs();
+  renderTable();
+}
+
+// ══════════════════════════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════════════════════════
+function populateFilterOptions(){
+  const locations = [...new Set(allStaff.map(s => s.location))].sort();
+  const designations = [...new Set(allStaff.map(s => s.designation))].sort();
+  document.getElementById('fLocation').innerHTML = '<option value="">All Locations</option>' + locations.map(l => `<option value="${l}">${l}</option>`).join('');
+  document.getElementById('fDesignation').innerHTML = '<option value="">All Designations</option>' + designations.map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function clearFilters(){
+  document.getElementById('fSearch').value = '';
+  document.getElementById('fSegment').value = '';
+  document.getElementById('fLocation').value = '';
+  document.getElementById('fDesignation').value = '';
+  document.getElementById('fUrgency').value = '';
+  document.getElementById('fActing').value = '';
+  activeKpiFilter = '';
+  renderKPIs();
+  renderTable();
+}
+
+let sortState = { key: 'days', dir: 'asc' };
+function sortBy(key){
+  if (sortState.key === key) sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+  else { sortState.key = key; sortState.dir = 'asc'; }
+  renderTable();
+}
+
+function getFilteredStaff(){
+  let data = allStaff.filter(s => !s.removed && !s.resigned);
+  const q = document.getElementById('fSearch').value.trim().toLowerCase();
+  const segment = document.getElementById('fSegment').value;
+  const location = document.getElementById('fLocation').value;
+  const designation = document.getElementById('fDesignation').value;
+  const urgency = document.getElementById('fUrgency').value;
+  const acting = document.getElementById('fActing').value;
+
+  if (q) data = data.filter(s => [s.name, s.empId, s.location, s.designation].some(f => String(f).toLowerCase().includes(q)));
+  if (segment) data = data.filter(s => s.segment === segment);
+  if (location) data = data.filter(s => s.location === location);
+  if (designation) data = data.filter(s => s.designation === designation);
+  if (urgency) data = data.filter(s => s.bucket === urgency);
+  if (acting === 'yes') data = data.filter(s => s.actingAboveLicense);
+
+  if (activeKpiFilter === 'expired') data = data.filter(s => s.bucket === 'expired');
+  else if (activeKpiFilter === 'critical') data = data.filter(s => s.bucket === 'critical');
+  else if (activeKpiFilter === 'warning') data = data.filter(s => s.bucket === 'warning');
+  else if (activeKpiFilter === 'acting') data = data.filter(s => s.actingAboveLicense);
+  else if (activeKpiFilter === 'leave') data = data.filter(s => s.onLeave);
+
+  data.sort((a,b) => {
+    let av = a[sortState.key], bv = b[sortState.key];
+    if (sortState.key === 'days') { av = av===null?99999:av; bv = bv===null?99999:bv; }
+    else { av = String(av||'').toLowerCase(); bv = String(bv||'').toLowerCase(); }
+    const cmp = av > bv ? 1 : av < bv ? -1 : 0;
+    return sortState.dir === 'asc' ? cmp : -cmp;
+  });
+
+  return data;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABLE RENDER
+// ══════════════════════════════════════════════════════════════
+function renderTable(){
+  const data = getFilteredStaff();
+  document.getElementById('tableCount').textContent = `${data.length} of ${allStaff.filter(s=>!s.removed&&!s.resigned).length} records`;
+
+  if (data.length === 0) {
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="8"><div class="empty-state">No records match. Load data or adjust filters.</div></td></tr>`;
+    return;
+  }
+
+  document.getElementById('tableBody').innerHTML = data.map(s => {
+    const expiryText = s.days === null ? '—' : s.days < 0 ? `${Math.abs(s.days)}d overdue` : `${s.days}d left`;
+    const flags = [];
+    if (s.actingAboveLicense) flags.push('<span class="badge acting">⚠ Above License</span>');
+    if (s.onLeave) flags.push('<span class="badge leave">On Leave</span>');
+    return `<tr onclick="openDetail('${s.empId}')">
+      <td class="name-cell">${s.name}</td>
+      <td class="mono subtext">${s.empId}</td>
+      <td>${s.segment}</td>
+      <td>${s.location}</td>
+      <td>${s.designation}</td>
+      <td class="mono">${expiryText}</td>
+      <td><span class="badge ${s.bucket}">${BUCKET_LABELS[s.bucket]}</span></td>
+      <td>${flags.join(' ') || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// DETAIL MODAL
+// ══════════════════════════════════════════════════════════════
+let currentDetailEmpId = null;
+
+function openDetail(empId){
+  const s = allStaff.find(x => x.empId === empId);
+  if (!s) return;
+  currentDetailEmpId = empId;
+  document.getElementById('detailTitle').textContent = s.name;
+  document.getElementById('detailBody').innerHTML = `
+    <div class="modal-field"><label>Employee ID</label><p class="mono">${s.empId}</p></div>
+    <div class="modal-field"><label>Segment</label><p>${s.segment}</p></div>
+    <div class="modal-field"><label>Location</label><p>${s.location}</p></div>
+    <div class="modal-field"><label>Designation</label><p>${s.designation}</p></div>
+    <div class="modal-field"><label>License No.</label><p class="mono">${s.licenseNo || '—'}</p></div>
+    <div class="modal-field"><label>Expiry Date</label><p>${s.expiredDateRaw || '—'} (${s.days===null?'—':s.days+' days'})</p></div>
+    <div class="modal-field"><label>Status</label><p><span class="badge ${s.bucket}">${BUCKET_LABELS[s.bucket]}</span></p></div>
+    <div class="modal-field"><label>Remarks</label><p>${s.remarks || '—'}</p></div>
+  `;
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeDetailModal(){ document.getElementById('detailModal').classList.remove('show'); }
+
+// ══════════════════════════════════════════════════════════════
+// AMENDMENT MODAL
+// ══════════════════════════════════════════════════════════════
+// TODO: replace with your real n8n webhook URL once the workflow is imported and activated.
+const SIRA_AMENDMENT_WEBHOOK_URL = 'PASTE_YOUR_N8N_WEBHOOK_URL_HERE/webhook/sira-amendment';
+
+function openAmendFromDetail(){
+  closeDetailModal();
+  openAmendModal(currentDetailEmpId);
+}
+
+function openAmendModal(empId){
+  const s = allStaff.find(x => x.empId === empId);
+  if (!s) return;
+  currentDetailEmpId = empId;
+  document.getElementById('amendSubtitle').textContent = `${s.name} · ID ${s.empId}`;
+  document.getElementById('amendType').value = 'location_change';
+  document.getElementById('amendNewLocation').value = s.location;
+  document.getElementById('amendNewDesignation').value = s.designation;
+  document.getElementById('amendEffectiveDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('amendNotes').value = '';
+  onAmendTypeChange();
+  document.getElementById('amendModal').classList.add('show');
+}
+function closeAmendModal(){ document.getElementById('amendModal').classList.remove('show'); }
+
+function onAmendTypeChange(){
+  const type = document.getElementById('amendType').value;
+  const showLoc = type === 'location_change' || type === 'promotion';
+  document.getElementById('fieldNewLocation').style.display = showLoc || type==='location_change' ? '' : 'none';
+  document.getElementById('fieldNewDesignation').style.display = showLoc ? '' : 'none';
+}
+
+async function submitAmendment(){
+  const empId = currentDetailEmpId;
+  const payload = {
+    employee_id: empId,
+    amendment_type: document.getElementById('amendType').value,
+    new_location: document.getElementById('amendNewLocation').value.trim(),
+    new_designation: document.getElementById('amendNewDesignation').value.trim(),
+    effective_date: document.getElementById('amendEffectiveDate').value,
+    notes: document.getElementById('amendNotes').value.trim(),
+    amended_by: document.getElementById('amendedBy').value.trim() || 'Unknown',
+  };
+
+  if (SIRA_AMENDMENT_WEBHOOK_URL.includes('PASTE_YOUR')) {
+    alert('Amendment webhook URL not yet configured. Set SIRA_AMENDMENT_WEBHOOK_URL in the code once the n8n workflow is imported and activated.\n\nAmendment that would have been sent:\n' + JSON.stringify(payload, null, 2));
+    return;
+  }
+
+  try {
+    const resp = await fetch(SIRA_AMENDMENT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    closeAmendModal();
+    alert('Amendment recorded. Reload data to see the update once the sheet syncs.');
+  } catch(e) {
+    alert('Failed to submit amendment: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
