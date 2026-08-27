@@ -166,6 +166,13 @@
     color:#93A9B9;
   }
   .masthead .meta strong{color:#D8E4EB;font-weight:500;}
+  .masthead .meta .code-inline{
+    background:rgba(224,166,98,0.16);
+    color:var(--accent);
+    padding:1px 6px;
+    border-radius:5px;
+    font-size:11px;
+  }
 
   /* ---------- Contacts strip ---------- */
   .contacts{
@@ -607,10 +614,10 @@
   <div class="masthead-inner">
     <div class="eyebrow"><span class="dot"></span>Security Operations &middot; Field Reference</div>
     <h1>Dubai Creek Harbour &mdash; Vertical Communities</h1>
-    <p class="sub">Condensed duty reference for enforcing the Community Rules &amp; Regulations for Vertical Communities. Every entry cites its source clause &mdash; use the citation when writing up a Notice of Violation.</p>
+    <p class="sub">Condensed duty reference for enforcing the Community Rules &amp; Regulations for Vertical Communities, plus the villa-oriented Master Community Rules items the Master Community security team also enforces. Every entry cites its source clause &mdash; use the citation when writing up a Notice of Violation.</p>
     <div class="meta">
-      <span>Source: <strong>Emaar Community Management &mdash; Rules &amp; Regulations for Vertical Communities, DCH</strong></span>
-      <span>Scope: <strong>Apartment / tower Units only</strong> &mdash; villa Master Community Rules differ, see footer</span>
+      <span>Primary source: <strong>Emaar &mdash; Rules &amp; Regulations for Vertical Communities, DCH</strong> <span class="code-inline">&sect;</span></span>
+      <span>Secondary source: <strong>DCH Master Community Rules</strong> (villa Lots) <span class="code-inline">MCR &sect;</span></span>
     </div>
   </div>
 </header>
@@ -642,10 +649,11 @@
     <a href="#facilities"><span class="code">&sect;5.1&ndash;5.6</span>Shared Facilities<span class="flagdot"></span></a>
     <a href="#access-parking"><span class="code">&sect;6.1&ndash;6.7</span>Access, Parking &amp; Roads</a>
     <a href="#maintenance"><span class="code">&sect;7.1&ndash;7.11</span>Unit &amp; Building Upkeep</a>
+    <a href="#yards-landscaping"><span class="code">MCR &sect;5.1</span>Yards &amp; Landscaping<span class="flagdot"></span></a>
     <a href="#security"><span class="code">&sect;8</span>Security &amp; Surveillance<span class="flagdot"></span></a>
     <a href="#appearance"><span class="code">&sect;9.1&ndash;9.7</span>Home Appearance</a>
     <a href="#charges-compliance"><span class="code">&sect;10&ndash;11</span>Charges &amp; Compliance</a>
-    <div class="toc-foot">Dot = section contains an item that escalates straight to Local Authority or an immediate penalty.</div>
+    <div class="toc-foot">Dot = section contains an item that escalates straight to Local Authority or an immediate penalty. &ldquo;MCR &sect;&rdquo; cites the villa-oriented Master Community Rules; plain &ldquo;&sect;&rdquo; cites Vertical Communities Rules.</div>
   </nav>
 
   <main>
@@ -660,6 +668,7 @@
         <div class="escalate-item"><span class="tag">Report to Municipality</span>Lost/abandoned pets, cruelty, pet attacks &mdash; residents contact <strong>Dubai Municipality</strong> directly. <span class="code">&sect;4.4.xix</span></div>
         <div class="escalate-item"><span class="tag">Report to authority</span>Any injury or death linked to Shared Facilities use is reported to the relevant <strong>Local Authority</strong>. <span class="code">&sect;5.1.viii</span></div>
         <div class="escalate-item"><span class="tag">Evidence authority</span>Security personnel may photograph or film violation evidence <strong>without prior consent</strong> &mdash; use this for incident write-ups. <span class="code">&sect;8.v</span></div>
+        <div class="escalate-item"><span class="tag">Municipality penalty</span>Dewatering a private pool into the sewer network draws <strong>severe penalties set by Dubai Municipality</strong>, on top of the standard NOV &mdash; villa Lots only. <span class="code">MCR &sect;5.1.6</span></div>
       </div>
     </section>
 
@@ -713,6 +722,7 @@
     <div class="legend">
       <div class="item"><span class="flag critical">Immediate / escalate</span> bypasses the warning step or names a Local Authority</div>
       <div class="item"><span class="flag authority">Reported outward</span> CM refers this to Local Authority or another body</div>
+      <div class="item"><span class="code" style="background:var(--surface-2);padding:2px 7px;border-radius:5px;">MCR &sect;</span> villa Master Community Rules, cited separately from Vertical Communities <span class="code" style="background:var(--surface-2);padding:2px 7px;border-radius:5px;">&sect;</span></div>
     </div>
 
     <!-- ENFORCEMENT -->
@@ -862,7 +872,7 @@
       <summary>
         <span class="cat-code">&sect;5.1&ndash;5.6</span>
         <h2>Shared Facilities &amp; Access</h2>
-        <span class="cat-count">18 items</span>
+        <span class="cat-count">19 items</span>
         <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </summary>
       <div class="body">
@@ -873,6 +883,7 @@
           <li class="rule"><span class="code">&sect;5.1.vii</span><span class="text">Private functions need the Community Manager's written permission and may require a security deposit.</span></li>
           <li class="rule"><span class="code">&sect;5.1.viii</span><span class="text">Serious injury or death is reported to the relevant Local Authority. <span class="flag critical">escalate</span></span></li>
           <li class="rule"><span class="code">&sect;5.1.xviii</span><span class="text">Repeat or severe violations can mean permanent exclusion from Shared Facilities.</span></li>
+          <li class="rule"><span class="code">MCR &sect;3.1.6</span><span class="text">Villa Master Community parks: private functions capped at <span class="num">8</span> guests by default, unless the Community Manager approves more &mdash; Vertical Communities rules don't set a fixed number.</span></li>
         </ul>
         <p class="subhead">Sports areas &mdash; &sect;5.2</p>
         <ul class="rule-list">
@@ -965,6 +976,31 @@
       </div>
     </details>
 
+    <!-- YARDS & LANDSCAPING (villa Lots, Master Community Rules) -->
+    <details class="category" id="yards-landscaping">
+      <summary>
+        <span class="cat-code">MCR &sect;5.1, 2.6</span>
+        <h2>Yards &amp; Landscaping <span style="font-weight:500;color:var(--ink-faint);font-size:13px;">&mdash; villa Lots</span></h2>
+        <span class="cat-count">10 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="intro">This section exists only in the villa-oriented <strong>Master Community Rules</strong> &mdash; towers have no Lots or private gardens, so it's absent from the Vertical Communities document. Included here because the Master Community security team patrols villa street frontages and shared landscaped areas too.</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">MCR &sect;5.1.1</span><span class="text">Owner keeps all landscaping &mdash; shrubs, trees, grass &mdash; neatly trimmed and maintained at their own expense, until the Lot's title is transferred.</span></li>
+          <li class="rule"><span class="code">MCR &sect;5.1.2</span><span class="text">The Board and Community Manager decide, at their discretion, what counts as an acceptable standard of maintenance.</span></li>
+          <li class="rule"><span class="code">MCR &sect;5.1.3</span><span class="text">Major landscape improvements &mdash; irrigation systems, sheds, pergolas, pools, shade structures, fences, gates &mdash; need prior Board/Community Manager approval, or removal can be ordered at the Owner's cost.</span></li>
+          <li class="rule"><span class="code">MCR &sect;5.1.4</span><span class="text">No removing trees from the front or rear garden without the Owners Association's express agreement, regardless of who planted them.</span></li>
+          <li class="rule"><span class="code">MCR &sect;5.1.5</span><span class="text">No sinking water wells, bore wells, reverse osmosis, or desalination plants anywhere on the property.</span></li>
+          <li class="rule"><span class="code">MCR &sect;5.1.6</span><span class="text">Dewatering a private swimming pool into the sewer network is strictly prohibited &mdash; enforced by NOV and severe penalties, including those set by Dubai Municipality. <span class="flag authority">authority</span></span></li>
+          <li class="rule"><span class="code">MCR &sect;5.1.7</span><span class="text">No discharging wastewater or dumping rubbish onto an adjacent plot or directly into the lake.</span></li>
+          <li class="rule"><span class="code">MCR &sect;2.6.5</span><span class="text">Weeds, rubbish, debris, storage boxes and unsightly items must be regularly cleared from the Lot.</span></li>
+          <li class="rule"><span class="code">MCR &sect;2.6.6</span><span class="text">Service yards, clotheslines and stored materials on a Lot must be enclosed, fenced or screened so they're not visible from neighbouring property or the street.</span></li>
+          <li class="rule"><span class="code">MCR &sect;2.6.7</span><span class="text">No incinerator may be kept or maintained on any Lot.</span></li>
+        </ul>
+      </div>
+    </details>
+
     <!-- SECURITY -->
     <details class="category" id="security">
       <summary>
@@ -1033,7 +1069,7 @@
 
 <footer class="page-footer">
   <p><strong>Source:</strong> Emaar Community Management, &ldquo;Community Rules and Regulations for Vertical Communities&rdquo; &mdash; Dubai Creek Harbour. This reference condenses that document for operational use; the original governs in any conflict, and the Community Manager interprets discrepancies or ambiguities per its Introduction.</p>
-  <p><strong>Scope note:</strong> a separate, villa-oriented &ldquo;Dubai Creek Harbour Master Community Rules&rdquo; document also exists and was not merged into this page &mdash; check it for any Unit outside the vertical/tower communities.</p>
+  <p><strong>Secondary source:</strong> &ldquo;Dubai Creek Harbour Master Community Rules&rdquo; (the villa-oriented document). Its Yards &amp; Landscaping section is folded in above, cited as <strong>MCR &sect;</strong>, since it covers ground the Vertical Communities document doesn't and the Master Community security team enforces it too. Everywhere else the two documents overlap, only the newer Vertical Communities wording is shown.</p>
 </footer>
 
 <script>
