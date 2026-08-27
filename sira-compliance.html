@@ -444,13 +444,15 @@ async function fetchCSV(url){
 }
 
 function mapRow(row, segment){
-  // Towers sheet has Location/Designation swapped relative to its own headers —
-  // Location column actually holds the job title, Designation holds the community name.
-  // Master Community and Project sheets are correctly ordered.
-  const rawLocation = row['Location'] || '';
-  const rawDesignation = row['Designation'] || '';
-  const location = segment === 'Towers' ? rawDesignation : rawLocation;
-  const designation = segment === 'Towers' ? rawLocation : rawDesignation;
+  // NOTE: the original uploaded Excel had Location/Designation swapped
+  // specifically on the Towers tab. That's been corrected at the SOURCE —
+  // the live Google Sheet was populated from a corrected export where all
+  // three tabs consistently use Location = community/site, Designation =
+  // job title. No per-segment compensation needed here anymore; applying
+  // one would incorrectly re-swap already-correct data (this was a real
+  // bug — fixed).
+  const location = row['Location'] || '';
+  const designation = row['Designation'] || '';
 
   const empId = row['Employee ID'] || '';
   const name = (row['NAME'] || '').trim();
