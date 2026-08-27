@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="ops.png">
+<title>DCH Vertical Duty Reference</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Tokens ---------- */
+  :root{
+    --bg:#EEF2F5;
+    --surface:#FFFFFF;
+    --surface-2:#E2E8EE;
+    --surface-3:#DCE6EC;
+    --ink:#12212E;
+    --ink-soft:#4C6070;
+    --ink-faint:#7C8FA0;
+    --line:#C7D2DA;
+
+    --accent:#A6672A;
+    --accent-soft:#F2E4D2;
+    --accent-ink:#6E4419;
+
+    --critical:#A13328;
+    --critical-soft:#F5DCD8;
+    --critical-ink:#7A2119;
+
+    --authority:#2D5F73;
+    --authority-soft:#DCEBEF;
+    --authority-ink:#1D4353;
+
+    --shadow: 0 1px 2px rgba(18,33,46,0.06), 0 6px 20px -8px rgba(18,33,46,0.12);
+    --radius: 10px;
+    --font-display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+    --font-body: "Public Sans", -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0A131B;
+      --surface:#101C27;
+      --surface-2:#16232F;
+      --surface-3:#1C2C3A;
+      --ink:#E7EEF3;
+      --ink-soft:#A8BAC7;
+      --ink-faint:#71879A;
+      --line:#243746;
+
+      --accent:#E0A662;
+      --accent-soft:#2E2113;
+      --accent-ink:#F0C592;
+
+      --critical:#E2766A;
+      --critical-soft:#341714;
+      --critical-ink:#F2A99E;
+
+      --authority:#6FB6CC;
+      --authority-soft:#112833;
+      --authority-ink:#9AD3E3;
+
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 24px -8px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0A131B;
+    --surface:#101C27;
+    --surface-2:#16232F;
+    --surface-3:#1C2C3A;
+    --ink:#E7EEF3;
+    --ink-soft:#A8BAC7;
+    --ink-faint:#71879A;
+    --line:#243746;
+
+    --accent:#E0A662;
+    --accent-soft:#2E2113;
+    --accent-ink:#F0C592;
+
+    --critical:#E2766A;
+    --critical-soft:#341714;
+    --critical-ink:#F2A99E;
+
+    --authority:#6FB6CC;
+    --authority-soft:#112833;
+    --authority-ink:#9AD3E3;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 24px -8px rgba(0,0,0,0.5);
+  }
+
+  /* ---------- Reset-ish ---------- */
+  *,*::before,*::after{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15.5px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:var(--font-display);
+    font-weight:700;
+    text-wrap:balance;
+    margin:0;
+    letter-spacing:0.01em;
+  }
+  a{color:inherit;}
+  ul{margin:0;padding:0;list-style:none;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  .visually-hidden{
+    position:absolute; width:1px;height:1px;overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    background:
+      linear-gradient(180deg, rgba(18,33,46,0.0), rgba(18,33,46,0.0)),
+      var(--ink);
+    color:#F4F7F9;
+    border-bottom:3px solid var(--accent);
+  }
+  .masthead-inner{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px clamp(16px,4vw,40px) 20px;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#B9CBD8;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .masthead h1{
+    font-size:clamp(28px,4.4vw,40px);
+    color:#FBFCFD;
+    line-height:1.05;
+  }
+  .masthead .sub{
+    margin-top:8px;
+    color:#C4D3DE;
+    font-size:15px;
+    max-width:62ch;
+  }
+  .masthead .meta{
+    margin-top:16px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:#93A9B9;
+  }
+  .masthead .meta strong{color:#D8E4EB;font-weight:500;}
+
+  /* ---------- Contacts strip ---------- */
+  .contacts{
+    background:var(--surface-2);
+    border-bottom:1px solid var(--line);
+  }
+  .contacts-inner{
+    max-width:1180px;
+    margin:0 auto;
+    padding:10px clamp(16px,4vw,40px);
+    display:flex;
+    align-items:center;
+    gap:14px;
+    overflow-x:auto;
+    scrollbar-width:thin;
+  }
+  .contacts-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    flex:0 0 auto;
+    white-space:nowrap;
+    padding-right:10px;
+    border-right:1px solid var(--line);
+  }
+  .contact-chip{
+    flex:0 0 auto;
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    white-space:nowrap;
+    padding:5px 10px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    font-size:13px;
+    text-decoration:none;
+    color:var(--ink);
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .contact-chip:hover{border-color:var(--accent);}
+  .contact-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .contact-chip .num{font-family:var(--font-mono);font-weight:500;color:var(--accent-ink);}
+
+  /* ---------- Shell / grid ---------- */
+  .shell{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 clamp(16px,4vw,40px) 80px;
+    display:grid;
+    grid-template-columns:252px minmax(0,1fr);
+    gap:36px;
+    align-items:start;
+  }
+
+  /* ---------- Nav ---------- */
+  .toc{
+    position:sticky;
+    top:16px;
+    align-self:start;
+    max-height:calc(100vh - 32px);
+    overflow-y:auto;
+    padding-top:24px;
+    scrollbar-width:thin;
+  }
+  .toc-title{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin-bottom:10px;
+    padding:0 4px;
+  }
+  .toc a{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:7px 10px;
+    border-radius:8px;
+    text-decoration:none;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    transition:background .12s ease, color .12s ease;
+  }
+  .toc a .code{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--ink-faint);
+    min-width:44px;
+  }
+  .toc a:hover{background:var(--surface-2); color:var(--ink);}
+  .toc a.active{background:var(--surface-3); color:var(--ink); font-weight:600;}
+  .toc a.active .code{color:var(--accent-ink);}
+  .toc a .flagdot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--critical);
+    flex:0 0 auto;
+    margin-left:auto;
+  }
+  .toc-foot{
+    margin-top:18px;
+    padding:10px;
+    border-top:1px solid var(--line);
+    font-size:11.5px;
+    color:var(--ink-faint);
+    line-height:1.5;
+  }
+
+  /* ---------- Main ---------- */
+  main{padding-top:24px; min-width:0;}
+
+  section{scroll-margin-top:18px;}
+
+  .section-block + .section-block{margin-top:14px;}
+
+  /* Critical escalation callout */
+  .escalate{
+    background:var(--critical-soft);
+    border:1px solid color-mix(in srgb, var(--critical) 35%, var(--critical-soft));
+    border-left:4px solid var(--critical);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin:26px 0 30px;
+  }
+  .escalate h2{
+    font-size:19px;
+    color:var(--critical-ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .escalate p.lead{margin:6px 0 12px;color:var(--ink-soft);font-size:13.5px;max-width:70ch;}
+  .escalate-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:10px;
+  }
+  .escalate-item{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:11px 12px;
+    font-size:13px;
+    line-height:1.45;
+  }
+  .escalate-item .tag{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--critical-ink);
+    background:var(--critical-soft);
+    border:1px solid color-mix(in srgb, var(--critical) 40%, transparent);
+    padding:1px 7px;
+    border-radius:5px;
+    margin-bottom:6px;
+  }
+
+  /* Ladder */
+  .ladder-wrap{margin:0 0 30px;}
+  .ladder-wrap h2{font-size:19px;margin-bottom:4px;}
+  .ladder-wrap p.lead{margin:0 0 14px;color:var(--ink-soft);font-size:13.5px;max-width:70ch;}
+  .ladder{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:0;
+    position:relative;
+  }
+  .ladder::before{
+    content:"";
+    position:absolute;
+    top:19px; left:6%; right:6%;
+    height:2px;
+    background:var(--line);
+    z-index:0;
+  }
+  .ladder-step{
+    position:relative;
+    z-index:1;
+    padding:0 10px;
+    text-align:left;
+  }
+  .ladder-step .num{
+    width:38px;height:38px;
+    border-radius:50%;
+    background:var(--surface);
+    border:2px solid var(--accent);
+    color:var(--accent-ink);
+    font-family:var(--font-mono);
+    font-weight:500;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+    margin-bottom:10px;
+  }
+  .ladder-step h3{font-size:14.5px;font-weight:600;font-family:var(--font-body);}
+  .ladder-step p{font-size:12.5px;color:var(--ink-soft);margin:4px 0 0;}
+  .ladder-note{
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--critical-ink);
+    background:var(--critical-soft);
+    display:inline-block;
+    padding:6px 11px;
+    border-radius:7px;
+  }
+
+  /* Stat grid */
+  .stats-wrap{margin:0 0 34px;}
+  .stats-wrap h2{font-size:19px;margin-bottom:4px;}
+  .stats-wrap p.lead{margin:0 0 14px;color:var(--ink-soft);font-size:13.5px;}
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(128px,1fr));
+    gap:10px;
+  }
+  .stat{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:12px 13px;
+    box-shadow:var(--shadow);
+  }
+  .stat .val{
+    font-family:var(--font-mono);
+    font-size:19px;
+    font-weight:500;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .stat .val small{font-size:11px;color:var(--ink-faint);font-weight:400;margin-left:2px;}
+  .stat .label{font-size:11.5px;color:var(--ink-soft);margin-top:3px;line-height:1.3;}
+
+  /* Category / details */
+  .category{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:12px;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .category summary{
+    list-style:none;
+    cursor:pointer;
+    padding:15px 18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .category summary::-webkit-details-marker{display:none;}
+  .category summary .chev{
+    margin-left:auto;
+    color:var(--ink-faint);
+    transition:transform .18s ease;
+    flex:0 0 auto;
+  }
+  .category[open] summary .chev{transform:rotate(90deg);}
+  .cat-code{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--accent-ink);
+    background:var(--accent-soft);
+    border-radius:6px;
+    padding:3px 8px;
+    flex:0 0 auto;
+  }
+  .category summary h2{
+    font-size:17.5px;
+    font-weight:600;
+  }
+  .cat-count{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--ink-faint);
+  }
+  .category .body{
+    padding:2px 18px 18px;
+    border-top:1px solid var(--line);
+  }
+  .category .intro{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:14px 0 12px;
+    max-width:72ch;
+  }
+
+  .rule-list{display:flex;flex-direction:column;}
+  .rule{
+    display:grid;
+    grid-template-columns:52px minmax(0,1fr);
+    gap:12px;
+    padding:9px 0;
+    border-top:1px solid var(--line);
+    font-size:13.8px;
+  }
+  .rule:first-child{border-top:none;}
+  .rule .code{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--ink-faint);
+    padding-top:1px;
+  }
+  .rule .text{color:var(--ink);}
+  .rule .text strong{font-weight:600;color:var(--ink);}
+  .rule .text .num{
+    font-family:var(--font-mono);
+    font-variant-numeric:tabular-nums;
+    color:var(--accent-ink);
+    font-weight:500;
+  }
+  .flag{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:1px 7px;
+    border-radius:5px;
+    margin-left:8px;
+    position:relative;
+    top:-1px;
+  }
+  .flag.critical{background:var(--critical-soft);color:var(--critical-ink);border:1px solid color-mix(in srgb, var(--critical) 35%, transparent);}
+  .flag.authority{background:var(--authority-soft);color:var(--authority-ink);border:1px solid color-mix(in srgb, var(--authority) 35%, transparent);}
+
+  .subhead{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin:18px 0 4px;
+  }
+  .subhead:first-of-type{margin-top:6px;}
+
+  /* Footer */
+  footer.page-footer{
+    max-width:1180px;
+    margin:0 auto;
+    padding:26px clamp(16px,4vw,40px) 60px;
+    color:var(--ink-faint);
+    font-size:12px;
+    line-height:1.6;
+    border-top:1px solid var(--line);
+  }
+  footer.page-footer strong{color:var(--ink-soft);}
+
+  .top-link{
+    position:fixed;
+    bottom:18px;
+    right:18px;
+    background:var(--ink);
+    color:#F4F7F9;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:9px 14px;
+    border-radius:999px;
+    text-decoration:none;
+    box-shadow:var(--shadow);
+    opacity:0;
+    transform:translateY(8px);
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:20;
+  }
+  .top-link.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+  .top-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* Legend */
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    margin:0 0 22px;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .legend .item{display:flex;align-items:center;gap:6px;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px){
+    .shell{grid-template-columns:1fr; gap:0;}
+    .toc{
+      position:static;
+      max-height:none;
+      overflow:visible;
+      padding-top:16px;
+      display:flex;
+      gap:6px;
+      overflow-x:auto;
+      border-bottom:1px solid var(--line);
+      padding-bottom:12px;
+      margin-bottom:8px;
+    }
+    .toc-title{display:none;}
+    .toc a{white-space:nowrap;flex:0 0 auto;}
+    .toc-foot{display:none;}
+    main{padding-top:14px;}
+    .ladder{grid-template-columns:1fr 1fr;row-gap:20px;}
+    .ladder::before{display:none;}
+  }
+  @media (max-width: 520px){
+    .ladder{grid-template-columns:1fr;}
+  }
+
+  .back-bar{
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }
+  .back-bar a{
+    display:block;
+    max-width:1180px;
+    margin:0 auto;
+    padding:9px clamp(16px,4vw,40px);
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    text-decoration:none;
+  }
+  .back-bar a:hover{color:var(--accent-ink);}
+</style>
+</head>
+<body id="top">
+<div class="back-bar">
+  <a href="securityops.html">&larr; Back to Live Feed</a>
+</div>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="eyebrow"><span class="dot"></span>Security Operations &middot; Field Reference</div>
+    <h1>Dubai Creek Harbour &mdash; Vertical Communities</h1>
+    <p class="sub">Condensed duty reference for enforcing the Community Rules &amp; Regulations for Vertical Communities. Every entry cites its source clause &mdash; use the citation when writing up a Notice of Violation.</p>
+    <div class="meta">
+      <span>Source: <strong>Emaar Community Management &mdash; Rules &amp; Regulations for Vertical Communities, DCH</strong></span>
+      <span>Scope: <strong>Apartment / tower Units only</strong> &mdash; villa Master Community Rules differ, see footer</span>
+    </div>
+  </div>
+</header>
+
+<div class="contacts">
+  <div class="contacts-inner">
+    <span class="contacts-label">Local Authority</span>
+    <a class="contact-chip" href="tel:999"><span>Dubai Police</span><span class="num">999</span></a>
+    <a class="contact-chip" href="tel:998"><span>Ambulance</span><span class="num">998</span></a>
+    <a class="contact-chip" href="tel:997"><span>Civil Defence</span><span class="num">997</span></a>
+    <a class="contact-chip" href="tel:112"><span>Emergency Services</span><span class="num">112</span></a>
+    <a class="contact-chip" href="tel:996"><span>Coastguard</span><span class="num">996</span></a>
+    <a class="contact-chip" href="tel:995"><span>Find &amp; Rescue</span><span class="num">995</span></a>
+    <a class="contact-chip" href="tel:991"><span>Electricity Failure</span><span class="num">991</span></a>
+    <a class="contact-chip" href="tel:992"><span>Water Failure</span><span class="num">992</span></a>
+    <a class="contact-chip" href="tel:46019999"><span>DEWA</span><span class="num">046 019999</span></a>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="toc" aria-label="Section navigation">
+    <div class="toc-title">Jump to</div>
+    <a href="#enforcement"><span class="code">&sect;2&ndash;3, 11</span>Enforcement Process</a>
+    <a href="#noise-privacy"><span class="code">&sect;4.1&ndash;4.2</span>Noise &amp; Privacy</a>
+    <a href="#conduct-staff"><span class="code">&sect;4.3, 4.8&ndash;4.9</span>Conduct &amp; Staff<span class="flagdot" title="Contains escalation-flagged rules"></span></a>
+    <a href="#pets"><span class="code">&sect;4.4</span>Pets &amp; Animals<span class="flagdot"></span></a>
+    <a href="#hazardous"><span class="code">&sect;4.5</span>Hazardous &amp; Fire<span class="flagdot"></span></a>
+    <a href="#waste-vandalism"><span class="code">&sect;4.6&ndash;4.7</span>Waste &amp; Vandalism<span class="flagdot"></span></a>
+    <a href="#facilities"><span class="code">&sect;5.1&ndash;5.6</span>Shared Facilities<span class="flagdot"></span></a>
+    <a href="#access-parking"><span class="code">&sect;6.1&ndash;6.7</span>Access, Parking &amp; Roads</a>
+    <a href="#maintenance"><span class="code">&sect;7.1&ndash;7.11</span>Unit &amp; Building Upkeep</a>
+    <a href="#security"><span class="code">&sect;8</span>Security &amp; Surveillance<span class="flagdot"></span></a>
+    <a href="#appearance"><span class="code">&sect;9.1&ndash;9.7</span>Home Appearance</a>
+    <a href="#charges-compliance"><span class="code">&sect;10&ndash;11</span>Charges &amp; Compliance</a>
+    <div class="toc-foot">Dot = section contains an item that escalates straight to Local Authority or an immediate penalty.</div>
+  </nav>
+
+  <main>
+
+    <section class="escalate" id="escalate" aria-labelledby="escalate-h">
+      <h2 id="escalate-h">Escalate immediately &mdash; do not treat as a routine NOV</h2>
+      <p class="lead">These clauses either bypass the warning step entirely or require contacting a Local Authority directly, rather than routing solely through the Community Manager / Mollak System.</p>
+      <div class="escalate-grid">
+        <div class="escalate-item"><span class="tag">First offence = NOV</span>Any breach of <strong>Hazardous Activities (&sect;4.5)</strong> &mdash; firearms, unattended open flame, LPG misuse, drones/fireworks, tampering with fire safety &mdash; triggers an immediate Notice of Violation and penalty, no warning. <span class="code">&sect;4.5.xx</span></div>
+        <div class="escalate-item"><span class="tag">Report to Immigration</span>Household staff not sponsored by the Owner/Tenant exposes them to <strong>criminal prosecution</strong> by Local Authorities. <span class="code">&sect;4.9.ii</span></div>
+        <div class="escalate-item"><span class="tag">Report to Police</span>Serious vandalism is reported to the <strong>Local Authorities</strong> for further action, in addition to cost recovery. <span class="code">&sect;4.7.iii</span></div>
+        <div class="escalate-item"><span class="tag">Report to Municipality</span>Lost/abandoned pets, cruelty, pet attacks &mdash; residents contact <strong>Dubai Municipality</strong> directly. <span class="code">&sect;4.4.xix</span></div>
+        <div class="escalate-item"><span class="tag">Report to authority</span>Any injury or death linked to Shared Facilities use is reported to the relevant <strong>Local Authority</strong>. <span class="code">&sect;5.1.viii</span></div>
+        <div class="escalate-item"><span class="tag">Evidence authority</span>Security personnel may photograph or film violation evidence <strong>without prior consent</strong> &mdash; use this for incident write-ups. <span class="code">&sect;8.v</span></div>
+      </div>
+    </section>
+
+    <div class="ladder-wrap">
+      <h2>Enforcement ladder</h2>
+      <p class="lead">The standard path from first observation to formal penalty, per the Community Manager's authority under &sect;3 and &sect;11.</p>
+      <div class="ladder">
+        <div class="ladder-step">
+          <div class="num">1</div>
+          <h3>Verbal / written warning</h3>
+          <p>At the Community Manager's discretion &mdash; not mandatory before a Notice of Violation. <span class="code" style="display:block;margin-top:4px;">&sect;11.iii</span></p>
+        </div>
+        <div class="ladder-step">
+          <div class="num">2</div>
+          <h3>Notice of Violation</h3>
+          <p>Issued via the Mollak System or directly by the Community Manager. <span class="code" style="display:block;margin-top:4px;">&sect;2, &sect;11.ii</span></p>
+        </div>
+        <div class="ladder-step">
+          <div class="num">3</div>
+          <h3>Violation Penalty</h3>
+          <p>Fine charged to the Owner's Service Fee account, or non-monetary enforcement action. <span class="code" style="display:block;margin-top:4px;">&sect;2, &sect;11.v</span></p>
+        </div>
+        <div class="ladder-step">
+          <div class="num">4</div>
+          <h3>Local Authority / legal</h3>
+          <p>Repeat or serious breaches &mdash; legal costs borne by the responsible Owner or Resident. <span class="code" style="display:block;margin-top:4px;">&sect;11.iv, &sect;11.vi</span></p>
+        </div>
+      </div>
+      <span class="ladder-note">Hazardous Activities (&sect;4.5) skip straight to Step 2&ndash;3 on the first occurrence.</span>
+    </div>
+
+    <div class="stats-wrap">
+      <h2>Numbers worth memorising</h2>
+      <p class="lead">The thresholds that come up most often on patrol.</p>
+      <div class="stat-grid">
+        <div class="stat"><div class="val">40<small>km/h</small></div><div class="label">Main road speed limit</div></div>
+        <div class="stat"><div class="val">25<small>km/h</small></div><div class="label">Neighbourhood road limit</div></div>
+        <div class="stat"><div class="val">10<small>km/h</small></div><div class="label">Car park speed limit</div></div>
+        <div class="stat"><div class="val">20<small>km/h</small></div><div class="label">E-scooter speed limit</div></div>
+        <div class="stat"><div class="val">16<small>yrs</small></div><div class="label">Minimum age &mdash; e-scooter</div></div>
+        <div class="stat"><div class="val">14<small>yrs</small></div><div class="label">Unsupervised-child threshold, most facilities</div></div>
+        <div class="stat"><div class="val">4<small>hrs</small></div><div class="label">Visitor parking &amp; EV charger max</div></div>
+        <div class="stat"><div class="val">24<small>hrs</small></div><div class="label">Min. stay for gym / pool guest access</div></div>
+        <div class="stat"><div class="val">48<small>hrs</small></div><div class="label">Advance notice &mdash; bulk deliveries</div></div>
+        <div class="stat"><div class="val">Mon&ndash;Sat<small>10&ndash;18h</small></div><div class="label">Bulk delivery / move window</div></div>
+        <div class="stat"><div class="val">&plusmn;10<small>days</small></div><div class="label">Holiday lighting install / removal window</div></div>
+        <div class="stat"><div class="val">1<small>cylinder</small></div><div class="label">LPG max, only in an approved Unit</div></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="flag critical">Immediate / escalate</span> bypasses the warning step or names a Local Authority</div>
+      <div class="item"><span class="flag authority">Reported outward</span> CM refers this to Local Authority or another body</div>
+    </div>
+
+    <!-- ENFORCEMENT -->
+    <details class="category" id="enforcement" open>
+      <summary>
+        <span class="cat-code">&sect;2&ndash;3, 11</span>
+        <h2>Enforcement Process</h2>
+        <span class="cat-count">6 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="intro">How a breach turns into paperwork, and who has authority to act on the spot.</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;2</span><span class="text"><strong>Notice of Violation (NOV):</strong> formal notice of a breach, issued via the Mollak System or directly by the Community Manager.</span></li>
+          <li class="rule"><span class="code">&sect;2</span><span class="text"><strong>Violation Penalty:</strong> the consequence when an NOV isn't corrected &mdash; usually a fine, sometimes reporting to Local Authorities.</span></li>
+          <li class="rule"><span class="code">&sect;3.iv</span><span class="text">If a breach threatens persons or property, the Community Manager is authorised to <strong>enforce immediately</strong> &mdash; no waiting period required.</span></li>
+          <li class="rule"><span class="code">&sect;3.v</span><span class="text">The Community Manager may pursue a breach until corrected, including initiating <strong>legal proceedings</strong>.</span></li>
+          <li class="rule"><span class="code">&sect;11.iii</span><span class="text">A verbal or written warning ahead of a formal NOV is <strong>discretionary</strong>, not required.</span></li>
+          <li class="rule"><span class="code">&sect;11.v&ndash;vi</span><span class="text">Fines are charged to the Owner's <strong>Service Fee account</strong>; legal costs from non-compliance are borne by the responsible party.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- NOISE & PRIVACY -->
+    <details class="category" id="noise-privacy">
+      <summary>
+        <span class="cat-code">&sect;4.1&ndash;4.2</span>
+        <h2>Noise &amp; Privacy</h2>
+        <span class="cat-count">6 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.1.i&ndash;ii</span><span class="text">Noise is deemed excessive if it's <strong>audible in a neighbouring Unit with windows and doors closed.</strong></span></li>
+          <li class="rule"><span class="code">&sect;4.1.vii</span><span class="text">Cleaning equipment / power tools only permitted <span class="num">9:00&ndash;13:00</span> and <span class="num">15:00&ndash;17:00</span>; contractor-permit work must keep to this window too.</span></li>
+          <li class="rule"><span class="code">&sect;4.1.vi</span><span class="text">Residents are responsible for children's noise in corridors, lobbies, parking areas and other Common Areas.</span></li>
+          <li class="rule"><span class="code">&sect;4.1.viii</span><span class="text">Escalation path: affected Resident &rarr; <strong>Community Security intervenes</strong> &rarr; unresolved &rarr; Community Manager &rarr; unresolved &rarr; Local Authority directly. Noise from outside the Community is a Local Authority matter throughout.</span></li>
+          <li class="rule"><span class="code">&sect;4.2.iv</span><span class="text">CCTV or surveillance equipment directed outside a private property, or facing another Unit / Common Area, is <strong>strictly prohibited</strong>.</span></li>
+          <li class="rule"><span class="code">&sect;4.2.ii</span><span class="text">Invitees must not create disturbances, operate drones, or otherwise disrupt a Resident's privacy or peaceful enjoyment.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- CONDUCT & STAFF -->
+    <details class="category" id="conduct-staff">
+      <summary>
+        <span class="cat-code">&sect;4.3, 4.8&ndash;4.9</span>
+        <h2>Conduct, Use &amp; Household Staff</h2>
+        <span class="cat-count">8 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="subhead">Community staff</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.3.i</span><span class="text">Verbal or physical abuse, or disrespectful conduct, toward Community staff is a <strong>serious violation</strong> of the Rules.</span></li>
+          <li class="rule"><span class="code">&sect;4.3.ii&ndash;iii</span><span class="text">Complaints about staff mistreatment go in writing to the Community Manager; offenders receive an NOV and possible penalty.</span></li>
+        </ul>
+        <p class="subhead">Unit use</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.8.i</span><span class="text">Residential use only, single-family occupancy: Owners, Tenants, immediate family, guests and domestic employees &mdash; per the Agreement of Sale.</span></li>
+          <li class="rule"><span class="code">&sect;4.8.ii</span><span class="text">Companies may not house bachelor employees in a Unit shared with other bachelors.</span></li>
+          <li class="rule"><span class="code">&sect;4.8.iii, v</span><span class="text">No public-access commercial activity without written approval; no partitioning a Unit to let out individual rooms.</span></li>
+          <li class="rule"><span class="code">&sect;4.8.xi</span><span class="text">Units and Common Areas may not be used for illegal or immoral activity, or anything that could harm the Community's reputation.</span></li>
+        </ul>
+        <p class="subhead">Household staff</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.9.i</span><span class="text">All household staff must hold a valid Dubai Immigration residence visa.</span></li>
+          <li class="rule"><span class="code">&sect;4.9.ii</span><span class="text">Housing staff not sponsored by the Owner/Tenant risks <strong>criminal prosecution</strong>. <span class="flag critical">escalate</span></span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- PETS -->
+    <details class="category" id="pets">
+      <summary>
+        <span class="cat-code">&sect;4.4</span>
+        <h2>Pets &amp; Animals</h2>
+        <span class="cat-count">9 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.4.i&ndash;ii</span><span class="text">Only domestic pets &mdash; dogs, cats, birds, fish, reptiles; no commercial breeding, no unreasonable quantities.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.iv</span><span class="text">All animals, including reptiles, must be approved by <strong>Dubai Municipality</strong>; check the Emirate's banned-pets list.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.x&ndash;xi</span><span class="text">Dogs on a leash with a competent handler at all times outside the Unit; all pets need visible ID outdoors.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.xii</span><span class="text">In lifts without a dedicated pet elevator, pet owners must yield to Residents without pets.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.xiii</span><span class="text">Handler must clean up faeces/urine immediately &mdash; non-compliance is an NOV plus penalty.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.xvii</span><span class="text">Pets barred from parking areas, children's play areas, BBQ areas, podiums, walkways and most Shared Facilities &mdash; except designated dog parks.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.xviii</span><span class="text">Feeding stray animals is strictly prohibited under Dubai Municipality rules.</span></li>
+          <li class="rule"><span class="code">&sect;4.4.xix</span><span class="text">Lost/abandoned pets, cruelty, pet attacks &mdash; direct the resident to <strong>Dubai Municipality</strong>, not just the Community Manager. <span class="flag critical">escalate</span></span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- HAZARDOUS -->
+    <details class="category" id="hazardous">
+      <summary>
+        <span class="cat-code">&sect;4.5</span>
+        <h2>Hazardous Activities &amp; Fire Safety</h2>
+        <span class="cat-count">11 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="intro"><span class="flag critical">Whole section</span> Any breach here results in an <strong>immediate Notice of Violation and penalty on the first occurrence</strong> &mdash; no verbal warning step. <span class="code">&sect;4.5.xx</span></p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.5.i</span><span class="text">Firearms, hunting, trapping, and toy/air guns capable of harm are strictly prohibited.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.ii&ndash;iv</span><span class="text">Open fires only in an attended BBQ unit; <strong>no cooking or grilling of any kind on a balcony or terrace.</strong></span></li>
+          <li class="rule"><span class="code">&sect;4.5.v, xi</span><span class="text">No smoking (cigarettes, shisha) on balconies, in hallways, stairwells or Shared Facilities &mdash; designated areas only.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.ix</span><span class="text">No storing or using flammable chemicals/liquids/gases without the Community Manager's written consent (a vehicle's own fuel tank is exempt).</span></li>
+          <li class="rule"><span class="code">&sect;4.5.x</span><span class="text">Drones and fireworks are strictly prohibited anywhere in the Community, including on balconies.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.xii&ndash;xiii</span><span class="text">No interference with fire safety devices; Residents must grant access for life-safety system inspections.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.xiv&ndash;xv</span><span class="text">No activity that could trigger a false alarm; strict compliance with evacuation plans and drills.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.xvi</span><span class="text">Improper disposal of live coal, lit cigarettes, flammable chemicals or batteries in Common Areas is prohibited.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.xvii</span><span class="text">LPG cylinders banned unless the Unit is specifically designed and approved for one &mdash; <span class="num">max 1 cylinder</span> even then.</span></li>
+          <li class="rule"><span class="code">&sect;4.5.xviii</span><span class="text">Only an authorised provider may activate a central gas connection &mdash; never the Resident or an unapproved technician.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- WASTE & VANDALISM -->
+    <details class="category" id="waste-vandalism">
+      <summary>
+        <span class="cat-code">&sect;4.6&ndash;4.7</span>
+        <h2>Waste &amp; Vandalism</h2>
+        <span class="cat-count">7 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="subhead">Waste</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.6.i&ndash;ii</span><span class="text">Household waste goes in the designated refuse room only &mdash; no dumping in Common Areas.</span></li>
+          <li class="rule"><span class="code">&sect;4.6.vi&ndash;vii</span><span class="text">Recycling is encouraged; contaminated recyclables are rejected and must go to general waste.</span></li>
+          <li class="rule"><span class="code">&sect;4.6.ix</span><span class="text">Hazardous waste (batteries, electronics, appliances) follows Dubai Municipality's hazardous-waste procedure &mdash; not the regular bins.</span></li>
+          <li class="rule"><span class="code">&sect;4.6.xi</span><span class="text">Non-compliance after a Security approach earns an NOV; persistent cases let the Community Manager remove items at the Resident's expense.</span></li>
+        </ul>
+        <p class="subhead">Vandalism</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;4.7.i&ndash;ii</span><span class="text">Littering, graffiti and vandalism are strictly prohibited; reinstatement cost is charged to the individual responsible, or recovered via Service Charges if unidentified.</span></li>
+          <li class="rule"><span class="code">&sect;4.7.iii</span><span class="text"><strong>Serious vandalism is reported to the Local Authorities</strong> for further action. <span class="flag critical">escalate</span></span></li>
+          <li class="rule"><span class="code">&sect;4.7.v</span><span class="text">No marking, painting, or driving nails/screws into Common Area structures without written consent.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- FACILITIES -->
+    <details class="category" id="facilities">
+      <summary>
+        <span class="cat-code">&sect;5.1&ndash;5.6</span>
+        <h2>Shared Facilities &amp; Access</h2>
+        <span class="cat-count">18 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="subhead">General &mdash; &sect;5.1</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;5.1.iii</span><span class="text">Children under <span class="num">14</span> always need supervision by an adult <span class="num">18+</span>.</span></li>
+          <li class="rule"><span class="code">&sect;5.1.iv&ndash;v</span><span class="text">Pets barred except in designated dog parks; <strong>alcohol strictly prohibited</strong> in all Shared Facilities and Common Areas.</span></li>
+          <li class="rule"><span class="code">&sect;5.1.vii</span><span class="text">Private functions need the Community Manager's written permission and may require a security deposit.</span></li>
+          <li class="rule"><span class="code">&sect;5.1.viii</span><span class="text">Serious injury or death is reported to the relevant Local Authority. <span class="flag critical">escalate</span></span></li>
+          <li class="rule"><span class="code">&sect;5.1.xviii</span><span class="text">Repeat or severe violations can mean permanent exclusion from Shared Facilities.</span></li>
+        </ul>
+        <p class="subhead">Sports areas &mdash; &sect;5.2</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;5.2.vii&ndash;x</span><span class="text">Play-time caps when others are waiting: basketball/tennis <span class="num">60 min</span>; 3+ playing basketball <span class="num">90 min</span>; tennis pairs <span class="num">45 min</span>; doubles tennis <span class="num">2 hrs</span>.</span></li>
+        </ul>
+        <p class="subhead">Gymnasiums &mdash; &sect;5.3</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;5.3.i</span><span class="text">Access limited to Residents and Invitees staying <span class="num">24+ hrs</span> in the Unit; max <span class="num">1 Invitee</span> per Resident without approval.</span></li>
+          <li class="rule"><span class="code">&sect;5.3.iii</span><span class="text">Weight equipment: <span class="num">16+</span> only; ages <span class="num">14&ndash;15</span> need active adult supervision; <span class="num">13 and under</span> strictly prohibited, even supervised.</span></li>
+          <li class="rule"><span class="code">&sect;5.3.xxii</span><span class="text">Personal training in gym/pool must be booked through the <strong>Emaar One app</strong>; trainers need a valid NOC.</span></li>
+        </ul>
+        <p class="subhead">Swimming pools &mdash; &sect;5.4</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;5.4.xvii</span><span class="text">Same 24-hour-stay access rule as the gym; Invitees must always be accompanied.</span></li>
+          <li class="rule"><span class="code">&sect;5.4.xii&ndash;xiii</span><span class="text">No alcohol, glass, or food/drink other than bottled water in the pool area.</span></li>
+          <li class="rule"><span class="code">&sect;5.4.vii</span><span class="text">Shower required before using the pool or jacuzzi.</span></li>
+        </ul>
+        <p class="subhead">Community beaches &mdash; &sect;5.5</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;5.5.ii&ndash;iii</span><span class="text">No swimming after sunset; beaches are <strong>unmanned</strong> &mdash; entering the water is entirely at the swimmer's own risk.</span></li>
+          <li class="rule"><span class="code">&sect;5.5.iv.a</span><span class="text">Red flag: no swimming. Yellow flag: swim with caution.</span></li>
+          <li class="rule"><span class="code">&sect;5.5.iv.e&ndash;h</span><span class="text">No alcohol, smoking, camping, overnight sleeping, fires or BBQs; children under <span class="num">12</span> need a responsible adult present.</span></li>
+        </ul>
+        <p class="subhead">Utility / plant rooms &mdash; &sect;5.6</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;5.6.i</span><span class="text">Service plant, filtration and telephone rooms are off-limits to unauthorised persons &mdash; access only for designated maintenance personnel.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- ACCESS & PARKING -->
+    <details class="category" id="access-parking">
+      <summary>
+        <span class="cat-code">&sect;6.1&ndash;6.7</span>
+        <h2>Access, Parking &amp; Roads</h2>
+        <span class="cat-count">17 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <p class="subhead">Building access &mdash; &sect;6.1</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;6.1.i&ndash;ii</span><span class="text">Valid access card or ANPR registration required; no tailgating or using the exit driveway to gain entry.</span></li>
+          <li class="rule"><span class="code">&sect;6.1.vi</span><span class="text">Contractors and handymen need Community Manager&ndash;approved entry permits &mdash; access can be denied at any time.</span></li>
+          <li class="rule"><span class="code">&sect;6.1.viii</span><span class="text">Holiday Home Operators must be physically present for guest check-in and check-out.</span></li>
+        </ul>
+        <p class="subhead">Parking &mdash; &sect;6.2</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;6.2.v</span><span class="text">Visitor bays: max <span class="num">4 hrs</span>, first-come-first-served, <strong>no overnight parking</strong>.</span></li>
+          <li class="rule"><span class="code">&sect;6.2.xv</span><span class="text">Car park speed limit: <span class="num">10 km/h</span>.</span></li>
+          <li class="rule"><span class="code">&sect;6.2.xi</span><span class="text">People-of-Determination bays require a valid POD permit.</span></li>
+          <li class="rule"><span class="code">&sect;6.2.xvii</span><span class="text">Oil/fluid spills must be cleaned within <span class="num">24 hrs</span> or the Community Manager arranges cleanup and recovers the cost.</span></li>
+          <li class="rule"><span class="code">&sect;6.2.xxii&ndash;xxv</span><span class="text">EV chargers: active charging only, <span class="num">max 4 hrs</span>, then vacate. Misuse risks towing plus an NOV.</span></li>
+        </ul>
+        <p class="subhead">Roads &amp; e-scooters &mdash; &sect;6.3&ndash;6.4</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;6.3.i</span><span class="text">Speed limits: <span class="num">40 km/h</span> main roads, <span class="num">25 km/h</span> neighbourhood roads &mdash; posted signage always governs.</span></li>
+          <li class="rule"><span class="code">&sect;6.3.iii</span><span class="text">Dirt bikes, trail bikes, sand buggies and unlicensed motorised vehicles/EVs are strictly prohibited.</span></li>
+          <li class="rule"><span class="code">&sect;6.4.i&ndash;iv</span><span class="text">E-scooter riders: <span class="num">16+</span> with a valid RTA permit, helmet mandatory, <span class="num">20 km/h</span> max speed.</span></li>
+          <li class="rule"><span class="code">&sect;6.4.xii</span><span class="text">Rental e-scooter/e-bike services are not permitted in gated communities &mdash; RTA-designated areas only.</span></li>
+        </ul>
+        <p class="subhead">Deliveries &amp; removals &mdash; &sect;6.7</p>
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;6.7.ii, viii</span><span class="text">Bulk deliveries/removals need <span class="num">48 hrs</span> advance approval and are permitted <strong>Mon&ndash;Sat, 10:00&ndash;18:00</strong> only &mdash; never on public holidays.</span></li>
+          <li class="rule"><span class="code">&sect;6.7.iv</span><span class="text">Furniture and bulky items must use designated service elevators &mdash; passenger lifts need written consent.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- MAINTENANCE -->
+    <details class="category" id="maintenance">
+      <summary>
+        <span class="cat-code">&sect;7.1&ndash;7.11</span>
+        <h2>Unit &amp; Building Upkeep</h2>
+        <span class="cat-count">10 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;7.1.i&ndash;ii</span><span class="text">Unoccupied Units must be regularly inspected/treated for pests; report anything beyond ants, non-poisonous spiders, bees and wasps to the Community Manager.</span></li>
+          <li class="rule"><span class="code">&sect;7.2.i, v</span><span class="text">Owner keeps the balcony clean, safe, and waterproofed &mdash; liable for water damage caused to the Unit below.</span></li>
+          <li class="rule"><span class="code">&sect;7.3.iv</span><span class="text">No cigarette butts, BBQ/shisha, thrown items, large-item storage, or open flames on balconies &mdash; unplug appliances when not in use.</span></li>
+          <li class="rule"><span class="code">&sect;7.4.vii</span><span class="text">Items obstructing Common Areas can be removed and disposed of at the Resident's cost, <strong>without prior notice</strong>.</span></li>
+          <li class="rule"><span class="code">&sect;7.5</span><span class="text">Residents must grant access for maintenance on request &mdash; advance notice given except in an emergency.</span></li>
+          <li class="rule"><span class="code">&sect;7.6.i&ndash;ii</span><span class="text">Unit interior kept to at least Common Area standard; quarterly AC servicing contract required.</span></li>
+          <li class="rule"><span class="code">&sect;7.6.ii</span><span class="text">Neighbour leak disputes: Community Manager appoints a third-party investigator &mdash; the liable party bears the cost.</span></li>
+          <li class="rule"><span class="code">&sect;7.7.i</span><span class="text">Owners/Residents must carry contents insurance for full replacement value &mdash; the Community Manager's cover does not extend to individual claims.</span></li>
+          <li class="rule"><span class="code">&sect;7.8.v</span><span class="text">Interior plumbing inspection recommended <span class="num">2&times;/year</span>, especially before and after storms.</span></li>
+          <li class="rule"><span class="code">&sect;7.9.i</span><span class="text">Owner is solely responsible for AC maintenance, interior and exterior units, at their own expense.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- SECURITY -->
+    <details class="category" id="security">
+      <summary>
+        <span class="cat-code">&sect;8</span>
+        <h2>Security &amp; Surveillance</h2>
+        <span class="cat-count">5 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;8.i</span><span class="text">Residents must take reasonable steps to secure an unoccupied Unit &mdash; doors, windows and other openings locked.</span></li>
+          <li class="rule"><span class="code">&sect;8.ii</span><span class="text">The Community Manager may enter and secure an unsecured, unoccupied Unit <strong>at the Resident's cost</strong>.</span></li>
+          <li class="rule"><span class="code">&sect;8.iii</span><span class="text">Residents must comply with all posted security protocols: evacuation drills, visitor management, biometric access, parking control.</span></li>
+          <li class="rule"><span class="code">&sect;8.iv</span><span class="text">Common Areas are monitored by CCTV; activity there may be recorded as part of the security protocol.</span></li>
+          <li class="rule"><span class="code">&sect;8.v</span><span class="text">Security personnel are authorised to photograph or video violation evidence <strong>without needing prior consent</strong> from the Resident or Invitee &mdash; useful for incident write-ups. <span class="flag authority">authority</span></span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- APPEARANCE -->
+    <details class="category" id="appearance">
+      <summary>
+        <span class="cat-code">&sect;9.1&ndash;9.7</span>
+        <h2>Home Appearance</h2>
+        <span class="cat-count">9 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;9.1.i, iii</span><span class="text">No paper/paint/tinfoil on windows; safety screening needs prior written approval and must be translucent.</span></li>
+          <li class="rule"><span class="code">&sect;9.2.i&ndash;ii</span><span class="text">Antennae only where invisible from the street/Common Areas; nothing affixed to the exterior or carport without written approval.</span></li>
+          <li class="rule"><span class="code">&sect;9.3.i</span><span class="text">No laundry visible from the street, Common Areas, or lower-level apartments.</span></li>
+          <li class="rule"><span class="code">&sect;9.4.i&ndash;ii</span><span class="text">Holiday lighting needs prior written approval; install <span class="num">&le;10 days</span> before, remove <span class="num">&le;10 days</span> after &mdash; LED only.</span></li>
+          <li class="rule"><span class="code">&sect;9.5.i&ndash;ii</span><span class="text">Banners, flags and signage need prior approval. Unapproved Common Area displays are removed immediately; unauthorised in-unit displays are reported to the relevant authorities.</span></li>
+          <li class="rule"><span class="code">&sect;9.6.i&ndash;iv</span><span class="text">No visible balcony storage; nothing draped over railings; personal items can't exceed the balcony wall height; no combustible storage.</span></li>
+          <li class="rule"><span class="code">&sect;9.7.i&ndash;ii</span><span class="text">No construction or alteration without submitted plans and prior written approval.</span></li>
+          <li class="rule"><span class="code">&sect;9.7.iii</span><span class="text">Approved home-improvement NOC must be displayed on-site during works and kept on file for future Owners.</span></li>
+          <li class="rule"><span class="code">&sect;9.7.vi</span><span class="text">Fire alarm devices must be protected during construction or alteration work, to prevent accidental triggering.</span></li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- CHARGES & COMPLIANCE -->
+    <details class="category" id="charges-compliance">
+      <summary>
+        <span class="cat-code">&sect;10&ndash;11</span>
+        <h2>Service Charges &amp; Compliance</h2>
+        <span class="cat-count">5 items</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="body">
+        <ul class="rule-list">
+          <li class="rule"><span class="code">&sect;10.i</span><span class="text">Service Charges (including the Master Community Levy share) are invoiced via the Mollak System.</span></li>
+          <li class="rule"><span class="code">&sect;10.iii</span><span class="text">Unpaid Service Charges can mean restricted access to Shared Facilities.</span></li>
+          <li class="rule"><span class="code">&sect;10.iv</span><span class="text">On sale/transfer, the new Owner assumes any outstanding Service Charges for that financial year.</span></li>
+          <li class="rule"><span class="code">&sect;11.i</span><span class="text">Owners, Residents, Holiday Home Operators and their Invitees must comply with the Rules at all times within the Community and Master Community.</span></li>
+          <li class="rule"><span class="code">&sect;11.ii</span><span class="text">Repeat violations are subject to escalating fines as determined by the Community Manager.</span></li>
+        </ul>
+      </div>
+    </details>
+
+  </main>
+</div>
+
+<a href="#top" class="top-link" id="topLink">Back to top</a>
+
+<footer class="page-footer">
+  <p><strong>Source:</strong> Emaar Community Management, &ldquo;Community Rules and Regulations for Vertical Communities&rdquo; &mdash; Dubai Creek Harbour. This reference condenses that document for operational use; the original governs in any conflict, and the Community Manager interprets discrepancies or ambiguities per its Introduction.</p>
+  <p><strong>Scope note:</strong> a separate, villa-oriented &ldquo;Dubai Creek Harbour Master Community Rules&rdquo; document also exists and was not merged into this page &mdash; check it for any Unit outside the vertical/tower communities.</p>
+</footer>
+
+<script>
+(function(){
+  var topLink = document.getElementById('topLink');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 480){ topLink.classList.add('show'); }
+    else{ topLink.classList.remove('show'); }
+  }, {passive:true});
+
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+  var sections = navLinks.map(function(a){
+    return document.getElementById(a.getAttribute('href').slice(1));
+  }).filter(Boolean);
+
+  if('IntersectionObserver' in window && sections.length){
+    var map = {};
+    navLinks.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = map[entry.target.id];
+        if(!link) return;
+        if(entry.isIntersecting){
+          navLinks.forEach(function(l){ l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, {rootMargin:'-15% 0px -70% 0px', threshold:0});
+    sections.forEach(function(s){ observer.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
