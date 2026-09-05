@@ -84,6 +84,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .kpi-card.c-warning{border-top-color:var(--amber);} .kpi-card.c-warning .kpi-val{color:var(--amber);}
 .kpi-card.c-acting{border-top-color:var(--purple);} .kpi-card.c-acting .kpi-val{color:var(--purple);}
 .kpi-card.c-leave{border-top-color:var(--blue);} .kpi-card.c-leave .kpi-val{color:var(--blue);}
+.kpi-card.c-remediation{border-top-color:var(--green);} .kpi-card.c-remediation .kpi-val{color:var(--green);}
 .kpi-card.c-total{border-top-color:var(--green);} .kpi-card.c-total .kpi-val{color:var(--green);}
 
 /* ── FILTER BAR ── */
@@ -112,6 +113,8 @@ tbody td{padding:9px 12px;vertical-align:middle;}
 .badge.ok{background:var(--green-dim);color:var(--green);}
 .badge.acting{background:rgba(168,85,247,.15);color:var(--purple);}
 .badge.leave{background:rgba(6,182,212,.12);color:var(--blue);}
+.badge.training{background:rgba(16,185,129,.12);color:var(--green);}
+.badge.awaiting-sira{background:rgba(245,158,11,.12);color:var(--amber);}
 .badge.unknown{background:var(--surface3);color:var(--text-faint);}
 .name-cell{font-weight:600;}
 .subtext{font-size:10px;color:var(--text-faint);}
@@ -248,6 +251,8 @@ tbody td{padding:9px 12px;vertical-align:middle;}
           <option value="promotion">Promotion</option>
           <option value="removed">Removed from Location</option>
           <option value="resigned">Resigned</option>
+          <option value="training_scheduled">Training Scheduled / Facilitated</option>
+          <option value="awaiting_sira">Awaiting SIRA Processing</option>
           <option value="other">Other</option>
         </select>
       </div>
@@ -260,7 +265,7 @@ tbody td{padding:9px 12px;vertical-align:middle;}
         <input type="text" id="amendNewDesignation" placeholder="e.g. Security Supervisor">
       </div>
       <div class="modal-field">
-        <label>Effective Date</label>
+        <label id="amendDateLabel">Effective Date</label>
         <input type="date" id="amendEffectiveDate">
       </div>
       <div class="modal-field">
@@ -393,6 +398,8 @@ function normalizeStatus(raw){
 
 const PROMOTION_PENDING_RE = /promot(ed|ion)|pending\s*(training|supervisor|update)|training\s*pending/i;
 const ON_LEAVE_RE = /\bALO\b|annual\s*leave|on\s*leave/i;
+const TRAINING_SCHEDULED_RE = /training\s*(scheduled|facilitated|booked|arranged)/i;
+const AWAITING_SIRA_RE = /awaiting\s*sira|pending\s*sira|sira\s*processing|submitted\s*to\s*sira/i;
 const REMOVED_RE = /removed\s*from\s*location/i;
 const RESIGNED_RE = /resigned/i;
 
@@ -477,6 +484,8 @@ function mapRow(row, segment){
     remarks,
     actingAboveLicense: PROMOTION_PENDING_RE.test(remarks),
     onLeave: ON_LEAVE_RE.test(remarks),
+    trainingScheduled: TRAINING_SCHEDULED_RE.test(remarks),
+    awaitingSira: AWAITING_SIRA_RE.test(remarks),
     removed: REMOVED_RE.test(remarks) || REMOVED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Traning']||'')),
     resigned: RESIGNED_RE.test(remarks) || RESIGNED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Traning']||'')),
   };
@@ -538,6 +547,7 @@ let activeKpiFilter = '';
 
 function renderKPIs(){
   const active = allStaff.filter(s => !s.removed && !s.resigned);
+  const urgent = active.filter(s => s.bucket === 'expired' || s.bucket === 'critical');
   const counts = {
     total: active.length,
     expired: active.filter(s => s.bucket === 'expired').length,
@@ -545,6 +555,7 @@ function renderKPIs(){
     warning: active.filter(s => s.bucket === 'warning').length,
     acting: active.filter(s => s.actingAboveLicense).length,
     leave: active.filter(s => s.onLeave).length,
+    remediation: urgent.filter(s => s.trainingScheduled || s.awaitingSira).length,
   };
 
   const cards = [
@@ -552,6 +563,7 @@ function renderKPIs(){
     ['expired','Expired',counts.expired,'c-expired'],
     ['critical','Critical ≤30d',counts.critical,'c-critical'],
     ['warning','Warning 31-60d',counts.warning,'c-warning'],
+    ['remediation',`Remediation In Progress (of ${urgent.length} urgent)`,counts.remediation,'c-remediation'],
     ['acting','Acting Above License',counts.acting,'c-acting'],
     ['leave','On Leave',counts.leave,'c-leave'],
   ];
@@ -617,6 +629,7 @@ function getFilteredStaff(){
   if (activeKpiFilter === 'expired') data = data.filter(s => s.bucket === 'expired');
   else if (activeKpiFilter === 'critical') data = data.filter(s => s.bucket === 'critical');
   else if (activeKpiFilter === 'warning') data = data.filter(s => s.bucket === 'warning');
+  else if (activeKpiFilter === 'remediation') data = data.filter(s => (s.bucket === 'expired' || s.bucket === 'critical') && (s.trainingScheduled || s.awaitingSira));
   else if (activeKpiFilter === 'acting') data = data.filter(s => s.actingAboveLicense);
   else if (activeKpiFilter === 'leave') data = data.filter(s => s.onLeave);
 
@@ -648,6 +661,8 @@ function renderTable(){
     const flags = [];
     if (s.actingAboveLicense) flags.push('<span class="badge acting">⚠ Above License</span>');
     if (s.onLeave) flags.push('<span class="badge leave">On Leave</span>');
+    if (s.trainingScheduled) flags.push('<span class="badge training">🎓 Training Scheduled</span>');
+    if (s.awaitingSira) flags.push('<span class="badge awaiting-sira">⏳ Awaiting SIRA</span>');
     return `<tr onclick="openDetail('${s.empId}')">
       <td class="name-cell">${s.name}</td>
       <td class="mono subtext">${s.empId}</td>
@@ -716,6 +731,11 @@ function onAmendTypeChange(){
   const showLoc = type === 'location_change' || type === 'promotion';
   document.getElementById('fieldNewLocation').style.display = showLoc || type==='location_change' ? '' : 'none';
   document.getElementById('fieldNewDesignation').style.display = showLoc ? '' : 'none';
+
+  const dateLabel = document.getElementById('amendDateLabel');
+  if (type === 'training_scheduled') dateLabel.textContent = 'Training Date';
+  else if (type === 'awaiting_sira') dateLabel.textContent = 'Date Submitted to SIRA';
+  else dateLabel.textContent = 'Effective Date';
 }
 
 async function submitAmendment(){
