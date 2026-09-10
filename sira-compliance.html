@@ -465,7 +465,7 @@ function mapRow(row, segment){
   const name = (row['NAME'] || '').trim();
   if (!empId || !name) return null;
 
-  const expiredDateRaw = row['Expired Date'] || '';
+  const expiredDateRaw = row['Expiry Date'] || '';
   const remarks = (row['Remarks'] || '').trim();
   const days = daysUntil(expiredDateRaw);
   const bucket = urgencyBucket(days);
@@ -480,14 +480,14 @@ function mapRow(row, segment){
     expiredDateRaw,
     days,
     bucket,
-    status: normalizeStatus(row['Vaild / Expired / Without Licence/Traning'] || ''),
+    status: normalizeStatus(row['Vaild / Expired / Without Licence/Training'] || ''),
     remarks,
     actingAboveLicense: PROMOTION_PENDING_RE.test(remarks),
     onLeave: ON_LEAVE_RE.test(remarks),
     trainingScheduled: TRAINING_SCHEDULED_RE.test(remarks),
     awaitingSira: AWAITING_SIRA_RE.test(remarks),
-    removed: REMOVED_RE.test(remarks) || REMOVED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Traning']||'')),
-    resigned: RESIGNED_RE.test(remarks) || RESIGNED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Traning']||'')),
+    removed: REMOVED_RE.test(remarks) || REMOVED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Training']||'')),
+    resigned: RESIGNED_RE.test(remarks) || RESIGNED_RE.test(normalizeStatus(row['Vaild / Expired / Without Licence/Training']||'')),
   };
 }
 
