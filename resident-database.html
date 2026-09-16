@@ -1,1 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCH Resident Database — Live Feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090f;
+  --surface: #0f1117;
+  --surface2: #161923;
+  --surface3: #1c2130;
+  --border: #1e2535;
+  --border2: #252d40;
+  --text: #e2e8f0;
+  --text-dim: #8895aa;
+  --text-faint: #4a5568;
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.12);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --cyan: #06b6d4;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+}
+[data-theme="light"] {
+  --bg: #f0f2f7;
+  --surface: #ffffff;
+  --surface2: #f8f9fc;
+  --surface3: #eef0f6;
+  --border: #d1d9e8;
+  --border2: #c0cbe0;
+  --text: #0f172a;
+  --text-dim: #475569;
+  --text-faint: #94a3b8;
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.12);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.1);
+  --green: #059669;
+  --green-dim: rgba(5,150,105,0.1);
+  --blue: #2563eb;
+  --blue-dim: rgba(37,99,235,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{
+  background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  font-size:13px;line-height:1.5;min-height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;z-index:1000;
+}
+[data-theme="light"] body::before{display:none;}
+
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.logo-badge{width:36px;height:36px;background:var(--pink);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#000;letter-spacing:0.5px;}
+.header-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;letter-spacing:1.5px;text-transform:uppercase;}
+.header-subtitle{font-size:11px;color:var(--text-dim);letter-spacing:0.5px;margin-top:1px;}
+.live-badge{display:flex;align-items:center;gap:6px;border:1px solid var(--green);padding:4px 12px;border-radius:20px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--green);}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse-green 1.5s ease-in-out infinite;}
+@keyframes pulse-green{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,0.4);}50%{opacity:.6;box-shadow:0 0 0 4px rgba(16,185,129,0);}}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.clock{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--pink);letter-spacing:1px;}
+.clock-date{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-dim);text-align:right;letter-spacing:0.5px;margin-top:1px;}
+.btn{padding:6px 14px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border-radius:20px;}
+.btn:hover{border-color:var(--pink);color:var(--pink);background:rgba(236,72,153,0.12);}
+.btn-live{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+.btn-live:hover{background:rgba(59,130,246,0.25);}
+.btn-hh{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.btn-hh:hover{background:rgba(245,158,11,0.25);}
+.btn-sira{border-color:var(--purple);color:var(--purple);background:rgba(139,92,246,0.12);}
+.btn-sira:hover{background:rgba(139,92,246,0.25);}
+.btn-duty{border-color:var(--cyan);color:var(--cyan);background:rgba(6,182,212,0.12);}
+.btn-duty:hover{background:rgba(6,182,212,0.25);}
+.btn-theme{padding:6px 10px;}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:center;gap:10px;padding:8px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.top-bar-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;}
+.top-bar label.tblbl{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);white-space:nowrap;}
+.top-bar input[type=text]{flex:1;min-width:220px;background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;}
+.top-bar input[type=text]:focus{border-color:var(--pink);}
+.btn-connect{background:var(--surface3);border:1px solid var(--blue);color:var(--blue);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;white-space:nowrap;}
+.btn-connect:hover{background:var(--blue-dim);}
+.btn-telemetry{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;white-space:nowrap;}
+.btn-telemetry:hover{border-color:var(--text-dim);color:var(--text);}
+.demo-tag{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-faint);letter-spacing:.5px;}
+
+/* MAIN */
+.main{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+@media(max-width:1400px){.kpi-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+.kpi{background:var(--surface);border:1px solid var(--border);padding:16px 18px;position:relative;overflow:hidden;cursor:default;transition:border-color .2s,transform .15s;}
+.kpi:hover{transform:translateY(-1px);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.total::before{background:var(--pink);}
+.kpi.movein::before{background:var(--green);}
+.kpi.moveout::before{background:var(--amber);}
+.kpi.follow::before{background:var(--red);}
+.kpi.lease::before{background:var(--cyan);}
+.kpi.flagged::before{background:var(--red);}
+.kpi-label{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.kpi.total .kpi-label{color:var(--pink);}
+.kpi.movein .kpi-label{color:var(--green);}
+.kpi.moveout .kpi-label{color:var(--amber);}
+.kpi.follow .kpi-label{color:var(--red);}
+.kpi.lease .kpi-label{color:var(--cyan);}
+.kpi.flagged .kpi-label{color:var(--red);}
+.kpi-num{font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;line-height:1;margin:8px 0 4px;}
+.kpi.total .kpi-num{color:var(--pink);}
+.kpi.movein .kpi-num{color:var(--green);}
+.kpi.moveout .kpi-num{color:var(--amber);}
+.kpi.follow .kpi-num{color:var(--red);}
+.kpi.lease .kpi-num{color:var(--cyan);}
+.kpi.flagged .kpi-num{color:var(--red);}
+.kpi-sub{font-size:11px;color:var(--text-faint);}
+.kpi.follow{cursor:pointer;}
+.kpi.follow:hover{border-color:var(--red);}
+.kpi.flagged{cursor:pointer;}
+.kpi.flagged:hover{border-color:var(--red);}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:10px 14px;flex-wrap:wrap;}
+.filter-bar input[type=text]{background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:6px 10px;font-family:'Inter',sans-serif;font-size:12px;outline:none;min-width:200px;flex:1;}
+.filter-bar input[type=text]:focus{border-color:var(--pink);}
+.filter-bar select{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:6px 10px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;outline:none;cursor:pointer;}
+.filter-bar select:focus{border-color:var(--pink);}
+.filter-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);white-space:nowrap;margin-left:auto;}
+
+/* TABLE PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);padding:16px;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.panel-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);}
+.panel-tag{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:600;letter-spacing:1px;color:var(--pink);border:1px solid rgba(236,72,153,.35);padding:2px 8px;}
+.panel-tag.red{color:var(--red);border-color:rgba(239,68,68,.35);}
+.panel-tag.cyan{color:var(--cyan);border-color:rgba(6,182,212,.35);}
+
+.table-scroll{overflow-x:auto;max-height:520px;overflow-y:auto;}
+table.res-table{width:100%;border-collapse:collapse;font-size:11.5px;white-space:nowrap;}
+table.res-table thead th{position:sticky;top:0;background:var(--surface2);text-align:left;padding:8px 10px;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);border-bottom:1px solid var(--border2);cursor:pointer;user-select:none;}
+table.res-table thead th:hover{color:var(--pink);}
+table.res-table tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+table.res-table tbody tr:hover{background:var(--surface2);}
+table.res-table td{padding:8px 10px;color:var(--text);}
+.badge{display:inline-block;font-size:9.5px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.8px;padding:2px 8px;border-radius:10px;text-transform:uppercase;}
+.badge.in{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.35);}
+.badge.out{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.35);}
+.badge.unknown{background:var(--surface3);color:var(--text-faint);border:1px solid var(--border2);}
+.badge.flag{background:rgba(239,68,68,.18);color:var(--red);border:1px solid rgba(239,68,68,.4);cursor:help;}
+tr.flagged-row{background:rgba(239,68,68,.055);}
+tr.flagged-row:hover{background:rgba(239,68,68,.11);}
+.flag-toggle{display:flex;align-items:center;gap:6px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;}
+.flag-toggle input{accent-color:var(--red);cursor:pointer;}
+.lease-chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:3px;}
+.lease-chip.soon{background:rgba(239,68,68,.15);color:var(--red);}
+.lease-chip.warn{background:rgba(245,158,11,.15);color:var(--amber);}
+.lease-chip.ok{background:rgba(16,185,129,.1);color:var(--green);}
+
+/* FOLLOW-UP LIST */
+.follow-scroll{max-height:340px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.follow-item{border-left:2px solid var(--red);padding:9px 12px;margin-bottom:8px;background:rgba(239,68,68,.05);cursor:pointer;}
+.follow-item:hover{background:rgba(239,68,68,.1);}
+.follow-head{display:flex;justify-content:space-between;gap:8px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:var(--text);}
+.follow-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);white-space:nowrap;}
+.follow-missing{font-size:11px;color:var(--red);margin-top:4px;}
+.follow-raw{font-size:10.5px;color:var(--text-dim);margin-top:4px;line-height:1.5;max-height:54px;overflow:hidden;}
+
+/* COMMUNITY BREAKDOWN */
+.dist-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+.dist-row:last-child{border-bottom:none;}
+.dist-label{font-size:11px;color:var(--text-dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dist-bar-wrap{flex:1.2;background:var(--surface3);height:6px;position:relative;}
+.dist-bar-fill{height:100%;background:var(--pink);opacity:.7;}
+.dist-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);width:24px;text-align:right;}
+
+.mid-row{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;}
+@media(max-width:1000px){.mid-row{grid-template-columns:1fr;}}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-backdrop.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);width:560px;max-width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;}
+.modal-header{padding:16px 20px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--text);}
+.modal-close{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;}
+.modal-close:hover{color:var(--red);}
+.modal-body{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;}
+.modal-body.full{display:block;}
+.modal-field label{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--pink);display:block;margin-bottom:4px;}
+.modal-field p{font-size:12px;color:var(--text);line-height:1.6;word-break:break-word;}
+.modal-raw{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-dim);background:var(--surface3);border:1px solid var(--border);padding:10px;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;margin-top:10px;}
+
+/* SYNC BAR */
+.sync-bar{position:fixed;bottom:18px;right:18px;z-index:4000;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);padding:7px 13px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--text-dim);opacity:0;pointer-events:none;transition:opacity .3s ease;}
+.sync-bar.show{opacity:1;}
+.sync-bar.error{border-color:var(--red);color:var(--red);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--pink);flex-shrink:0;animation:syncpulse .8s ease-in-out infinite;}
+.sync-bar.error .sync-dot{background:var(--red);animation:none;}
+@keyframes syncpulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+.empty-state{padding:30px;text-align:center;color:var(--text-faint);font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;}
+
+.footer{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-top:1px solid var(--border);font-size:10px;color:var(--text-faint);font-family:'Rajdhani',sans-serif;letter-spacing:.5px;flex-wrap:wrap;gap:6px;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo-badge">DCH</div>
+    <div>
+      <div class="header-title">Resident Database</div>
+      <div class="header-subtitle">Dubai Creek Harbour · Move-In / Move-Out Tracker</div>
+    </div>
+  </div>
+  <div class="live-badge"><span class="live-dot"></span>LIVE MONITORING</div>
+  <div class="header-right">
+    <a href="security-ops.html" class="btn btn-live">🛰️ LIVE FEED</a>
+    <a href="holiday-home.html" class="btn btn-hh">🏠 HOLIDAY HOMES</a>
+    <a href="sira-compliance.html" class="btn btn-sira">🪪 SIRA COMPLIANCE</a>
+    <a href="duty-reference.html" class="btn btn-duty">🛡️ DUTY REFERENCE</a>
+    <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
+    <div style="text-align:right">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-date" id="clockDate">---</div>
+    </div>
+  </div>
+</header>
+
+<div class="top-bar">
+  <div class="top-bar-row">
+    <label class="tblbl">RESIDENT DATABASE CSV:</label>
+    <input type="text" id="csvUrlMain" placeholder="Published CSV link for the 'Resident Database' tab">
+    <label class="tblbl">ERRORS CSV:</label>
+    <input type="text" id="csvUrlErrors" placeholder="Published CSV link for the 'Resident Move-In Errors' tab (optional)">
+  </div>
+  <div class="top-bar-row">
+    <button class="btn-connect" onclick="connectTarget()">CONNECT TARGET</button>
+    <button class="btn-telemetry" onclick="loadDemoData()">LOAD TELEMETRY PROFILE</button>
+    <span class="demo-tag" id="demoTag">No data loaded · Connect or load demo</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="kpi-row">
+    <div class="kpi total">
+      <div class="kpi-label">🏘️ Total Records</div>
+      <div class="kpi-num" id="kpiTotal">—</div>
+      <div class="kpi-sub" id="kpiTotalSub">All communities</div>
+    </div>
+    <div class="kpi movein">
+      <div class="kpi-label">➕ Move-Ins (30d)</div>
+      <div class="kpi-num" id="kpiMoveIn">—</div>
+      <div class="kpi-sub">Last 30 days</div>
+    </div>
+    <div class="kpi moveout">
+      <div class="kpi-label">➖ Move-Outs (30d)</div>
+      <div class="kpi-num" id="kpiMoveOut">—</div>
+      <div class="kpi-sub">Last 30 days</div>
+    </div>
+    <div class="kpi lease">
+      <div class="kpi-label">📅 Leases Expiring</div>
+      <div class="kpi-num" id="kpiLease">—</div>
+      <div class="kpi-sub">Within 30 days</div>
+    </div>
+    <div class="kpi flagged" onclick="toggleFlaggedFilter()">
+      <div class="kpi-label">🚩 Flagged Nationalities</div>
+      <div class="kpi-num" id="kpiFlagged">—</div>
+      <div class="kpi-sub">Tap to filter</div>
+    </div>
+    <div class="kpi follow" onclick="scrollToFollowUp()">
+      <div class="kpi-label">⚠ Needs Follow-Up</div>
+      <div class="kpi-num" id="kpiFollow">—</div>
+      <div class="kpi-sub" id="lastUpdate">LAST UPDATE: --:--:--</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchBox" placeholder="Search name, apartment, EID, contact, RQ no..." oninput="renderTable()">
+    <select id="filterLocation" onchange="renderAll()"><option value="">All Communities</option></select>
+    <select id="filterActivity" onchange="renderTable()">
+      <option value="">All Activity</option>
+      <option value="Move In">Move In</option>
+      <option value="Move Out">Move Out</option>
+    </select>
+    <label class="flag-toggle"><input type="checkbox" id="filterFlaggedOnly" onchange="renderTable()"> 🚩 Flagged only</label>
+    <span class="filter-count" id="filterCount">0 records</span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Resident Records</div>
+      <div class="panel-tag" id="feedCount">CLICK A ROW FOR FULL DETAILS</div>
+    </div>
+    <div class="table-scroll">
+      <table class="res-table">
+        <thead>
+          <tr>
+            <th onclick="setSort('date')">Date</th>
+            <th onclick="setSort('location')">Location</th>
+            <th onclick="setSort('apartment')">Apt</th>
+            <th onclick="setSort('activity')">Activity</th>
+            <th onclick="setSort('name')">Name</th>
+            <th onclick="setSort('nationality')">Nationality</th>
+            <th>Flag</th>
+            <th onclick="setSort('contact')">Contact</th>
+            <th onclick="setSort('cm_type')">CM Type</th>
+            <th onclick="setSort('_moveDate')">Move Date</th>
+            <th onclick="setSort('lease_end_date')">Lease End</th>
+            <th onclick="setSort('security_supervisor')">Supervisor</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="12" class="empty-state">Connect to Google Sheets or load demo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="mid-row">
+    <div class="panel" id="followUpPanel">
+      <div class="panel-header">
+        <div class="panel-title">Needs Follow-Up — Incomplete Move-In Reports</div>
+        <div class="panel-tag red" id="followTag">0 PENDING</div>
+      </div>
+      <div class="follow-scroll" id="followUpList">
+        <div class="empty-state">No errors sheet connected, or nothing pending</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Records by Community</div>
+        <div class="panel-tag cyan">ALL COMMUNITIES</div>
+      </div>
+      <div id="communityDist">
+        <div class="empty-state">Load data to see breakdown</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<footer class="footer">
+  <div>Powered By: <strong style="color:var(--pink);">DCH</strong> Security Intelligence Platform · Resident Move-In/Out Tracker</div>
+  <div id="lastRefresh">LAST REFRESH: —</div>
+  <div>© 2026 Dubai Creek Harbour Command Center</div>
+</footer>
+
+<!-- DETAIL MODAL -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Resident Record</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="sync-bar" id="loadingOverlay">
+  <span class="sync-dot" id="syncDot"></span>
+  <span id="loadingText">SYNCING...</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  CLOCK (GST / Dubai time)
+// ═══════════════════════════════════════════════════════════════════
+function getGSTNow(dateInput){
+  const base = dateInput ? new Date(dateInput) : new Date();
+  const gstStr = base.toLocaleString('en-US',{timeZone:'Asia/Dubai'});
+  return new Date(gstStr);
+}
+function updateClock(){
+  const n=getGSTNow();
+  const pad=x=>String(x).padStart(2,'0');
+  document.getElementById('clock').textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  const days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('clockDate').textContent=`${days[n.getDay()]}, ${months[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()} GST`;
+}
+setInterval(updateClock,1000);updateClock();
+
+// ═══════════════════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════════════════
+function toggleTheme(){
+  const h=document.documentElement;
+  const t=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',t);
+  document.querySelector('.btn-theme').textContent=t==='dark'?'☀':'🌙';
+  try{localStorage.setItem('dch-theme',t);}catch(e){}
+}
+(function(){
+  let s='dark';
+  try{s=localStorage.getItem('dch-theme')||'dark';}catch(e){}
+  document.documentElement.setAttribute('data-theme',s);
+  document.querySelector('.btn-theme').textContent=s==='dark'?'☀':'🌙';
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════
+let allResidents=[];
+let allErrors=[];
+let sortKey='date';
+let sortDir=-1;
+
+// ═══════════════════════════════════════════════════════════════════
+//  LOADING HELPERS
+// ═══════════════════════════════════════════════════════════════════
+let _syncTimer=null;
+function showLoading(msg){
+  const bar=document.getElementById('loadingOverlay');
+  const dot=document.getElementById('syncDot');
+  bar.classList.remove('error');
+  dot.style.animation='syncpulse .8s ease-in-out infinite';
+  document.getElementById('loadingText').textContent=msg||'SYNCING...';
+  bar.classList.add('show');
+  clearTimeout(_syncTimer);
+}
+function hideLoading(isError){
+  const bar=document.getElementById('loadingOverlay');
+  if(isError){
+    bar.classList.add('error');
+    document.getElementById('syncDot').style.animation='none';
+    document.getElementById('loadingText').textContent='SYNC FAILED';
+    clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(()=>bar.classList.remove('show'),3500);
+  } else {
+    bar.classList.remove('error');
+    document.getElementById('loadingText').textContent='SYNCED ✓';
+    clearTimeout(_syncTimer);
+    _syncTimer=setTimeout(()=>bar.classList.remove('show'),1800);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  GOOGLE SHEETS FETCH — same pattern as securityops.html / holiday-home.html
+// ═══════════════════════════════════════════════════════════════════
+function toCsvUrl(url){
+  if(!url) return '';
+  if(url.includes('/edit'))            return url.replace('/edit','/pub')+'?output=csv';
+  else if(!url.includes('output=csv')) return url+(url.includes('?')?'&':'?')+'output=csv';
+  return url;
+}
+async function fetchCsv(url){
+  const csvUrl=toCsvUrl(url);
+  const proxies=[csvUrl,'https://api.allorigins.win/raw?url='+encodeURIComponent(csvUrl),'https://corsproxy.io/?'+encodeURIComponent(csvUrl)];
+  for(const attempt of proxies){
+    try{
+      const resp=await fetch(attempt,{cache:'no-store'});
+      if(!resp.ok) continue;
+      const text=await resp.text();
+      if(!text||text.trim().length<5) continue;
+      return text;
+    }catch(e){continue;}
+  }
+  return null;
+}
+
+async function connectTarget(){
+  const mainUrl=document.getElementById('csvUrlMain').value.trim();
+  const errUrl=document.getElementById('csvUrlErrors').value.trim();
+  if(!mainUrl){alert('Please enter the Resident Database published CSV URL.');return;}
+
+  try{
+    localStorage.setItem('dch-resident-sheet-url', mainUrl);
+    localStorage.setItem('dch-resident-errors-url', errUrl);
+  }catch(e){}
+
+  showLoading('SYNCING...');
+  document.getElementById('demoTag').textContent='CONNECTING TO SHEET...';
+
+  const mainText=await fetchCsv(mainUrl);
+  if(!mainText){
+    hideLoading(true);
+    document.getElementById('demoTag').textContent='CONNECTION FAILED — try LOAD TELEMETRY PROFILE';
+    alert('Could not fetch the Resident Database sheet. Check the URL (File > Share > Publish to web > CSV) or use LOAD TELEMETRY PROFILE to test with demo data.');
+    return;
+  }
+  allResidents=parseResidentCSV(mainText);
+
+  if(errUrl){
+    const errText=await fetchCsv(errUrl);
+    allErrors = errText ? parseErrorsCSV(errText) : [];
+  } else {
+    allErrors=[];
+  }
+
+  const gst=getGSTNow();
+  const timeStr=gst.toLocaleTimeString('en-AE');
+  document.getElementById('demoTag').innerHTML=`LIVE · <strong>${allResidents.length} RECORDS LOADED</strong> · ${timeStr}`;
+  document.getElementById('lastUpdate').textContent=`LAST UPDATE: ${timeStr}`;
+  document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
+  hideLoading(false);
+  populateLocationFilter();
+  renderAll();
+  scheduleAutoRefresh();
+}
+
+let _autoRefreshTimer=null;
+function scheduleAutoRefresh(){
+  clearTimeout(_autoRefreshTimer);
+  _autoRefreshTimer=setTimeout(()=>{
+    const mainUrl=document.getElementById('csvUrlMain').value.trim();
+    if(mainUrl) connectTarget();
+  }, 5*60*1000); // refresh every 5 minutes, same cadence as the live feed page
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CSV PARSER
+// ═══════════════════════════════════════════════════════════════════
+function parseCSVLine(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){inQ=!inQ;}
+    else if(line[i]===','&&!inQ){result.push(cur);cur='';}
+    else{cur+=line[i];}
+  }
+  result.push(cur);
+  return result;
+}
+function csvToObjects(text){
+  const lines=text.trim().split('\n');
+  const headers=lines[0].split(',').map(h=>h.replace(/"/g,'').trim());
+  return lines.slice(1).map(line=>{
+    const vals=parseCSVLine(line);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/"/g,'').trim());
+    return obj;
+  });
+}
+function parseResidentCSV(text){
+  return csvToObjects(text).filter(r=>{
+    const hasName = r.name && r.name.trim()!=='';
+    const hasApt  = r.apartment && r.apartment.trim()!=='';
+    return hasName || hasApt;
+  });
+}
+function parseErrorsCSV(text){
+  return csvToObjects(text).filter(r=>r.message_id && r.message_id.trim()!=='');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DEMO DATA
+// ═══════════════════════════════════════════════════════════════════
+function loadDemoData(){
+  const today=new Date();
+  function iso(d){return d.toISOString().slice(0,10);}
+  function daysFromNow(n){const d=new Date(today);d.setDate(d.getDate()+n);return iso(d);}
+  allResidents=[
+    {message_id:'RES_demo1',timestamp:new Date().toISOString(),date:daysFromNow(-2),location:'The Cove',apartment:'1204',activity:'Move In',name:'Ahmed Al Farsi',contact:'971501234567',eid:'784-1990-1234567-1',nationality:'UAE',cm_type:'Owner',rq_no:'RQ10234',move_in_date:daysFromNow(-2),lease_start_date:daysFromNow(-2),lease_end_date:daysFromNow(363),security_supervisor:'Mohammed K.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'},
+    {message_id:'RES_demo2',timestamp:new Date().toISOString(),date:daysFromNow(-10),location:'Creek Gate',apartment:'805',activity:'Move In',name:'Elena Popescu',contact:'971509876543',eid:'784-1988-7654321-2',nationality:'Romania',cm_type:'Tenant',rq_no:'RQ10088',move_in_date:daysFromNow(-10),lease_start_date:daysFromNow(-10),lease_end_date:daysFromNow(20),security_supervisor:'Faisal R.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'},
+    {message_id:'RES_demo3',timestamp:new Date().toISOString(),date:daysFromNow(-1),location:'Harbour Gate',apartment:'302',activity:'Move Out',name:'James Whitfield',contact:'971521112233',eid:'784-1985-1112233-3',nationality:'United Kingdom',cm_type:'Tenant',rq_no:'RQ09950',move_out_date:daysFromNow(-1),lease_start_date:daysFromNow(-400),lease_end_date:daysFromNow(5),security_supervisor:'Omar S.',senior_security_supervisor:'Ben',raw_message:'Resident Move Out...'},
+    {message_id:'RES_demo4',timestamp:new Date().toISOString(),date:daysFromNow(-20),location:'The Grand',apartment:'1501',activity:'Move In',name:'Priya Nair',contact:'971557778899',eid:'784-1992-7778899-4',nationality:'India',cm_type:'Owner',rq_no:'RQ09876',move_in_date:daysFromNow(-20),lease_start_date:daysFromNow(-20),lease_end_date:daysFromNow(345),security_supervisor:'Mohammed K.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'},
+    {message_id:'RES_demo5',timestamp:new Date().toISOString(),date:daysFromNow(-5),location:'17 Icon Bay',apartment:'910',activity:'Move In',name:'Reza Hosseini',contact:'971503334455',eid:'784-1991-3334455-5',nationality:'Iranian',compliance_alert:'true',compliance_flags:'Iran',cm_type:'Tenant',rq_no:'RQ10310',move_in_date:daysFromNow(-5),lease_start_date:daysFromNow(-5),lease_end_date:daysFromNow(360),security_supervisor:'Faisal R.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'}
+  ];
+  allErrors=[
+    {message_id:'RES_demoerr1',received_at:new Date().toISOString(),sender:'Supervisor - North Residence',sender_number:'971544981447',missing_fields:'eid, rq_no',raw_message:'Resident Move In\n-Date: today\n-Location: North Residence\n-Apartment: 610\n-Activity: Move In\n\nResident Details :\n-Name: Test Resident\n-Contact: 971500000000\n...'}
+  ];
+  document.getElementById('demoTag').innerHTML='DEMO DATA · <strong>'+allResidents.length+' RECORDS</strong>';
+  const gst=getGSTNow();
+  document.getElementById('lastUpdate').textContent='LAST UPDATE: '+gst.toLocaleTimeString('en-AE');
+  document.getElementById('lastRefresh').textContent='LAST REFRESH: '+gst.toLocaleTimeString('en-AE');
+  populateLocationFilter();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════════════════════
+function populateLocationFilter(){
+  const sel=document.getElementById('filterLocation');
+  const current=sel.value;
+  const locs=[...new Set(allResidents.map(r=>r.location).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">All Communities</option>'+locs.map(l=>`<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('');
+  if(locs.includes(current)) sel.value=current;
+}
+// A record is flagged either via the compliance_alert column written by the
+// n8n pipeline (same COMPLIANCE_PATTERNS list used on the HHO Tracker), or
+// — as a safety net for rows synced before that column existed — by
+// re-checking the nationality text directly against the same flagged list.
+const COMPLIANCE_PATTERNS = [
+  { country: 'Iran',        patterns: ['iran', 'iranian', 'persia', 'persian'] },
+  { country: 'Iraq',        patterns: ['iraq', 'iraqi'] },
+  { country: 'Israel',      patterns: ['israel', 'israeli'] },
+  { country: 'Yemen',       patterns: ['yemen', 'yemeni'] },
+  { country: 'Afghanistan', patterns: ['afghanistan', 'afghan'] }
+];
+function flagsForNationality(nat){
+  const v=String(nat||'').toLowerCase();
+  const hits=[];
+  for(const {country,patterns} of COMPLIANCE_PATTERNS){
+    if(patterns.some(p=>v.includes(p))) hits.push(country);
+  }
+  return hits;
+}
+function isFlagged(r){
+  const explicit=String(r.compliance_alert||'').toLowerCase();
+  if(explicit==='true') return true;
+  if(explicit==='false') return false;
+  return flagsForNationality(r.nationality).length>0;
+}
+function complianceFlagsFor(r){
+  if(r.compliance_flags && r.compliance_flags.trim()) return r.compliance_flags;
+  return flagsForNationality(r.nationality).join(', ');
+}
+
+let flaggedOnlyActive=false;
+function toggleFlaggedFilter(){
+  flaggedOnlyActive=!flaggedOnlyActive;
+  document.getElementById('filterFlaggedOnly').checked=flaggedOnlyActive;
+  renderTable();
+}
+
+function getFiltered(){
+  const q=(document.getElementById('searchBox').value||'').toLowerCase().trim();
+  const loc=document.getElementById('filterLocation').value;
+  const act=document.getElementById('filterActivity').value;
+  const flaggedOnly=document.getElementById('filterFlaggedOnly').checked;
+  flaggedOnlyActive=flaggedOnly;
+  return allResidents.filter(r=>{
+    if(loc && r.location!==loc) return false;
+    if(act && r.activity!==act) return false;
+    if(flaggedOnly && !isFlagged(r)) return false;
+    if(q){
+      const hay=[r.name,r.apartment,r.eid,r.contact,r.rq_no,r.location].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function setSort(key){
+  if(sortKey===key) sortDir*=-1; else {sortKey=key;sortDir=-1;}
+  renderTable();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════════════
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const d=new Date(dateStr);
+  if(isNaN(d)) return null;
+  const now=getGSTNow();
+  return Math.round((d-now)/(1000*60*60*24));
+}
+function leaseChip(dateStr){
+  const d=daysUntil(dateStr);
+  if(d===null) return '';
+  if(d<0) return `<span class="lease-chip soon">EXPIRED</span>`;
+  if(d<=30) return `<span class="lease-chip soon">${d}d left</span>`;
+  if(d<=90) return `<span class="lease-chip warn">${d}d left</span>`;
+  return `<span class="lease-chip ok">${d}d left</span>`;
+}
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function activityBadge(a){
+  const cls = a==='Move In' ? 'in' : (a==='Move Out' ? 'out' : 'unknown');
+  return `<span class="badge ${cls}">${escapeHtml(a||'Unknown')}</span>`;
+}
+
+function renderAll(){
+  renderKpis();
+  renderTable();
+  renderFollowUp();
+  renderCommunityDist();
+}
+
+function renderKpis(){
+  const now=getGSTNow();
+  const total=allResidents.length;
+  const last30=allResidents.filter(r=>{const d=daysUntil(r.date);return d!==null && d>=-30 && d<=0;});
+  const moveIns=last30.filter(r=>r.activity==='Move In').length;
+  const moveOuts=last30.filter(r=>r.activity==='Move Out').length;
+  const leasesExpiring=allResidents.filter(r=>{const d=daysUntil(r.lease_end_date);return d!==null && d>=0 && d<=30;}).length;
+  const flaggedCount=allResidents.filter(isFlagged).length;
+
+  document.getElementById('kpiTotal').textContent=total;
+  document.getElementById('kpiMoveIn').textContent=moveIns;
+  document.getElementById('kpiMoveOut').textContent=moveOuts;
+  document.getElementById('kpiLease').textContent=leasesExpiring;
+  document.getElementById('kpiFlagged').textContent=flaggedCount;
+  document.getElementById('kpiFollow').textContent=allErrors.length;
+  document.getElementById('kpiTotalSub').textContent=[...new Set(allResidents.map(r=>r.location).filter(Boolean))].length+' communities';
+}
+
+// Move-Out records use their own "move_out_date" field (Move-In's
+// "move_in_date" doesn't apply), so the table shows whichever one matches
+// the record's activity under one "Move Date" column.
+function moveDateFor(r){
+  return r.activity==='Move Out' ? (r.move_out_date||'') : (r.move_in_date||'');
+}
+
+let currentTableRows=[];
+function renderTable(){
+  const rows=getFiltered().sort((a,b)=>{
+    let av, bv;
+    if(sortKey==='_moveDate'){ av=moveDateFor(a); bv=moveDateFor(b); }
+    else { av=a[sortKey]||''; bv=b[sortKey]||''; }
+    if(sortKey==='_moveDate' || sortKey.includes('date')){av=new Date(av||0).getTime()||0;bv=new Date(bv||0).getTime()||0;}
+    if(av<bv) return -1*sortDir;
+    if(av>bv) return 1*sortDir;
+    return 0;
+  });
+  currentTableRows=rows;
+  document.getElementById('filterCount').textContent=rows.length+' record'+(rows.length===1?'':'s');
+  const body=document.getElementById('tableBody');
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="12" class="empty-state">No records match the current filters</td></tr>';
+    return;
+  }
+  body.innerHTML=rows.map((r,i)=>{
+    const flagged=isFlagged(r);
+    const flags=complianceFlagsFor(r);
+    return `
+    <tr data-idx="${i}" class="${flagged?'flagged-row':''}">
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.location)}</td>
+      <td>${escapeHtml(r.apartment)}</td>
+      <td>${activityBadge(r.activity)}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.nationality)}</td>
+      <td>${flagged?`<span class="badge flag" title="${escapeHtml(flags)}">🚩 ${escapeHtml(flags)}</span>`:''}</td>
+      <td>${escapeHtml(r.contact)}</td>
+      <td>${escapeHtml(r.cm_type)}</td>
+      <td>${escapeHtml(moveDateFor(r))}</td>
+      <td>${escapeHtml(r.lease_end_date)} ${leaseChip(r.lease_end_date)}</td>
+      <td>${escapeHtml(r.security_supervisor)}</td>
+    </tr>
+  `;
+  }).join('');
+  body.querySelectorAll('tr[data-idx]').forEach(tr=>{
+    tr.addEventListener('click',()=>openModal(currentTableRows[+tr.dataset.idx]));
+  });
+}
+
+function renderFollowUp(){
+  const tag=document.getElementById('followTag');
+  const list=document.getElementById('followUpList');
+  tag.textContent=allErrors.length+' PENDING';
+  if(!allErrors.length){
+    list.innerHTML='<div class="empty-state">No errors sheet connected, or nothing pending</div>';
+    return;
+  }
+  list.innerHTML=allErrors.map((e,i)=>`
+    <div class="follow-item" data-idx="${i}">
+      <div class="follow-head">
+        <span>${escapeHtml(e.sender||'Unknown Supervisor')}</span>
+        <span class="follow-time">${escapeHtml(e.received_at||'')}</span>
+      </div>
+      <div class="follow-missing">Missing: ${escapeHtml(e.missing_fields||'—')}</div>
+      <div class="follow-raw">${escapeHtml(e.raw_message||'')}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.follow-item[data-idx]').forEach(el=>{
+    el.addEventListener('click',()=>openErrorModal(allErrors[+el.dataset.idx]));
+  });
+}
+
+function renderCommunityDist(){
+  const el=document.getElementById('communityDist');
+  const counts={};
+  allResidents.forEach(r=>{if(r.location) counts[r.location]=(counts[r.location]||0)+1;});
+  const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){
+    el.innerHTML='<div class="empty-state">Load data to see breakdown</div>';
+    return;
+  }
+  const max=entries[0][1];
+  el.innerHTML=entries.map(([loc,count])=>`
+    <div class="dist-row">
+      <div class="dist-label">${escapeHtml(loc)}</div>
+      <div class="dist-bar-wrap"><div class="dist-bar-fill" style="width:${(count/max*100).toFixed(0)}%"></div></div>
+      <div class="dist-count">${count}</div>
+    </div>
+  `).join('');
+}
+
+function scrollToFollowUp(){
+  document.getElementById('followUpPanel').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════════════════════
+function openModal(r){
+  document.getElementById('modalTitle').textContent=(r.name||'Resident')+' — '+(r.apartment||'');
+  const fields=[
+    ['Date',r.date],['Location',r.location],['Apartment',r.apartment],['Activity',r.activity],
+    ['Name',r.name],['Contact',r.contact],['EID',r.eid],['Nationality',r.nationality],
+    ['Compliance Flag',isFlagged(r)?('🚩 '+complianceFlagsFor(r)):'None'],
+    ['CM Type',r.cm_type],['RQ No',r.rq_no],
+    ['Move-In Date',r.move_in_date],['Move-Out Date',r.move_out_date],
+    ['Lease Start',r.lease_start_date],['Lease End',r.lease_end_date],
+    ['Security Supervisor',r.security_supervisor],['Senior Security Supervisor',r.senior_security_supervisor]
+  ];
+  document.getElementById('modalBody').innerHTML=fields.map(([label,val])=>`
+    <div class="modal-field"><label>${label}</label><p>${escapeHtml(val)||'—'}</p></div>
+  `).join('') + `<div style="grid-column:1/-1"><div class="modal-field"><label>Raw Message</label><div class="modal-raw">${escapeHtml(r.raw_message)}</div></div></div>`;
+  document.getElementById('modalBackdrop').classList.add('show');
+}
+function openErrorModal(e){
+  document.getElementById('modalTitle').textContent='Incomplete Report — '+(e.sender||'Unknown');
+  const fields=[['Sender',e.sender],['Sender Number',e.sender_number],['Received At',e.received_at],['Missing Fields',e.missing_fields]];
+  document.getElementById('modalBody').innerHTML=fields.map(([label,val])=>`
+    <div class="modal-field"><label>${label}</label><p>${escapeHtml(val)||'—'}</p></div>
+  `).join('') + `<div style="grid-column:1/-1"><div class="modal-field"><label>Raw Message</label><div class="modal-raw">${escapeHtml(e.raw_message)}</div></div></div>`;
+  document.getElementById('modalBackdrop').classList.add('show');
+}
+function closeModal(){document.getElementById('modalBackdrop').classList.remove('show');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  try{
+    const savedMain=localStorage.getItem('dch-resident-sheet-url');
+    const savedErr=localStorage.getItem('dch-resident-errors-url');
+    if(savedMain) document.getElementById('csvUrlMain').value=savedMain;
+    if(savedErr) document.getElementById('csvUrlErrors').value=savedErr;
+  }catch(e){}
+});
+</script>
+</body>
+</html>
 
