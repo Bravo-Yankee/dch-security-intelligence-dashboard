@@ -161,8 +161,11 @@ table.res-table td{padding:8px 10px;color:var(--text);}
 .badge.out{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.35);}
 .badge.unknown{background:var(--surface3);color:var(--text-faint);border:1px solid var(--border2);}
 .badge.flag{background:rgba(239,68,68,.18);color:var(--red);border:1px solid rgba(239,68,68,.4);cursor:help;}
+.badge.partial{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.4);cursor:help;}
 tr.flagged-row{background:rgba(239,68,68,.055);}
 tr.flagged-row:hover{background:rgba(239,68,68,.11);}
+tr.partial-row{background:rgba(245,158,11,.045);}
+tr.partial-row:hover{background:rgba(245,158,11,.09);}
 .flag-toggle{display:flex;align-items:center;gap:6px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--text-dim);cursor:pointer;white-space:nowrap;}
 .flag-toggle input{accent-color:var(--red);cursor:pointer;}
 .lease-chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:1px 6px;border-radius:3px;}
@@ -571,7 +574,7 @@ function loadDemoData(){
   function daysFromNow(n){const d=new Date(today);d.setDate(d.getDate()+n);return iso(d);}
   allResidents=[
     {message_id:'RES_demo1',timestamp:new Date().toISOString(),date:daysFromNow(-2),location:'The Cove',apartment:'1204',activity:'Move In',name:'Ahmed Al Farsi',contact:'971501234567',eid:'784-1990-1234567-1',nationality:'UAE',cm_type:'Owner',rq_no:'RQ10234',move_in_date:daysFromNow(-2),lease_start_date:daysFromNow(-2),lease_end_date:daysFromNow(363),security_supervisor:'Mohammed K.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'},
-    {message_id:'RES_demo2',timestamp:new Date().toISOString(),date:daysFromNow(-10),location:'Creek Gate',apartment:'805',activity:'Move In',name:'Elena Popescu',contact:'971509876543',eid:'784-1988-7654321-2',nationality:'Romania',cm_type:'Tenant',rq_no:'RQ10088',move_in_date:daysFromNow(-10),lease_start_date:daysFromNow(-10),lease_end_date:daysFromNow(20),security_supervisor:'Faisal R.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'},
+    {message_id:'RES_demo2',timestamp:new Date().toISOString(),date:daysFromNow(-10),location:'Creek Gate',apartment:'805',activity:'Move In',name:'Elena Popescu',contact:'971509876543',eid:'784-1988-7654321-2',nationality:'Romania',cm_type:'Tenant',rq_no:'RQ10088',move_in_date:daysFromNow(-10),lease_start_date:daysFromNow(-10),lease_end_date:'',security_supervisor:'',senior_security_supervisor:'Ben',missing_fields:'lease_end_date, security_supervisor',raw_message:'Resident Move In\n-Date: '+daysFromNow(-10)+'\n-Location: Creek Gate\n-Apartment: 805\n-Activity: Move In\n-Name: Elena Popescu\n(lease end date and security supervisor line were left blank on the original message — logged anyway since 5+ other required fields checked out)'},
     {message_id:'RES_demo3',timestamp:new Date().toISOString(),date:daysFromNow(-1),location:'Harbour Gate',apartment:'302',activity:'Move Out',name:'James Whitfield',contact:'971521112233',eid:'784-1985-1112233-3',nationality:'United Kingdom',cm_type:'Tenant',rq_no:'RQ09950',move_out_date:daysFromNow(-1),lease_start_date:daysFromNow(-400),lease_end_date:daysFromNow(5),security_supervisor:'Omar S.',senior_security_supervisor:'Ben',raw_message:'Resident Move Out...'},
     {message_id:'RES_demo4',timestamp:new Date().toISOString(),date:daysFromNow(-20),location:'The Grand',apartment:'1501',activity:'Move In',name:'Priya Nair',contact:'971557778899',eid:'784-1992-7778899-4',nationality:'India',cm_type:'Owner',rq_no:'RQ09876',move_in_date:daysFromNow(-20),lease_start_date:daysFromNow(-20),lease_end_date:daysFromNow(345),security_supervisor:'Mohammed K.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'},
     {message_id:'RES_demo5',timestamp:new Date().toISOString(),date:daysFromNow(-5),location:'17 Icon Bay',apartment:'910',activity:'Move In',name:'Reza Hosseini',contact:'971503334455',eid:'784-1991-3334455-5',nationality:'Iranian',compliance_alert:'true',compliance_flags:'Iran',cm_type:'Tenant',rq_no:'RQ10310',move_in_date:daysFromNow(-5),lease_start_date:daysFromNow(-5),lease_end_date:daysFromNow(360),security_supervisor:'Faisal R.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'}
@@ -621,6 +624,13 @@ function isFlagged(r){
   if(explicit==='true') return true;
   if(explicit==='false') return false;
   return flagsForNationality(r.nationality).length>0;
+}
+// A record can land in the Resident Database tab without every field —
+// the parser only requires 5 of the activity's required fields to log it
+// as complete, so this flags the rest of the gap (still visible here
+// instead of needing to open the sheet and scroll to missing_fields).
+function isPartial(r){
+  return !!(r.missing_fields && r.missing_fields.trim());
 }
 function complianceFlagsFor(r){
   if(r.compliance_flags && r.compliance_flags.trim()) return r.compliance_flags;
@@ -697,6 +707,7 @@ function renderKpis(){
   const moveOuts=last30.filter(r=>r.activity==='Move Out').length;
   const leasesExpiring=allResidents.filter(r=>{const d=daysUntil(r.lease_end_date);return d!==null && d>=0 && d<=30;}).length;
   const flaggedCount=allResidents.filter(isFlagged).length;
+  const partialCount=allResidents.filter(isPartial).length;
 
   document.getElementById('kpiTotal').textContent=total;
   document.getElementById('kpiMoveIn').textContent=moveIns;
@@ -704,7 +715,8 @@ function renderKpis(){
   document.getElementById('kpiLease').textContent=leasesExpiring;
   document.getElementById('kpiFlagged').textContent=flaggedCount;
   document.getElementById('kpiFollow').textContent=allErrors.length;
-  document.getElementById('kpiTotalSub').textContent=[...new Set(allResidents.map(r=>r.location).filter(Boolean))].length+' communities';
+  const communityCount=[...new Set(allResidents.map(r=>r.location).filter(Boolean))].length;
+  document.getElementById('kpiTotalSub').textContent=communityCount+' communities'+(partialCount?' · '+partialCount+' partial':'');
 }
 
 // Move-Out records use their own "move_out_date" field (Move-In's
@@ -735,15 +747,17 @@ function renderTable(){
   body.innerHTML=rows.map((r,i)=>{
     const flagged=isFlagged(r);
     const flags=complianceFlagsFor(r);
+    const partial=isPartial(r);
+    const rowClass = flagged ? 'flagged-row' : (partial ? 'partial-row' : '');
     return `
-    <tr data-idx="${i}" class="${flagged?'flagged-row':''}">
+    <tr data-idx="${i}" class="${rowClass}">
       <td>${escapeHtml(r.date)}</td>
       <td>${escapeHtml(r.location)}</td>
       <td>${escapeHtml(r.apartment)}</td>
       <td>${activityBadge(r.activity)}</td>
       <td>${escapeHtml(r.name)}</td>
       <td>${escapeHtml(r.nationality)}</td>
-      <td>${flagged?`<span class="badge flag" title="${escapeHtml(flags)}">🚩 ${escapeHtml(flags)}</span>`:''}</td>
+      <td>${flagged?`<span class="badge flag" title="${escapeHtml(flags)}">🚩 ${escapeHtml(flags)}</span>`:(partial?`<span class="badge partial" title="Missing: ${escapeHtml(r.missing_fields)}">⚠ Partial</span>`:'')}</td>
       <td>${escapeHtml(r.contact)}</td>
       <td>${escapeHtml(r.cm_type)}</td>
       <td>${escapeHtml(moveDateFor(r))}</td>
@@ -815,7 +829,8 @@ function openModal(r){
     ['CM Type',r.cm_type],['RQ No',r.rq_no],
     ['Move-In Date',r.move_in_date],['Move-Out Date',r.move_out_date],
     ['Lease Start',r.lease_start_date],['Lease End',r.lease_end_date],
-    ['Security Supervisor',r.security_supervisor],['Senior Security Supervisor',r.senior_security_supervisor]
+    ['Security Supervisor',r.security_supervisor],['Senior Security Supervisor',r.senior_security_supervisor],
+    ['Missing Fields',isPartial(r)?('⚠ '+r.missing_fields):'None — fully complete']
   ];
   document.getElementById('modalBody').innerHTML=fields.map(([label,val])=>`
     <div class="modal-field"><label>${label}</label><p>${escapeHtml(val)||'—'}</p></div>
