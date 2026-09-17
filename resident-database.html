@@ -837,14 +837,27 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 //  INIT
 // ═══════════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded',()=>{
+  // ── Auto-connect on every page load ────────────────────────────
+  // Same pattern as security-ops.html: priority is 1) a user-saved URL in
+  // localStorage, 2) whatever default is already sitting in the input
+  // field. Whichever wins gets saved back to localStorage, and if a
+  // Resident Database URL is present either way, it fetches immediately —
+  // no more clicking CONNECT TARGET on every reload. The Errors URL is
+  // optional either way (connectTarget already treats it as such).
   try{
-    const savedMain=localStorage.getItem('dch-resident-sheet-url');
-    const savedErr=localStorage.getItem('dch-resident-errors-url');
-    if(savedMain) document.getElementById('csvUrlMain').value=savedMain;
-    if(savedErr) document.getElementById('csvUrlErrors').value=savedErr;
+    const mainInput=document.getElementById('csvUrlMain');
+    const errInput=document.getElementById('csvUrlErrors');
+    const savedMain=localStorage.getItem('dch-resident-sheet-url')||mainInput.value.trim();
+    const savedErr=localStorage.getItem('dch-resident-errors-url')||errInput.value.trim();
+    if(savedMain) mainInput.value=savedMain;
+    if(savedErr) errInput.value=savedErr;
+    if(savedMain){
+      localStorage.setItem('dch-resident-sheet-url',savedMain);
+      if(savedErr) localStorage.setItem('dch-resident-errors-url',savedErr);
+      connectTarget();
+    }
   }catch(e){}
 });
 </script>
 </body>
 </html>
-
