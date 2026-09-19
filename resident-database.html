@@ -210,6 +210,15 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
 .follow-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);white-space:nowrap;}
 .follow-missing{font-size:11px;color:var(--red);margin-top:4px;}
 .follow-raw{font-size:10.5px;color:var(--text-dim);margin-top:4px;line-height:1.5;max-height:54px;overflow:hidden;}
+.follow-group{margin-bottom:10px;}
+.follow-group-header{display:flex;align-items:center;gap:8px;padding:6px 2px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.follow-group-header:hover .follow-group-name{color:var(--cyan);}
+.follow-group-arrow{font-size:9px;color:var(--text-faint);transition:transform .15s;width:10px;display:inline-block;}
+.follow-group.collapsed .follow-group-arrow{transform:rotate(-90deg);}
+.follow-group.collapsed .follow-group-items{display:none;}
+.follow-group-name{font-family:'Rajdhani',sans-serif;font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:.3px;flex:1;}
+.follow-group-count{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--red);background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:3px;padding:1px 6px;}
+.follow-group[data-group="__unmatched"] .follow-group-count{color:var(--text-faint);background:rgba(148,163,184,.1);border-color:var(--border);}
 
 /* COMMUNITY BREAKDOWN */
 .dist-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
@@ -506,6 +515,43 @@ function updateClock(){
 setInterval(updateClock,1000);updateClock();
 
 // ═══════════════════════════════════════════════════════════════════
+//  DATE PARSING — resident date fields (date, move_in_date, move_out_date,
+//  lease_start_date, lease_end_date) come straight from the supervisor's
+//  WhatsApp message as DD/MM/YYYY or DD-MM-YYYY text, NOT ISO. Handing that
+//  to the native `new Date()` either silently swaps day/month (for day<=12,
+//  e.g. "05/09/2026" is read as May 9 instead of Sep 5) or returns Invalid
+//  Date outright (for day>12), which is why sorting/lease-countdown/month
+//  filters looked scrambled. This parser reads DD/MM/YYYY explicitly and
+//  still accepts ISO (from demo data) and anything else as a fallback.
+// ═══════════════════════════════════════════════════════════════════
+function parseDchDate(str){
+  if(!str) return null;
+  const s=String(str).trim();
+  if(!s) return null;
+  const dmy=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(dmy){
+    const day=+dmy[1], month=+dmy[2], year=+dmy[3];
+    if(month>=1&&month<=12&&day>=1&&day<=31){
+      const d=new Date(year,month-1,day);
+      return isNaN(d) ? null : d;
+    }
+  }
+  const isoDateOnly=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(isoDateOnly){
+    const d=new Date(+isoDateOnly[1],+isoDateOnly[2]-1,+isoDateOnly[3]);
+    return isNaN(d) ? null : d;
+  }
+  // Full ISO timestamp (has a time component, e.g. processed_at) — native
+  // parsing is reliable here and keeps the time-of-day for tie-breaking.
+  const d=new Date(s);
+  return isNaN(d) ? null : d;
+}
+function dchDateMs(str){
+  const d=parseDchDate(str);
+  return d ? d.getTime() : 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  THEME
 // ═══════════════════════════════════════════════════════════════════
 function toggleTheme(){
@@ -682,7 +728,10 @@ function loadDemoData(){
     {message_id:'RES_demo5',timestamp:new Date().toISOString(),date:daysFromNow(-5),location:'17 Icon Bay',apartment:'910',activity:'Move In',name:'Reza Hosseini',contact:'971503334455',eid:'784-1991-3334455-5',nationality:'Iranian',compliance_alert:'true',compliance_flags:'Iran',cm_type:'Tenant',rq_no:'RQ10310',move_in_date:daysFromNow(-5),lease_start_date:daysFromNow(-5),lease_end_date:daysFromNow(360),security_supervisor:'Faisal R.',senior_security_supervisor:'Ben',raw_message:'Resident Move In...'}
   ];
   allErrors=[
-    {message_id:'RES_demoerr1',received_at:new Date().toISOString(),sender:'Supervisor - North Residence',sender_number:'971544981447',missing_fields:'eid, rq_no',raw_message:'Resident Move In\n-Date: today\n-Location: North Residence\n-Apartment: 610\n-Activity: Move In\n\nResident Details :\n-Name: Test Resident\n-Contact: 971500000000\n...'}
+    {message_id:'RES_demoerr1',received_at:new Date(Date.now()-1000*60*40).toISOString(),sender:'Supervisor - North Residence',sender_number:'971544981447',missing_fields:'eid, rq_no',raw_message:'Resident Move In\n-Date: today\n-Location: North Residence\n-Apartment: 610\n-Activity: Move In\n\nResident Details :\n-Name: Test Resident\n-Contact: 971500000000\n...'},
+    {message_id:'RES_demoerr2',received_at:new Date(Date.now()-1000*60*60*3).toISOString(),sender:'Supervisor - North Residence',sender_number:'971544981447',missing_fields:'lease_end_date',raw_message:'Resident Move In\n-Date: today\n-Location: North Tower (2)\n-Apartment: 1204\n-Activity: Move In\n-Name: Sara Al Naqbi\n...'},
+    {message_id:'RES_demoerr3',received_at:new Date(Date.now()-1000*60*60*20).toISOString(),sender:'Faisal R.',sender_number:'971503334455',missing_fields:'contact, cm_type',raw_message:'Resident Move In\n-Date: yesterday\n-Location: DCH/Creek Gate Tower(2)/Access Control\n-Apartment: 405\n-Activity: Move In\n-Name: unclear\n...'},
+    {message_id:'RES_demoerr4',received_at:new Date(Date.now()-1000*60*60*30).toISOString(),sender:'Omar S.',sender_number:'971521112233',missing_fields:'name, eid',raw_message:'Move Out request received but supervisor name and unit reference were unreadable in the forwarded image.'}
   ];
   document.getElementById('demoTag').innerHTML='DEMO DATA · <strong>'+allResidents.length+' RECORDS</strong>';
   const gst=getGSTNow();
@@ -691,6 +740,61 @@ function loadDemoData(){
   populateLocationFilter();
   populateCmTypeFilter();
   renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  COMMUNITY MATCHING — same 14-community alias list used server-side in
+//  the n8n Resident Message Parser. The "Resident Move-In Errors" sheet
+//  has no dedicated location column, so incomplete reports are matched
+//  here, client-side, against the sender line and the raw message text,
+//  so the Follow-Up panel can group them by community instead of showing
+//  a flat, generic list.
+// ═══════════════════════════════════════════════════════════════════
+const COMMUNITY_ALIASES = [
+  { name: 'The Cove Phase 2', aliases: ['the cove phase 2', 'cove phase 2'] },
+  { name: 'The Cove',         aliases: ['the cove', 'cove'] },
+  { name: 'North Residence',  aliases: ['north residence', 'north tower'] },
+  { name: 'South Residence',  aliases: ['south residence', 'south tower'] },
+  { name: 'The Grand',        aliases: ['the grand', 'grand'] },
+  { name: 'Creek Edge',       aliases: ['creek edge'] },
+  { name: 'Creek Crescent',   aliases: ['creek crescent'] },
+  { name: '17 Icon Bay',      aliases: ['17 icon bay', 'icon bay'] },
+  { name: 'Creek Gate',       aliases: ['creek gate'] },
+  { name: 'Harbour Gate',     aliases: ['harbour gate', 'harbor gate'] },
+  { name: 'Creek Rise',       aliases: ['creek rise'] },
+  { name: 'Creek Horizon',    aliases: ['creek horizon'] },
+  { name: 'Harbour Views',    aliases: ['harbour views', 'harbor views'] },
+  { name: 'Creekside 18',     aliases: ['creekside 18', 'creekside'] }
+];
+function normalizeCommunityText(s){
+  return ' ' + String(s || '')
+    .toLowerCase()
+    .replace(/\bdch\b/g, ' ')
+    .replace(/\bdcr\b/g, ' ')
+    .replace(/\bdubai creek harbour\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ') + ' ';
+}
+const COMMUNITY_ALIAS_FLAT = [];
+COMMUNITY_ALIASES.forEach(({ name, aliases }) => {
+  aliases.forEach(a => COMMUNITY_ALIAS_FLAT.push({ name, norm: ' ' + a + ' ' }));
+});
+COMMUNITY_ALIAS_FLAT.sort((a, b) => b.norm.length - a.norm.length);
+function matchCommunity(rawText){
+  if(!rawText) return '';
+  const norm = normalizeCommunityText(rawText);
+  if(norm.trim() === '') return '';
+  for(const { name, norm: aliasNorm } of COMMUNITY_ALIAS_FLAT){
+    if(norm.includes(aliasNorm)) return name;
+  }
+  return '';
+}
+// Errors sheet has no location column — guess it from whichever of the
+// sender line ("Supervisor - North Residence") or the raw message body
+// mentions a known community first.
+function guessCommunityFromError(e){
+  return matchCommunity(e.sender) || matchCommunity(e.raw_message) || '';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -815,9 +919,8 @@ function exportFilteredCsv(){
 //  RENDER
 // ═══════════════════════════════════════════════════════════════════
 function daysUntil(dateStr){
-  if(!dateStr) return null;
-  const d=new Date(dateStr);
-  if(isNaN(d)) return null;
+  const d=parseDchDate(dateStr);
+  if(!d) return null;
   const now=getGSTNow();
   return Math.round((d-now)/(1000*60*60*24));
 }
@@ -888,7 +991,17 @@ function renderTable(){
       av=rank(a); bv=rank(b);
     }
     else { av=a[sortKey]||''; bv=b[sortKey]||''; }
-    if(sortKey==='_moveDate' || sortKey.includes('date')){av=new Date(av||0).getTime()||0;bv=new Date(bv||0).getTime()||0;}
+    if(sortKey==='_moveDate' || sortKey.includes('date')){
+      av=dchDateMs(av); bv=dchDateMs(bv);
+      // Same day (or both unparseable) — break the tie by when it was
+      // actually logged, so "latest first" stays meaningful within a day.
+      if(av===bv){
+        const at=dchDateMs(a.processed_at||a.timestamp||0), bt=dchDateMs(b.processed_at||b.timestamp||0);
+        if(at<bt) return -1*sortDir;
+        if(at>bt) return 1*sortDir;
+        return 0;
+      }
+    }
     if(av<bv) return -1*sortDir;
     if(av>bv) return 1*sortDir;
     return 0;
@@ -927,6 +1040,7 @@ function renderTable(){
   });
 }
 
+let _followCollapsedGroups=new Set();
 function renderFollowUp(){
   const tag=document.getElementById('followTag');
   const list=document.getElementById('followUpList');
@@ -935,18 +1049,58 @@ function renderFollowUp(){
     list.innerHTML='<div class="empty-state">No errors sheet connected, or nothing pending</div>';
     return;
   }
-  list.innerHTML=allErrors.map((e,i)=>`
-    <div class="follow-item" data-idx="${i}">
-      <div class="follow-head">
-        <span>${escapeHtml(e.sender||'Unknown Supervisor')}</span>
-        <span class="follow-time">${escapeHtml(e.received_at||'')}</span>
+  // The Errors sheet has no location column, so each report is bucketed by
+  // the community guessed from its sender line / raw message text — grouped
+  // and sorted busiest-first so follow-up is actionable at a glance instead
+  // of a flat list of generic "Unknown Supervisor" cards. Anything that
+  // can't be matched to a known community lands in its own bucket at the
+  // end rather than being silently dropped.
+  const groups={};
+  allErrors.forEach((e,i)=>{
+    const community=guessCommunityFromError(e) || '__unmatched';
+    (groups[community]=groups[community]||[]).push(i);
+  });
+  const communityNames=Object.keys(groups).filter(k=>k!=='__unmatched');
+  communityNames.sort((a,b)=>groups[b].length-groups[a].length || a.localeCompare(b));
+  if(groups['__unmatched']) communityNames.push('__unmatched');
+
+  list.innerHTML=communityNames.map(community=>{
+    const idxs=groups[community].slice().sort((a,b)=>dchDateMs(allErrors[b].received_at)-dchDateMs(allErrors[a].received_at));
+    const label=community==='__unmatched' ? 'Unmatched — No Location Found' : community;
+    const collapsed=_followCollapsedGroups.has(community);
+    return `
+    <div class="follow-group${collapsed?' collapsed':''}" data-group="${escapeHtml(community)}">
+      <div class="follow-group-header" data-toggle="${escapeHtml(community)}">
+        <span class="follow-group-arrow">▾</span>
+        <span class="follow-group-name">${escapeHtml(label)}</span>
+        <span class="follow-group-count">${idxs.length}</span>
       </div>
-      <div class="follow-missing">Missing: ${escapeHtml(e.missing_fields||'—')}</div>
-      <div class="follow-raw">${escapeHtml(e.raw_message||'')}</div>
-    </div>
-  `).join('');
+      <div class="follow-group-items">
+        ${idxs.map(i=>{
+          const e=allErrors[i];
+          return `
+          <div class="follow-item" data-idx="${i}">
+            <div class="follow-head">
+              <span>${escapeHtml(e.sender||'Unknown Supervisor')}</span>
+              <span class="follow-time">${escapeHtml(e.received_at||'')}</span>
+            </div>
+            <div class="follow-missing">Missing: ${escapeHtml(e.missing_fields||'—')}</div>
+            <div class="follow-raw">${escapeHtml(e.raw_message||'')}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
   list.querySelectorAll('.follow-item[data-idx]').forEach(el=>{
-    el.addEventListener('click',()=>openErrorModal(allErrors[+el.dataset.idx]));
+    el.addEventListener('click',(ev)=>{ ev.stopPropagation(); openErrorModal(allErrors[+el.dataset.idx]); });
+  });
+  list.querySelectorAll('.follow-group-header[data-toggle]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const key=el.dataset.toggle;
+      if(_followCollapsedGroups.has(key)) _followCollapsedGroups.delete(key); else _followCollapsedGroups.add(key);
+      renderFollowUp();
+    });
   });
 }
 
@@ -1014,8 +1168,8 @@ function _raGetData(){
   const f=_raFilters;
   if(f.month!=='' || f.year!==''){
     rows=rows.filter(r=>{
-      const d=new Date(r.date||moveDateFor(r));
-      if(isNaN(d)) return false;
+      const d=parseDchDate(r.date||moveDateFor(r));
+      if(!d) return false;
       if(f.month!=='' && d.getMonth()!==parseInt(f.month)) return false;
       if(f.year!=='' && d.getFullYear()!==parseInt(f.year)) return false;
       return true;
@@ -1037,7 +1191,7 @@ function _raPopulateDropdowns(){
   const monthSel=document.getElementById('raFMonth');
   const yearSel=document.getElementById('raFYear');
   const months=new Set(), years=new Set();
-  all.forEach(r=>{ const d=new Date(r.date||moveDateFor(r)); if(!isNaN(d)){ months.add(d.getMonth()); years.add(d.getFullYear()); } });
+  all.forEach(r=>{ const d=parseDchDate(r.date||moveDateFor(r)); if(d){ months.add(d.getMonth()); years.add(d.getFullYear()); } });
   monthSel.innerHTML='<option value="">All Months</option>'+[...months].sort((a,b)=>a-b).map(m=>`<option value="${m}">${RA_MONTH_NAMES[m]}</option>`).join('');
   yearSel.innerHTML='<option value="">All Years</option>'+[...years].sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}</option>`).join('');
   const commSel=document.getElementById('raFCommunity');
@@ -1238,8 +1392,8 @@ function _raTrends(rows,body){
   const byDow={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
   const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   rows.forEach(r=>{
-    const d=new Date(r.date||moveDateFor(r));
-    if(!isNaN(d)){
+    const d=parseDchDate(r.date||moveDateFor(r));
+    if(d){
       const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
       byMonth[mk]=(byMonth[mk]||0)+1;
       if(r.activity==='Move In') byMonthIn[mk]=(byMonthIn[mk]||0)+1;
@@ -1357,7 +1511,7 @@ function _raDataQuality(rows,body){
     ` : '<div class="empty-state" style="font-size:11px;padding:16px 0;">No partial records in the current filter — clean data set. ✅</div>'}
     ${partial.length?`
       <div class="an-section-title">Partial Records — Most Recent</div>
-      ${partial.slice().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,10).map(r=>`
+      ${partial.slice().sort((a,b)=>dchDateMs(b.date)-dchDateMs(a.date)).slice(0,10).map(r=>`
         <div class="an-rec-card" onclick="_raGoToIndex(${allResidents.indexOf(r)})">
           <div style="display:flex;justify-content:space-between;">
             <span style="font-size:12px;font-weight:600;">${escapeHtml(r.name)||'—'}</span>
