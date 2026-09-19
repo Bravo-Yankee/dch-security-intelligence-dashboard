@@ -145,6 +145,11 @@ body::before{
 .filter-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);white-space:nowrap;margin-left:auto;}
 .btn-export{background:var(--surface3);border:1px solid var(--green);color:var(--green);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;white-space:nowrap;}
 .btn-export:hover{background:var(--green-dim);}
+.sort-group{display:flex;align-items:center;gap:0;}
+.sort-group select{border-radius:20px 0 0 20px;border-right:none;}
+.btn-sortdir{background:var(--surface3);border:1px solid var(--border2);color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;padding:6px 12px;cursor:pointer;transition:all .2s;border-radius:0 20px 20px 0;white-space:nowrap;}
+.btn-sortdir:hover{background:var(--cyan-dim,rgba(34,211,238,.12));border-color:var(--cyan);}
+.sort-ind{display:inline-block;margin-left:4px;font-size:9px;color:var(--pink);}
 
 /* ANALYTICS MODAL */
 .an-tab{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-faint);cursor:pointer;white-space:nowrap;transition:all .15s;}
@@ -358,6 +363,21 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
     </select>
     <label class="flag-toggle"><input type="checkbox" id="filterFlaggedOnly" onchange="renderTable()"> 🚩 Flagged only</label>
     <label class="flag-toggle"><input type="checkbox" id="filterPartialOnly" onchange="renderTable()"> ⚠ Partial only</label>
+    <div class="sort-group">
+      <select id="sortBySelect" onchange="onSortSelectChange()" title="Sort Resident Records by">
+        <option value="date">Sort: Date</option>
+        <option value="_moveDate">Sort: Move Date</option>
+        <option value="location">Sort: Location</option>
+        <option value="name">Sort: Name</option>
+        <option value="nationality">Sort: Nationality</option>
+        <option value="activity">Sort: Activity</option>
+        <option value="cm_type">Sort: CM Type</option>
+        <option value="lease_end_date">Sort: Lease End</option>
+        <option value="security_supervisor">Sort: Supervisor</option>
+        <option value="_flag">Sort: Attention</option>
+      </select>
+      <button class="btn-sortdir" id="sortDirBtn" onclick="toggleSortDir()" title="Toggle sort direction">↓ Newest First</button>
+    </div>
     <button class="btn-export" onclick="exportFilteredCsv()">⬇ EXPORT CSV</button>
     <span class="filter-count" id="filterCount">0 records</span>
   </div>
@@ -371,18 +391,18 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
       <table class="res-table">
         <thead>
           <tr>
-            <th onclick="setSort('date')">Date</th>
-            <th onclick="setSort('location')">Location</th>
-            <th onclick="setSort('apartment')">Apt</th>
-            <th onclick="setSort('activity')">Activity</th>
-            <th onclick="setSort('name')">Name</th>
-            <th onclick="setSort('nationality')">Nationality</th>
-            <th onclick="setSort('_flag')" title="Sort by attention needed: flagged, then partial">Flag</th>
-            <th onclick="setSort('contact')">Contact</th>
-            <th onclick="setSort('cm_type')">CM Type</th>
-            <th onclick="setSort('_moveDate')">Move Date</th>
-            <th onclick="setSort('lease_end_date')">Lease End</th>
-            <th onclick="setSort('security_supervisor')">Supervisor</th>
+            <th onclick="setSort('date')">Date<span class="sort-ind" id="sortInd-date"></span></th>
+            <th onclick="setSort('location')">Location<span class="sort-ind" id="sortInd-location"></span></th>
+            <th onclick="setSort('apartment')">Apt<span class="sort-ind" id="sortInd-apartment"></span></th>
+            <th onclick="setSort('activity')">Activity<span class="sort-ind" id="sortInd-activity"></span></th>
+            <th onclick="setSort('name')">Name<span class="sort-ind" id="sortInd-name"></span></th>
+            <th onclick="setSort('nationality')">Nationality<span class="sort-ind" id="sortInd-nationality"></span></th>
+            <th onclick="setSort('_flag')" title="Sort by attention needed: flagged, then partial">Flag<span class="sort-ind" id="sortInd-_flag"></span></th>
+            <th onclick="setSort('contact')">Contact<span class="sort-ind" id="sortInd-contact"></span></th>
+            <th onclick="setSort('cm_type')">CM Type<span class="sort-ind" id="sortInd-cm_type"></span></th>
+            <th onclick="setSort('_moveDate')">Move Date<span class="sort-ind" id="sortInd-_moveDate"></span></th>
+            <th onclick="setSort('lease_end_date')">Lease End<span class="sort-ind" id="sortInd-lease_end_date"></span></th>
+            <th onclick="setSort('security_supervisor')">Supervisor<span class="sort-ind" id="sortInd-security_supervisor"></span></th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -882,6 +902,37 @@ function setSort(key){
   if(sortKey===key) sortDir*=-1; else {sortKey=key;sortDir=-1;}
   renderTable();
 }
+// Explicit "Sort By" dropdown + direction button in the filter bar — the
+// clickable column headers were the only way to change sort order, with
+// no visible indication they were clickable at all, so there was no way
+// to tell the current sort state at a glance. These controls and the
+// header click-to-sort stay in sync through the single sortKey/sortDir
+// state, resynced in _syncSortUI() every time renderTable() runs.
+function onSortSelectChange(){
+  sortKey=document.getElementById('sortBySelect').value;
+  sortDir=-1; // picking a new field starts at its most-relevant-first default
+  renderTable();
+}
+function toggleSortDir(){
+  sortDir*=-1;
+  renderTable();
+}
+function updateSortDirBtnLabel(){
+  const btn=document.getElementById('sortDirBtn');
+  if(!btn) return;
+  const isDateLike = sortKey==='_moveDate' || sortKey.includes('date');
+  if(isDateLike) btn.textContent = sortDir===-1 ? '↓ Newest First' : '↑ Oldest First';
+  else if(sortKey==='_flag') btn.textContent = sortDir===-1 ? '↓ Most Urgent First' : '↑ Least Urgent First';
+  else btn.textContent = sortDir===-1 ? '↓ Z–A' : '↑ A–Z';
+}
+function _syncSortUI(){
+  document.querySelectorAll('.sort-ind').forEach(el=>el.textContent='');
+  const activeInd=document.getElementById('sortInd-'+sortKey);
+  if(activeInd) activeInd.textContent = sortDir===-1 ? '▼' : '▲';
+  const sel=document.getElementById('sortBySelect');
+  if(sel && sel.value!==sortKey) sel.value=sortKey;
+  updateSortDirBtnLabel();
+}
 function quickFilterCommunity(loc){
   document.getElementById('filterLocation').value=loc;
   renderTable();
@@ -983,6 +1034,7 @@ function moveDateFor(r){
 
 let currentTableRows=[];
 function renderTable(){
+  _syncSortUI();
   const rows=getFiltered().sort((a,b)=>{
     let av, bv;
     if(sortKey==='_moveDate'){ av=moveDateFor(a); bv=moveDateFor(b); }
