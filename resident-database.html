@@ -101,10 +101,8 @@ body::before{
 .main{padding:16px 20px;display:flex;flex-direction:column;gap:14px;}
 
 /* KPI */
-.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
-@media(max-width:1400px){.kpi-row{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
-.kpi{background:var(--surface);border:1px solid var(--border);padding:16px 18px;position:relative;overflow:hidden;cursor:default;transition:border-color .2s,transform .15s;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.kpi{background:var(--surface);border:1px solid var(--border);padding:16px 18px;position:relative;overflow:hidden;cursor:default;transition:border-color .2s,transform .15s,background .15s;}
 .kpi:hover{transform:translateY(-1px);}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
 .kpi.total::before{background:var(--pink);}
@@ -113,6 +111,7 @@ body::before{
 .kpi.follow::before{background:var(--red);}
 .kpi.lease::before{background:var(--cyan);}
 .kpi.flagged::before{background:var(--red);}
+.kpi.analytics::before{background:var(--cyan);}
 .kpi-label{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
 .kpi.total .kpi-label{color:var(--pink);}
 .kpi.movein .kpi-label{color:var(--green);}
@@ -120,6 +119,7 @@ body::before{
 .kpi.follow .kpi-label{color:var(--red);}
 .kpi.lease .kpi-label{color:var(--cyan);}
 .kpi.flagged .kpi-label{color:var(--red);}
+.kpi.analytics .kpi-label{color:var(--cyan);}
 .kpi-num{font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;line-height:1;margin:8px 0 4px;}
 .kpi.total .kpi-num{color:var(--pink);}
 .kpi.movein .kpi-num{color:var(--green);}
@@ -127,11 +127,14 @@ body::before{
 .kpi.follow .kpi-num{color:var(--red);}
 .kpi.lease .kpi-num{color:var(--cyan);}
 .kpi.flagged .kpi-num{color:var(--red);}
+.kpi.analytics .kpi-num{color:var(--cyan);}
 .kpi-sub{font-size:11px;color:var(--text-faint);}
 .kpi.follow{cursor:pointer;}
 .kpi.follow:hover{border-color:var(--red);}
 .kpi.flagged{cursor:pointer;}
 .kpi.flagged:hover{border-color:var(--red);}
+.kpi.analytics{cursor:pointer;border-color:rgba(6,182,212,.3);background:rgba(6,182,212,.03);}
+.kpi.analytics:hover{border-color:var(--cyan);background:rgba(6,182,212,.09);}
 
 /* FILTER BAR */
 .filter-bar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:10px 14px;flex-wrap:wrap;}
@@ -140,6 +143,32 @@ body::before{
 .filter-bar select{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);padding:6px 10px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;outline:none;cursor:pointer;}
 .filter-bar select:focus{border-color:var(--pink);}
 .filter-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);white-space:nowrap;margin-left:auto;}
+.btn-export{background:var(--surface3);border:1px solid var(--green);color:var(--green);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;white-space:nowrap;}
+.btn-export:hover{background:var(--green-dim);}
+
+/* ANALYTICS MODAL */
+.an-tab{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--text-faint);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.an-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(6,182,212,.06);}
+.an-tab:hover:not(.active){color:var(--text);}
+.an-bar-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--border);}
+.an-bar-row:last-child{border-bottom:none;}
+.an-rank{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);width:18px;flex-shrink:0;text-align:right;}
+.an-label{font-size:11px;color:var(--text-dim);flex:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.an-bar-wrap{flex:1.5;background:var(--surface3);height:5px;border-radius:3px;overflow:hidden;}
+.an-bar{height:100%;border-radius:3px;transition:width .4s ease;}
+.an-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);width:30px;text-align:right;flex-shrink:0;}
+.an-pct{font-size:9px;color:var(--text-faint);width:60px;text-align:right;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.an-section-title{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);margin:14px 0 8px;display:flex;align-items:center;gap:8px;}
+.an-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.an-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px;}
+.an-stat{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 12px;}
+.an-stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;margin-bottom:2px;}
+.an-stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-faint);}
+.an-lookup-input{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--text);outline:none;margin-bottom:12px;}
+.an-rec-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.an-rec-card:hover{border-color:var(--cyan);}
+.dist-row{cursor:pointer;transition:background .12s;}
+.dist-row:hover{background:var(--surface2);}
 
 /* TABLE PANEL */
 .panel{background:var(--surface);border:1px solid var(--border);padding:16px;}
@@ -295,17 +324,32 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
       <div class="kpi-num" id="kpiFollow">—</div>
       <div class="kpi-sub" id="lastUpdate">LAST UPDATE: --:--:--</div>
     </div>
+    <div class="kpi analytics" onclick="openResidentAnalytics()">
+      <div class="kpi-label">📊 Resident Analytics</div>
+      <div class="kpi-num" id="kpiAnalytics">—</div>
+      <div class="kpi-sub" id="kpiAnalyticsSub">Tap for full intelligence</div>
+    </div>
   </div>
 
   <div class="filter-bar">
-    <input type="text" id="searchBox" placeholder="Search name, apartment, EID, contact, RQ no..." oninput="renderTable()">
+    <input type="text" id="searchBox" placeholder="Search name, apartment, EID, contact, RQ no, supervisor... ( / to focus)" oninput="renderTable()">
     <select id="filterLocation" onchange="renderAll()"><option value="">All Communities</option></select>
     <select id="filterActivity" onchange="renderTable()">
       <option value="">All Activity</option>
       <option value="Move In">Move In</option>
       <option value="Move Out">Move Out</option>
     </select>
+    <select id="filterCmType" onchange="renderTable()"><option value="">All CM Types</option></select>
+    <select id="filterLeaseExpiry" onchange="renderTable()">
+      <option value="">Any Lease Status</option>
+      <option value="expired">Expired</option>
+      <option value="30">Expiring ≤30d</option>
+      <option value="60">Expiring ≤60d</option>
+      <option value="90">Expiring ≤90d</option>
+    </select>
     <label class="flag-toggle"><input type="checkbox" id="filterFlaggedOnly" onchange="renderTable()"> 🚩 Flagged only</label>
+    <label class="flag-toggle"><input type="checkbox" id="filterPartialOnly" onchange="renderTable()"> ⚠ Partial only</label>
+    <button class="btn-export" onclick="exportFilteredCsv()">⬇ EXPORT CSV</button>
     <span class="filter-count" id="filterCount">0 records</span>
   </div>
 
@@ -324,7 +368,7 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
             <th onclick="setSort('activity')">Activity</th>
             <th onclick="setSort('name')">Name</th>
             <th onclick="setSort('nationality')">Nationality</th>
-            <th>Flag</th>
+            <th onclick="setSort('_flag')" title="Sort by attention needed: flagged, then partial">Flag</th>
             <th onclick="setSort('contact')">Contact</th>
             <th onclick="setSort('cm_type')">CM Type</th>
             <th onclick="setSort('_moveDate')">Move Date</th>
@@ -374,7 +418,10 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">Resident Record</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn" id="copySummaryBtn" onclick="copyResidentSummary()" style="padding:4px 10px;font-size:10px;">📋 COPY</button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
     </div>
     <div class="modal-body" id="modalBody"></div>
   </div>
@@ -383,6 +430,60 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
 <div class="sync-bar" id="loadingOverlay">
   <span class="sync-dot" id="syncDot"></span>
   <span id="loadingText">SYNCING...</span>
+</div>
+
+<!-- RESIDENT ANALYTICS MODAL -->
+<div class="modal-backdrop" id="raModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal" style="max-width:900px;width:96vw;max-height:92vh;display:flex;flex-direction:column;">
+    <div class="modal-header" style="flex-shrink:0;">
+      <div>
+        <div class="modal-title">RESIDENT INTELLIGENCE</div>
+        <div id="raSubtitle" style="font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;margin-top:2px;"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('raModal').classList.remove('show')">✕</button>
+    </div>
+
+    <div id="raFilterBar" style="flex-shrink:0;background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 12px 10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <span style="font-size:9px;letter-spacing:1px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;text-transform:uppercase;">Filters</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="raFilterBadge" style="display:none;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.4);color:var(--cyan);font-family:'JetBrains Mono',monospace;"></span>
+          <button onclick="raClearFilters()" id="raClearBtn" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-faint);cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;">CLEAR ALL</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <select id="raFMonth" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:100px;"><option value="">All Months</option></select>
+        <select id="raFYear" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:72px;"><option value="">All Years</option></select>
+        <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+        <select id="raFCommunity" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:130px;"><option value="">All Communities</option></select>
+        <select id="raFActivity" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:110px;">
+          <option value="">All Activity</option><option value="Move In">Move In</option><option value="Move Out">Move Out</option>
+        </select>
+        <select id="raFNat" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:120px;"><option value="">All Nationalities</option></select>
+        <select id="raFCmType" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:110px;"><option value="">All CM Types</option></select>
+        <div style="width:1px;height:18px;background:var(--border);margin:0 2px;"></div>
+        <select id="raFCompliance" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:110px;">
+          <option value="">All Records</option><option value="flagged">🚩 Flagged Only</option><option value="clean">✅ Clean Only</option>
+        </select>
+        <select id="raFCompleteness" onchange="raApplyFilters()" style="font-size:10px;padding:4px 6px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);color:var(--text);cursor:pointer;min-width:120px;">
+          <option value="">All Completeness</option><option value="partial">⚠ Partial Only</option><option value="complete">✓ Complete Only</option>
+        </select>
+      </div>
+      <div id="raFilterChips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;min-height:0;"></div>
+      <div id="raFilterCount" style="font-size:9px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;margin-top:5px;"></div>
+    </div>
+
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;background:var(--surface2);">
+      <button class="an-tab active" onclick="raSwitch(0)">🏢 Community</button>
+      <button class="an-tab" onclick="raSwitch(1)">🌍 Nationality</button>
+      <button class="an-tab" onclick="raSwitch(2)">🏠 CM Type</button>
+      <button class="an-tab" onclick="raSwitch(3)">📅 Trends &amp; Leases</button>
+      <button class="an-tab" onclick="raSwitch(4)">⚠ Data Quality</button>
+      <button class="an-tab" onclick="raSwitch(5)">👮 Supervisors</button>
+      <button class="an-tab" onclick="raSwitch(6)">🔍 Lookup</button>
+    </div>
+    <div id="raBody" class="modal-body full" style="flex:1;overflow-y:auto;padding:16px;"></div>
+  </div>
 </div>
 
 <script>
@@ -518,6 +619,7 @@ async function connectTarget(){
   document.getElementById('lastRefresh').textContent='LAST REFRESH: '+timeStr;
   hideLoading(false);
   populateLocationFilter();
+  populateCmTypeFilter();
   renderAll();
   scheduleAutoRefresh();
 }
@@ -587,6 +689,7 @@ function loadDemoData(){
   document.getElementById('lastUpdate').textContent='LAST UPDATE: '+gst.toLocaleTimeString('en-AE');
   document.getElementById('lastRefresh').textContent='LAST REFRESH: '+gst.toLocaleTimeString('en-AE');
   populateLocationFilter();
+  populateCmTypeFilter();
   renderAll();
 }
 
@@ -648,14 +751,24 @@ function getFiltered(){
   const q=(document.getElementById('searchBox').value||'').toLowerCase().trim();
   const loc=document.getElementById('filterLocation').value;
   const act=document.getElementById('filterActivity').value;
+  const cmType=document.getElementById('filterCmType').value;
+  const leaseExp=document.getElementById('filterLeaseExpiry').value;
   const flaggedOnly=document.getElementById('filterFlaggedOnly').checked;
+  const partialOnly=document.getElementById('filterPartialOnly').checked;
   flaggedOnlyActive=flaggedOnly;
   return allResidents.filter(r=>{
     if(loc && r.location!==loc) return false;
     if(act && r.activity!==act) return false;
+    if(cmType && r.cm_type!==cmType) return false;
     if(flaggedOnly && !isFlagged(r)) return false;
+    if(partialOnly && !isPartial(r)) return false;
+    if(leaseExp){
+      const d=daysUntil(r.lease_end_date);
+      if(leaseExp==='expired'){ if(d===null||d>=0) return false; }
+      else { const n=parseInt(leaseExp); if(d===null||d<0||d>n) return false; }
+    }
     if(q){
-      const hay=[r.name,r.apartment,r.eid,r.contact,r.rq_no,r.location].join(' ').toLowerCase();
+      const hay=[r.name,r.apartment,r.eid,r.contact,r.rq_no,r.location,r.security_supervisor,r.senior_security_supervisor].join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
     return true;
@@ -664,6 +777,38 @@ function getFiltered(){
 function setSort(key){
   if(sortKey===key) sortDir*=-1; else {sortKey=key;sortDir=-1;}
   renderTable();
+}
+function quickFilterCommunity(loc){
+  document.getElementById('filterLocation').value=loc;
+  renderTable();
+  document.querySelector('.panel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function populateCmTypeFilter(){
+  const sel=document.getElementById('filterCmType');
+  const current=sel.value;
+  const types=[...new Set(allResidents.map(r=>r.cm_type).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">All CM Types</option>'+types.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  if(types.includes(current)) sel.value=current;
+}
+function exportFilteredCsv(){
+  if(!currentTableRows.length){alert('No records to export — adjust your filters first.');return;}
+  const cols=['date','location','apartment','activity','name','contact','eid','nationality','cm_type','rq_no','move_date','lease_start_date','lease_end_date','security_supervisor','senior_security_supervisor','missing_fields'];
+  const csvEscape=v=>{
+    v=String(v==null?'':v);
+    return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+  };
+  const lines=[cols.join(',')];
+  currentTableRows.forEach(r=>{
+    const row={...r, move_date: moveDateFor(r)};
+    lines.push(cols.map(c=>csvEscape(row[c])).join(','));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='dch-resident-records-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -717,6 +862,13 @@ function renderKpis(){
   document.getElementById('kpiFollow').textContent=allErrors.length;
   const communityCount=[...new Set(allResidents.map(r=>r.location).filter(Boolean))].length;
   document.getElementById('kpiTotalSub').textContent=communityCount+' communities'+(partialCount?' · '+partialCount+' partial':'');
+
+  // Analytics KPI card — quick summary line
+  const locCounts={};
+  allResidents.forEach(r=>{if(r.location) locCounts[r.location]=(locCounts[r.location]||0)+1;});
+  const topLoc=Object.entries(locCounts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('kpiAnalytics').textContent=total;
+  document.getElementById('kpiAnalyticsSub').textContent=topLoc?`Top: ${topLoc[0]} (${topLoc[1]})`:'Tap for full intelligence';
 }
 
 // Move-Out records use their own "move_out_date" field (Move-In's
@@ -731,6 +883,10 @@ function renderTable(){
   const rows=getFiltered().sort((a,b)=>{
     let av, bv;
     if(sortKey==='_moveDate'){ av=moveDateFor(a); bv=moveDateFor(b); }
+    else if(sortKey==='_flag'){
+      const rank=r=>isFlagged(r)?2:(isPartial(r)?1:0);
+      av=rank(a); bv=rank(b);
+    }
     else { av=a[sortKey]||''; bv=b[sortKey]||''; }
     if(sortKey==='_moveDate' || sortKey.includes('date')){av=new Date(av||0).getTime()||0;bv=new Date(bv||0).getTime()||0;}
     if(av<bv) return -1*sortDir;
@@ -805,12 +961,15 @@ function renderCommunityDist(){
   }
   const max=entries[0][1];
   el.innerHTML=entries.map(([loc,count])=>`
-    <div class="dist-row">
+    <div class="dist-row" title="Click to filter the table by ${escapeHtml(loc)}">
       <div class="dist-label">${escapeHtml(loc)}</div>
       <div class="dist-bar-wrap"><div class="dist-bar-fill" style="width:${(count/max*100).toFixed(0)}%"></div></div>
       <div class="dist-count">${count}</div>
     </div>
   `).join('');
+  el.querySelectorAll('.dist-row').forEach((row,i)=>{
+    row.addEventListener('click',()=>quickFilterCommunity(entries[i][0]));
+  });
 }
 
 function scrollToFollowUp(){
@@ -818,9 +977,463 @@ function scrollToFollowUp(){
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  RESIDENT ANALYTICS — clickable intelligence modal
+// ═══════════════════════════════════════════════════════════════════
+let _raFilters={month:'',year:'',community:'',activity:'',nat:'',cmType:'',compliance:'',completeness:''};
+let _raTab=0;
+const RA_MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function _raBar(val,max,color){
+  const pct = max>0 ? Math.round(val/max*100) : 0;
+  return `<div class="an-bar" style="width:${val>0?Math.max(pct,2):0}%;background:${color||'var(--cyan)'}"></div>`;
+}
+function _raRows(entries,max,color,pctBase){
+  return entries.map(([label,count],i)=>`
+    <div class="an-bar-row">
+      <span class="an-rank">${i+1}</span>
+      <span class="an-label" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
+      <div class="an-bar-wrap">${_raBar(count,max,color)}</div>
+      <span class="an-count">${count}</span>
+      <span class="an-pct">${pctBase?Math.round(count/pctBase*100)+'%':''}</span>
+    </div>`).join('');
+}
+function _raStatGrid(stats){
+  return `<div class="an-stat-grid">${stats.map(([val,lbl,color])=>
+    `<div class="an-stat"><div class="an-stat-val" style="color:${color||'var(--text)'}">${escapeHtml(val)}</div><div class="an-stat-lbl">${escapeHtml(lbl)}</div></div>`
+  ).join('')}</div>`;
+}
+function _raGoToIndex(i){
+  const r=allResidents[i];
+  if(!r) return;
+  document.getElementById('raModal').classList.remove('show');
+  openModal(r);
+}
+
+function _raGetData(){
+  let rows=allResidents.slice();
+  const f=_raFilters;
+  if(f.month!=='' || f.year!==''){
+    rows=rows.filter(r=>{
+      const d=new Date(r.date||moveDateFor(r));
+      if(isNaN(d)) return false;
+      if(f.month!=='' && d.getMonth()!==parseInt(f.month)) return false;
+      if(f.year!=='' && d.getFullYear()!==parseInt(f.year)) return false;
+      return true;
+    });
+  }
+  if(f.community) rows=rows.filter(r=>r.location===f.community);
+  if(f.activity) rows=rows.filter(r=>r.activity===f.activity);
+  if(f.nat) rows=rows.filter(r=>(r.nationality||'Unknown')===f.nat);
+  if(f.cmType) rows=rows.filter(r=>(r.cm_type||'Unknown')===f.cmType);
+  if(f.compliance==='flagged') rows=rows.filter(isFlagged);
+  else if(f.compliance==='clean') rows=rows.filter(r=>!isFlagged(r));
+  if(f.completeness==='partial') rows=rows.filter(isPartial);
+  else if(f.completeness==='complete') rows=rows.filter(r=>!isPartial(r));
+  return rows;
+}
+
+function _raPopulateDropdowns(){
+  const all=allResidents;
+  const monthSel=document.getElementById('raFMonth');
+  const yearSel=document.getElementById('raFYear');
+  const months=new Set(), years=new Set();
+  all.forEach(r=>{ const d=new Date(r.date||moveDateFor(r)); if(!isNaN(d)){ months.add(d.getMonth()); years.add(d.getFullYear()); } });
+  monthSel.innerHTML='<option value="">All Months</option>'+[...months].sort((a,b)=>a-b).map(m=>`<option value="${m}">${RA_MONTH_NAMES[m]}</option>`).join('');
+  yearSel.innerHTML='<option value="">All Years</option>'+[...years].sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}</option>`).join('');
+  const commSel=document.getElementById('raFCommunity');
+  const comms=[...new Set(all.map(r=>r.location).filter(Boolean))].sort();
+  commSel.innerHTML='<option value="">All Communities</option>'+comms.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  const natSel=document.getElementById('raFNat');
+  const natCounts={};
+  all.forEach(r=>{ const n=r.nationality||'Unknown'; natCounts[n]=(natCounts[n]||0)+1; });
+  const topNats=Object.entries(natCounts).sort((a,b)=>b[1]-a[1]).map(([n])=>n);
+  natSel.innerHTML='<option value="">All Nationalities</option>'+topNats.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  const cmSel=document.getElementById('raFCmType');
+  const cmCounts={};
+  all.forEach(r=>{ const c=r.cm_type||'Unknown'; cmCounts[c]=(cmCounts[c]||0)+1; });
+  const topCm=Object.entries(cmCounts).sort((a,b)=>b[1]-a[1]).map(([c])=>c);
+  cmSel.innerHTML='<option value="">All CM Types</option>'+topCm.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  document.getElementById('raFMonth').value=_raFilters.month;
+  document.getElementById('raFYear').value=_raFilters.year;
+  document.getElementById('raFCommunity').value=_raFilters.community;
+  document.getElementById('raFActivity').value=_raFilters.activity;
+  document.getElementById('raFNat').value=_raFilters.nat;
+  document.getElementById('raFCmType').value=_raFilters.cmType;
+  document.getElementById('raFCompliance').value=_raFilters.compliance;
+  document.getElementById('raFCompleteness').value=_raFilters.completeness;
+}
+
+function raApplyFilters(){
+  _raFilters.month=document.getElementById('raFMonth').value;
+  _raFilters.year=document.getElementById('raFYear').value;
+  _raFilters.community=document.getElementById('raFCommunity').value;
+  _raFilters.activity=document.getElementById('raFActivity').value;
+  _raFilters.nat=document.getElementById('raFNat').value;
+  _raFilters.cmType=document.getElementById('raFCmType').value;
+  _raFilters.compliance=document.getElementById('raFCompliance').value;
+  _raFilters.completeness=document.getElementById('raFCompleteness').value;
+  _raUpdateFilterUI();
+  raSwitch(_raTab);
+}
+function raClearFilters(){
+  Object.keys(_raFilters).forEach(k=>_raFilters[k]='');
+  ['raFMonth','raFYear','raFCommunity','raFActivity','raFNat','raFCmType','raFCompliance','raFCompleteness']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  _raUpdateFilterUI();
+  raSwitch(_raTab);
+}
+function _raUpdateFilterUI(){
+  const f=_raFilters;
+  const labels={
+    month: f.month!==''?RA_MONTH_NAMES[parseInt(f.month)]:'',
+    year: f.year,
+    community: f.community,
+    activity: f.activity,
+    nat: f.nat,
+    cmType: f.cmType,
+    compliance: f.compliance==='flagged'?'🚩 Flagged Only':f.compliance==='clean'?'✅ Clean Only':'',
+    completeness: f.completeness==='partial'?'⚠ Partial Only':f.completeness==='complete'?'✓ Complete Only':''
+  };
+  const active=Object.entries(labels).filter(([,v])=>v);
+  const badge=document.getElementById('raFilterBadge');
+  const clearBtn=document.getElementById('raClearBtn');
+  if(active.length){
+    badge.style.display='inline';
+    badge.textContent=active.length+' filter'+(active.length>1?'s':'')+' active';
+    clearBtn.style.color='var(--cyan)';
+    clearBtn.style.borderColor='rgba(6,182,212,.5)';
+  } else {
+    badge.style.display='none';
+    clearBtn.style.color='';
+    clearBtn.style.borderColor='';
+  }
+  document.getElementById('raFilterChips').innerHTML=active.map(([key,val])=>`
+    <span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:var(--cyan);font-family:'JetBrains Mono',monospace;">
+      ${escapeHtml(val)}
+      <span onclick="raRemoveFilter('${key}')" style="cursor:pointer;opacity:.7;font-size:10px;line-height:1;">✕</span>
+    </span>`).join('');
+  const filtered=_raGetData();
+  document.getElementById('raFilterCount').textContent = active.length
+    ? `Showing ${filtered.length} of ${allResidents.length} records`
+    : `${allResidents.length} records total`;
+  document.getElementById('raSubtitle').textContent = filtered.length+' records in view';
+}
+function raRemoveFilter(key){
+  _raFilters[key]='';
+  const idMap={month:'raFMonth',year:'raFYear',community:'raFCommunity',activity:'raFActivity',nat:'raFNat',cmType:'raFCmType',compliance:'raFCompliance',completeness:'raFCompleteness'};
+  const el=document.getElementById(idMap[key]);
+  if(el) el.value='';
+  _raUpdateFilterUI();
+  raSwitch(_raTab);
+}
+
+function openResidentAnalytics(){
+  if(!allResidents.length){ alert('Connect to Google Sheets or load demo data first.'); return; }
+  document.getElementById('raModal').classList.add('show');
+  _raPopulateDropdowns();
+  _raUpdateFilterUI();
+  raSwitch(0);
+}
+
+function raSwitch(idx){
+  _raTab=idx;
+  document.querySelectorAll('#raModal .an-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const rows=_raGetData();
+  const body=document.getElementById('raBody');
+  if(!rows.length){
+    body.innerHTML=`<div class="empty-state" style="padding:40px 0;">
+      <div style="font-size:28px;margin-bottom:8px;">🔍</div>
+      <div style="font-weight:600;margin-bottom:4px;">No records match the active filters</div>
+      <div style="font-size:11px;color:var(--text-faint);margin-bottom:14px;">Try removing some filters to broaden the results</div>
+      <button onclick="raClearFilters()" style="font-size:11px;padding:6px 16px;border-radius:5px;border:1px solid rgba(6,182,212,.5);background:rgba(6,182,212,.08);color:var(--cyan);cursor:pointer;">Clear All Filters</button>
+    </div>`;
+    return;
+  }
+  if(idx===0) _raCommunity(rows,body);
+  else if(idx===1) _raNationality(rows,body);
+  else if(idx===2) _raCmType(rows,body);
+  else if(idx===3) _raTrends(rows,body);
+  else if(idx===4) _raDataQuality(rows,body);
+  else if(idx===5) _raSupervisors(rows,body);
+  else if(idx===6) _raLookup(rows,body);
+}
+
+function _raCommunity(rows,body){
+  const byLoc={}, byIn={}, byOut={};
+  rows.forEach(r=>{
+    const l=r.location||'Unknown';
+    byLoc[l]=(byLoc[l]||0)+1;
+    if(r.activity==='Move In') byIn[l]=(byIn[l]||0)+1;
+    else if(r.activity==='Move Out') byOut[l]=(byOut[l]||0)+1;
+  });
+  const entries=Object.entries(byLoc).sort((a,b)=>b[1]-a[1]);
+  const max=entries[0]?.[1]||1;
+  body.innerHTML=`
+    ${_raStatGrid([
+      [entries.length,'Communities','var(--cyan)'],
+      [entries[0]?.[0]||'—','Busiest Community','var(--amber)'],
+      [entries[0]?.[1]||0,'Top Community Count','var(--green)'],
+      [rows.length,'Total In View','var(--pink)']
+    ])}
+    <div class="an-section-title">Records by Community</div>
+    ${entries.map(([loc,cnt],i)=>`
+      <div class="an-bar-row">
+        <span class="an-rank">${i+1}</span>
+        <span class="an-label" title="${escapeHtml(loc)}">${escapeHtml(loc)}</span>
+        <div class="an-bar-wrap">${_raBar(cnt,max,'var(--pink)')}</div>
+        <span class="an-count">${cnt}</span>
+        <span class="an-pct">${byIn[loc]||0}in·${byOut[loc]||0}out</span>
+      </div>`).join('')}
+  `;
+}
+
+function _raNationality(rows,body){
+  const natMap={};
+  rows.forEach(r=>{ const n=r.nationality||'Unknown'; natMap[n]=(natMap[n]||0)+1; });
+  const byCount=Object.entries(natMap).sort((a,b)=>b[1]-a[1]);
+  const max=byCount[0]?.[1]||1;
+  const flagged=rows.filter(isFlagged);
+  const flaggedNats=[...new Set(flagged.map(r=>r.nationality||'Unknown'))];
+  body.innerHTML=`
+    ${_raStatGrid([
+      [byCount.length,'Nationalities','var(--cyan)'],
+      [byCount[0]?.[0]||'—','Top Nationality','var(--amber)'],
+      [flaggedNats.length,'Compliance Flags','var(--red)'],
+      [rows.length?Math.round((byCount[0]?.[1]||0)/rows.length*100)+'%':'0%','Top Share','var(--green)']
+    ])}
+    <div class="an-section-title">By Nationality</div>
+    ${_raRows(byCount.slice(0,20),max,'var(--blue)',rows.length)}
+    ${flaggedNats.length?`
+      <div class="an-section-title" style="color:var(--red);">⚠️ Compliance-Flagged Nationalities</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${flaggedNats.map(n=>`<span style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);">${escapeHtml(n)} (${natMap[n]||0})</span>`).join('')}
+      </div>` : ''}
+  `;
+}
+
+function _raCmType(rows,body){
+  const map={};
+  rows.forEach(r=>{ const c=r.cm_type||'Unknown'; map[c]=(map[c]||0)+1; });
+  const entries=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const total=rows.length||1;
+  const colors={'Tenant':'var(--green)','Owner':'var(--blue)','Visitor':'var(--amber)'};
+  body.innerHTML=`
+    ${_raStatGrid(entries.slice(0,4).map(([c,n])=>[n,c,colors[c]||'var(--purple)']))}
+    <div class="an-section-title">CM Type Split</div>
+    <div style="display:flex;gap:0;border-radius:5px;overflow:hidden;height:22px;margin-bottom:12px;">
+      ${entries.map(([c,n])=>`<div style="width:${Math.round(n/total*100)}%;background:${colors[c]||'var(--purple)'};display:flex;align-items:center;justify-content:center;" title="${escapeHtml(c)}: ${n}">
+        ${Math.round(n/total*100)>8?`<span style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#000;font-weight:700;">${Math.round(n/total*100)}%</span>`:''}
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      ${entries.map(([c,n])=>`<span style="font-size:10px;color:${colors[c]||'var(--purple)'}">■ ${escapeHtml(c)} (${n})</span>`).join('')}
+    </div>
+    <div class="an-section-title">By CM Type</div>
+    ${_raRows(entries,entries[0]?.[1]||1,'var(--purple)',total)}
+  `;
+}
+
+function _raTrends(rows,body){
+  const byMonth={}, byMonthIn={}, byMonthOut={};
+  const byDow={0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  rows.forEach(r=>{
+    const d=new Date(r.date||moveDateFor(r));
+    if(!isNaN(d)){
+      const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      byMonth[mk]=(byMonth[mk]||0)+1;
+      if(r.activity==='Move In') byMonthIn[mk]=(byMonthIn[mk]||0)+1;
+      else if(r.activity==='Move Out') byMonthOut[mk]=(byMonthOut[mk]||0)+1;
+      byDow[d.getDay()]=(byDow[d.getDay()]||0)+1;
+    }
+  });
+  const months=Object.keys(byMonth).sort();
+  const maxMonth=Math.max(...Object.values(byMonth),1);
+  const maxDow=Math.max(...Object.values(byDow),1);
+
+  const expired=rows.filter(r=>{ const d=daysUntil(r.lease_end_date); return d!==null&&d<0; });
+  const b30=rows.filter(r=>{ const d=daysUntil(r.lease_end_date); return d!==null&&d>=0&&d<=30; });
+  const b60=rows.filter(r=>{ const d=daysUntil(r.lease_end_date); return d!==null&&d>30&&d<=60; });
+  const b90=rows.filter(r=>{ const d=daysUntil(r.lease_end_date); return d!==null&&d>60&&d<=90; });
+  const noLease=rows.filter(r=>!r.lease_end_date);
+  const maxBucket=Math.max(expired.length,b30.length,b60.length,b90.length,1);
+
+  let momText='—';
+  if(months.length>=2){
+    const prev=byMonth[months[months.length-2]];
+    const curr=byMonth[months[months.length-1]];
+    const pct=prev?Math.round((curr-prev)/prev*100):0;
+    momText=(pct>=0?'+':'')+pct+'%';
+  }
+  const peakMonth=months.length?months.reduce((a,b)=>byMonth[a]>=byMonth[b]?a:b):null;
+  const peakDow=dowNames[Object.entries(byDow).sort((a,b)=>b[1]-a[1])[0]?.[0]??0];
+
+  body.innerHTML=`
+    ${_raStatGrid([
+      [peakMonth?RA_MONTH_NAMES[parseInt(peakMonth.split('-')[1])-1].slice(0,3)+' '+peakMonth.split('-')[0]:'—','Busiest Month','var(--amber)'],
+      [momText,'MoM Change',momText.startsWith('+')?'var(--green)':'var(--red)'],
+      [peakDow,'Busiest Day','var(--cyan)'],
+      [b30.length+expired.length,'Leases Due ≤30d','var(--red)']
+    ])}
+    ${months.length?`
+    <div class="an-section-title">Move Activity by Month</div>
+    <div style="overflow-x:auto;padding-bottom:4px;">
+      <div style="min-width:${Math.max(months.length*56,300)}px;">
+        <div style="display:flex;align-items:flex-end;gap:4px;height:80px;margin-bottom:4px;">
+          ${months.map(mk=>{
+            const hIn=Math.max(Math.round((byMonthIn[mk]||0)/maxMonth*74),(byMonthIn[mk]||0)>0?2:0);
+            const hOut=Math.max(Math.round((byMonthOut[mk]||0)/maxMonth*74),(byMonthOut[mk]||0)>0?2:0);
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;" title="${mk}: ${byMonthIn[mk]||0} in, ${byMonthOut[mk]||0} out">
+              <span style="font-size:8px;color:var(--text-faint);">${byMonth[mk]}</span>
+              <div style="width:100%;display:flex;gap:1px;align-items:flex-end;height:74px;">
+                <div style="flex:1;height:${hIn}px;background:var(--green);border-radius:2px 2px 0 0;opacity:.85;"></div>
+                <div style="flex:1;height:${hOut}px;background:var(--amber);border-radius:2px 2px 0 0;opacity:.85;"></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;gap:4px;border-top:1px solid var(--border);padding-top:3px;">
+          ${months.map(mk=>`<div style="flex:1;font-size:7.5px;color:var(--text-faint);text-align:center;font-family:'JetBrains Mono',monospace;">${RA_MONTH_NAMES[parseInt(mk.split('-')[1])-1].slice(0,3)}<br>${mk.split('-')[0]}</div>`).join('')}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <span style="font-size:9px;color:var(--green);">■ Move In</span>
+          <span style="font-size:9px;color:var(--amber);">■ Move Out</span>
+        </div>
+      </div>
+    </div>` : '<div class="empty-state" style="font-size:10px;padding:20px;">No date data available for trend chart.</div>'}
+
+    <div class="an-section-title">By Day of Week</div>
+    ${dowNames.map((d,i)=>`
+      <div class="an-bar-row">
+        <span class="an-label" style="min-width:30px;">${d}</span>
+        <div class="an-bar-wrap">${_raBar(byDow[i],maxDow,'var(--purple)')}</div>
+        <span class="an-count">${byDow[i]}</span>
+      </div>`).join('')}
+
+    <div class="an-section-title">Lease Expiry</div>
+    ${[['Expired',expired.length,'#ef4444'],['≤30 Days',b30.length,'#ef4444'],['31–60 Days',b60.length,'#f59e0b'],['61–90 Days',b90.length,'#eab308'],['No Lease End Date',noLease.length,'var(--text-faint)']].map(([lbl,cnt,col])=>`
+      <div class="an-bar-row">
+        <span class="an-label">${lbl}</span>
+        <div class="an-bar-wrap">${_raBar(cnt,maxBucket,col)}</div>
+        <span class="an-count">${cnt}</span>
+      </div>`).join('')}
+    ${(expired.length+b30.length)?`
+      <div class="an-section-title">Leases Needing Attention — Soonest First</div>
+      ${[...expired,...b30].sort((a,b)=>daysUntil(a.lease_end_date)-daysUntil(b.lease_end_date)).slice(0,10).map(r=>`
+        <div class="an-rec-card" onclick="_raGoToIndex(${allResidents.indexOf(r)})">
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:12px;font-weight:600;">${escapeHtml(r.name)||'—'}</span>
+            <span style="font-size:12px;font-weight:700;color:${daysUntil(r.lease_end_date)<0?'var(--red)':'var(--amber)'};">${leaseChip(r.lease_end_date)}</span>
+          </div>
+          <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">${escapeHtml(r.location)||'—'} · Apt ${escapeHtml(r.apartment)||'—'} · ${escapeHtml(r.cm_type)||'—'}</div>
+        </div>`).join('')}
+    ` : ''}
+  `;
+}
+
+function _raDataQuality(rows,body){
+  const partial=rows.filter(isPartial);
+  const complete=rows.length-partial.length;
+  const fieldCounts={};
+  partial.forEach(r=>{
+    (r.missing_fields||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(f=>{
+      fieldCounts[f]=(fieldCounts[f]||0)+1;
+    });
+  });
+  const byField=Object.entries(fieldCounts).sort((a,b)=>b[1]-a[1]);
+  const maxField=byField[0]?.[1]||1;
+  const pctComplete=rows.length?Math.round(complete/rows.length*100):0;
+
+  body.innerHTML=`
+    ${_raStatGrid([
+      [pctComplete+'%','Fully Complete','var(--green)'],
+      [partial.length,'Partial Records','var(--amber)'],
+      [byField[0]?.[0]||'—','Most Often Missing','var(--red)'],
+      [allErrors.length,'Pending Follow-Up','var(--red)']
+    ])}
+    ${byField.length?`
+      <div class="an-section-title">Most Commonly Missing Fields</div>
+      ${_raRows(byField,maxField,'var(--amber)',partial.length)}
+    ` : '<div class="empty-state" style="font-size:11px;padding:16px 0;">No partial records in the current filter — clean data set. ✅</div>'}
+    ${partial.length?`
+      <div class="an-section-title">Partial Records — Most Recent</div>
+      ${partial.slice().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,10).map(r=>`
+        <div class="an-rec-card" onclick="_raGoToIndex(${allResidents.indexOf(r)})">
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:12px;font-weight:600;">${escapeHtml(r.name)||'—'}</span>
+            <span class="badge partial">⚠ Partial</span>
+          </div>
+          <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">${escapeHtml(r.location)||'—'} · Apt ${escapeHtml(r.apartment)||'—'}</div>
+          <div style="font-size:9px;color:var(--amber);margin-top:2px;">Missing: ${escapeHtml(r.missing_fields)}</div>
+        </div>`).join('')}
+    ` : ''}
+  `;
+}
+
+function _raSupervisors(rows,body){
+  const map={};
+  rows.forEach(r=>{
+    const s=(r.security_supervisor||'').trim();
+    if(s) map[s]=(map[s]||0)+1;
+  });
+  const entries=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const max=entries[0]?.[1]||1;
+  const withName=rows.filter(r=>(r.security_supervisor||'').trim()).length;
+  const withoutName=rows.length-withName;
+  body.innerHTML=`
+    ${_raStatGrid([
+      [entries.length,'Supervisors Logging','var(--cyan)'],
+      [entries[0]?.[0]||'—','Top Logger','var(--amber)'],
+      [entries[0]?.[1]||0,'Top Logger Count','var(--green)'],
+      [withoutName,'Missing Supervisor Name','var(--red)']
+    ])}
+    <div class="an-section-title">Reports Logged by Supervisor</div>
+    ${entries.length?_raRows(entries,max,'var(--blue)',rows.length):'<div class="empty-state" style="font-size:11px;padding:16px 0;">No supervisor names on file for this filter.</div>'}
+  `;
+}
+
+function _raLookup(rows,body){
+  const hasFilters=Object.values(_raFilters).some(v=>v!=='');
+  body.innerHTML=`
+    <div style="margin-bottom:4px;font-size:10px;color:var(--text-faint);">Search by name, apartment, EID, contact, RQ no, or supervisor${hasFilters?' · <span style="color:var(--cyan);">searching within active filters ('+rows.length+' records)</span>':''}</div>
+    <input class="an-lookup-input" id="raLookupInput" placeholder="e.g. Hafiz, 2101, 784-1990…, Creek Gate…" oninput="_raLookupRender()" autofocus>
+    <div id="raLookupResults"></div>`;
+  setTimeout(()=>document.getElementById('raLookupInput')?.focus(),100);
+}
+function _raLookupRender(){
+  const q=(document.getElementById('raLookupInput')?.value||'').toLowerCase().trim();
+  const out=document.getElementById('raLookupResults');
+  if(!q){ out.innerHTML='<div class="empty-state" style="font-size:10px;">Start typing to search residents…</div>'; return; }
+  const rows=_raGetData();
+  const results=rows.filter(r=>
+    [r.name,r.apartment,r.eid,r.contact,r.rq_no,r.location,r.security_supervisor,r.nationality]
+      .map(f=>(f||'').toLowerCase()).some(f=>f.includes(q))
+  ).slice(0,20);
+  if(!results.length){ out.innerHTML='<div class="empty-state" style="font-size:10px;">No residents match your search.</div>'; return; }
+  out.innerHTML=`<div style="font-size:9px;color:var(--text-faint);margin-bottom:8px;">${results.length} result${results.length!==1?'s':''}</div>`+
+    results.map(r=>`
+      <div class="an-rec-card" onclick="_raGoToIndex(${allResidents.indexOf(r)})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <div style="font-size:12px;font-weight:600;margin-bottom:3px;">${escapeHtml(r.name)||'—'} ${isFlagged(r)?'<span style="font-size:9px;color:var(--red);margin-left:5px;">🚩 FLAGGED</span>':''}</div>
+            <div style="font-size:10px;color:var(--text-faint);">${escapeHtml(r.location)||'—'} · Apt ${escapeHtml(r.apartment)||'—'}</div>
+            <div style="font-size:10px;color:var(--text-faint);">${escapeHtml(r.nationality)||'—'} · ${escapeHtml(r.cm_type)||'—'}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            ${activityBadge(r.activity)}
+            <div style="font-size:9px;color:var(--text-faint);margin-top:4px;">${escapeHtml(moveDateFor(r))||'—'}</div>
+            <div style="font-size:9px;color:var(--text-faint);">${escapeHtml(r.eid)||'—'}</div>
+          </div>
+        </div>
+      </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  MODALS
 // ═══════════════════════════════════════════════════════════════════
+let currentModalRecord=null;
 function openModal(r){
+  currentModalRecord=r;
   document.getElementById('modalTitle').textContent=(r.name||'Resident')+' — '+(r.apartment||'');
   const fields=[
     ['Date',r.date],['Location',r.location],['Apartment',r.apartment],['Activity',r.activity],
@@ -846,7 +1459,43 @@ function openErrorModal(e){
   document.getElementById('modalBackdrop').classList.add('show');
 }
 function closeModal(){document.getElementById('modalBackdrop').classList.remove('show');}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+function copyResidentSummary(){
+  const r=currentModalRecord;
+  if(!r) return;
+  const lines=[
+    `${r.name||'Resident'} — ${r.activity||''}`,
+    `Location: ${r.location||'—'} · Apt ${r.apartment||'—'}`,
+    `EID: ${r.eid||'—'}`,
+    `Contact: ${r.contact||'—'}`,
+    `Nationality: ${r.nationality||'—'}`,
+    `CM Type: ${r.cm_type||'—'}`,
+    `RQ No: ${r.rq_no||'—'}`,
+    `Move Date: ${moveDateFor(r)||'—'}`,
+    `Lease: ${r.lease_start_date||'—'} to ${r.lease_end_date||'—'}`,
+    `Supervisor: ${r.security_supervisor||'—'}`
+  ];
+  const text=lines.join('\n');
+  const btn=document.getElementById('copySummaryBtn');
+  const flash=ok=>{ if(!btn) return; const orig='📋 COPY'; btn.textContent=ok?'✓ COPIED':'✕ FAILED'; setTimeout(()=>btn.textContent=orig,1500); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>flash(true)).catch(()=>flash(false));
+  } else {
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      flash(true);
+    }catch(e){ flash(false); }
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();document.getElementById('raModal').classList.remove('show');}
+  if(e.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='SELECT' && document.activeElement.tagName!=='TEXTAREA'){
+    e.preventDefault();
+    document.getElementById('searchBox').focus();
+  }
+});
 
 // ═══════════════════════════════════════════════════════════════════
 //  INIT
