@@ -407,6 +407,28 @@ border-radius:20px;}
 .shift-badge.pm{background:#f59e0b20;color:#f59e0b;border:1px solid #f59e0b40;}
 .shift-badge.both{background:#8b5cf620;color:#8b5cf6;border:1px solid #8b5cf640;}
 
+/* MANPOWER MAP IN-APP FRAME — keeps the live board inside this window
+   (installed PWA / standalone app) instead of breaking out to the browser,
+   since script.google.com is a different origin than this dashboard. */
+.manpower-frame-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  z-index:4000;display:none;flex-direction:column;
+}
+.manpower-frame-backdrop.show{display:flex;}
+.manpower-frame-header{
+  padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
+}
+.manpower-frame-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:var(--text);}
+.manpower-frame-actions{display:flex;align-items:center;gap:14px;}
+.manpower-frame-actions a{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;color:var(--text-dim);text-decoration:none;}
+.manpower-frame-actions a:hover{color:var(--green);}
+.manpower-frame-close{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;line-height:1;}
+.manpower-frame-close:hover{color:var(--red);}
+.manpower-frame-body{flex:1;position:relative;background:#08090f;}
+.manpower-frame-body iframe{width:100%;height:100%;border:none;}
+.manpower-frame-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:.5px;pointer-events:none;}
+
 /* INCIDENT DETAIL MODAL */
 .modal-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,0.65);
@@ -499,7 +521,7 @@ border-radius:20px;}
     <a href="sira-compliance.html" class="btn btn-sira">🪪 SIRA COMPLIANCE</a>
     <a href="duty-reference.html" class="btn btn-duty">🛡️ DUTY REFERENCE</a>
     <a href="resident-database.html" class="btn btn-resident">🏘️ RESIDENTS</a>
-    <a href="https://script.google.com/macros/s/AKfycbw9A75Ya5iMi2gcEJhctgU1jv9Yey3hHI4whjM0hF22ZyidRs7xDhaqeaRdkoZs2OI9rA/exec" target="_blank" rel="noopener" class="btn btn-manpower">🗺️ MANPOWER MAP (LIVE)</a>
+    <button class="btn btn-manpower" onclick="openManpowerFrame()">🗺️ MANPOWER MAP (LIVE)</button>
     <button class="btn btn-admin" onclick="openAdminPanel()" title="Community & Tower Admin Panel">🏢</button>
     <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
     <div style="text-align:right">
@@ -710,6 +732,20 @@ border-radius:20px;}
 </div>
 
 <!-- INCIDENT DETAIL MODAL -->
+<div class="manpower-frame-backdrop" id="manpowerFrameBackdrop">
+  <div class="manpower-frame-header">
+    <div class="manpower-frame-title">🗺️ SECURITY MANPOWER MAP — LIVE</div>
+    <div class="manpower-frame-actions">
+      <a href="https://script.google.com/macros/s/AKfycbw9A75Ya5iMi2gcEJhctgU1jv9Yey3hHI4whjM0hF22ZyidRs7xDhaqeaRdkoZs2OI9rA/exec" target="_blank" rel="noopener">Open in browser tab ↗</a>
+      <button class="manpower-frame-close" onclick="closeManpowerFrame()" title="Close">×</button>
+    </div>
+  </div>
+  <div class="manpower-frame-body">
+    <div class="manpower-frame-loading" id="manpowerFrameLoading">Loading live board…</div>
+    <iframe id="manpowerFrameIframe" title="Security Manpower Map"></iframe>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="incidentModal" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
@@ -976,6 +1012,28 @@ border-radius:20px;}
 // ═══════════════════════════════════════════════════════════════════
 //  THEME
 // ═══════════════════════════════════════════════════════════════════
+const MANPOWER_MAP_URL = 'https://script.google.com/macros/s/AKfycbw9A75Ya5iMi2gcEJhctgU1jv9Yey3hHI4whjM0hF22ZyidRs7xDhaqeaRdkoZs2OI9rA/exec';
+function openManpowerFrame(){
+  const iframe = document.getElementById('manpowerFrameIframe');
+  const loading = document.getElementById('manpowerFrameLoading');
+  loading.style.display = 'flex';
+  loading.textContent = 'Loading live board…';
+  // Reset then set src so re-opening always gets a fresh load, not a stale cached frame
+  iframe.src = 'about:blank';
+  iframe.onload = function(){
+    if (iframe.src !== 'about:blank') loading.style.display = 'none';
+  };
+  setTimeout(function(){ iframe.src = MANPOWER_MAP_URL; }, 30);
+  document.getElementById('manpowerFrameBackdrop').classList.add('show');
+  document.addEventListener('keydown', manpowerFrameEscHandler);
+}
+function closeManpowerFrame(){
+  document.getElementById('manpowerFrameBackdrop').classList.remove('show');
+  document.getElementById('manpowerFrameIframe').src = 'about:blank';
+  document.removeEventListener('keydown', manpowerFrameEscHandler);
+}
+function manpowerFrameEscHandler(e){ if(e.key === 'Escape') closeManpowerFrame(); }
+
 function toggleTheme(){
   const h=document.documentElement;
   const t=h.getAttribute('data-theme')==='dark'?'light':'dark';
