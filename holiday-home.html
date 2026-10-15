@@ -17,6 +17,7 @@
   --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.12);
   --purple:#8b5cf6;--purple-dim:rgba(139,92,246,0.12);
   --cyan:#06b6d4;
+  --pink:#ec4899;--pink-dim:rgba(236,72,153,0.12);
 }
 [data-theme="light"]{
   --bg:#f0f2f7;--surface:#ffffff;--surface2:#f8f9fc;--surface3:#eef0f6;
@@ -33,6 +34,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:999;}
 [data-theme="light"] body::before{display:none;}
 .header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:6px;}
+@media(max-width:768px){.header{height:auto;padding:10px 20px;}}
 .header-left{display:flex;align-items:center;gap:14px;}
 .logo-badge{width:36px;height:36px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;}
 .header-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;letter-spacing:1.5px;text-transform:uppercase;}
@@ -40,12 +42,22 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .status-badge{display:flex;align-items:center;gap:6px;border:1px solid var(--purple);padding:4px 12px;border-radius:20px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--purple);}
 .status-dot{width:7px;height:7px;background:var(--purple);border-radius:50%;animation:pulse-p 2s ease-in-out infinite;}
 @keyframes pulse-p{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.5);}50%{box-shadow:0 0 0 4px rgba(139,92,246,0);}}
-.header-right{display:flex;align-items:center;gap:10px;}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .clock{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--purple);letter-spacing:1px;}
 .clock-date{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-dim);text-align:right;letter-spacing:0.5px;margin-top:1px;}
 .btn{padding:6px 14px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border-radius:20px;}
 .btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
 .btn-dash{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.btn-live{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+.btn-live:hover{background:rgba(59,130,246,0.25);}
+.btn-sira{border-color:var(--purple);color:var(--purple);background:var(--purple-dim);}
+.btn-sira:hover{background:rgba(139,92,246,0.25);}
+.btn-duty{border-color:var(--cyan);color:var(--cyan);background:rgba(6,182,212,0.12);}
+.btn-duty:hover{background:rgba(6,182,212,0.25);}
+.btn-resident{border-color:var(--pink);color:var(--pink);background:var(--pink-dim);}
+.btn-resident:hover{background:rgba(236,72,153,0.25);}
+.btn-manpower{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.btn-manpower:hover{background:rgba(16,185,129,0.25);}
 .btn-theme{padding:6px 10px;}
 .tab-bar{display:flex;align-items:center;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;}
 .tab-bar::-webkit-scrollbar{display:none;}
@@ -277,7 +289,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <header class="header">
   <div class="header-left">
-    <div class="logo-badge">HH</div>
+    <a href="index.html" title="Home" style="display:flex;text-decoration:none;"><div class="logo-badge">HH</div></a>
     <div>
       <div class="header-title">HOLIDAY HOMES TRACKER</div>
       <div class="header-subtitle">Dubai Creek Harbour · Zone D · HHO Guest Monitoring</div>
@@ -285,7 +297,11 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
   <div class="status-badge"><span class="status-dot"></span>HHO LIVE TRACKING</div>
   <div class="header-right">
-    <a href="security-ops.html" class="btn btn-dash">📡 MAIN DASHBOARD</a>
+    <a href="security-ops.html" class="btn btn-live">🛰️ LIVE FEED</a>
+    <a href="sira-compliance.html" class="btn btn-sira">🪪 SIRA COMPLIANCE</a>
+    <a href="duty-reference.html" class="btn btn-duty">🛡️ DUTY REFERENCE</a>
+    <a href="resident-database.html" class="btn btn-resident">🏘️ RESIDENTS</a>
+    <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
     <button class="btn btn-theme" onclick="toggleTheme()">☀</button>
     <div style="text-align:right">
       <div class="clock" id="clock">--:--:--</div>

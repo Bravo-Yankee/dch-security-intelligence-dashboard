@@ -63,6 +63,7 @@ body::before{
 
 /* HEADER */
 .header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px;}
+@media(max-width:768px){.header{height:auto;padding:10px 20px;}}
 .header-left{display:flex;align-items:center;gap:14px;}
 .logo-badge{width:36px;height:36px;background:var(--pink);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#000;letter-spacing:0.5px;}
 .header-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:18px;letter-spacing:1.5px;text-transform:uppercase;}
@@ -274,7 +275,7 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
 
 <header class="header">
   <div class="header-left">
-    <div class="logo-badge">DCH</div>
+    <a href="index.html" title="Home" style="display:flex;text-decoration:none;"><div class="logo-badge">DCH</div></a>
     <div>
       <div class="header-title">Resident Database</div>
       <div class="header-subtitle">Dubai Creek Harbour · Move-In / Move-Out Tracker</div>
@@ -283,11 +284,10 @@ tr.partial-row:hover{background:rgba(245,158,11,.09);}
   <div class="live-badge"><span class="live-dot"></span>LIVE MONITORING</div>
   <div class="header-right">
     <a href="security-ops.html" class="btn btn-live">🛰️ LIVE FEED</a>
-    <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec
-" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
     <a href="holiday-home.html" class="btn btn-hh">🏠 HOLIDAY HOMES</a>
     <a href="sira-compliance.html" class="btn btn-sira">🪪 SIRA COMPLIANCE</a>
     <a href="duty-reference.html" class="btn btn-duty">🛡️ DUTY REFERENCE</a>
+    <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
     <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
     <div style="text-align:right">
       <div class="clock" id="clock">--:--:--</div>

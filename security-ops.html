@@ -75,7 +75,9 @@ body::before{
   background:var(--surface);
   border-bottom:1px solid var(--border);
   position:sticky;top:0;z-index:100;
+  flex-wrap:wrap;gap:8px;
 }
+@media(max-width:768px){.header{height:auto;padding:10px 20px;}}
 .header-left{display:flex;align-items:center;gap:14px;}
 .logo-badge{
   width:36px;height:36px;background:var(--amber);
@@ -93,7 +95,7 @@ body::before{
 }
 .live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse-green 1.5s ease-in-out infinite;}
 @keyframes pulse-green{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,0.4);}50%{opacity:.6;box-shadow:0 0 0 4px rgba(16,185,129,0);}}
-.header-right{display:flex;align-items:center;gap:10px;}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .clock{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--amber);letter-spacing:1px;}
 .clock-date{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-dim);text-align:right;letter-spacing:0.5px;margin-top:1px;}
 .btn{
@@ -484,7 +486,7 @@ border-radius:20px;}
 <!-- HEADER -->
 <header class="header">
   <div class="header-left">
-    <div class="logo-badge">DCH</div>
+    <a href="index.html" title="Home" style="display:flex;text-decoration:none;"><div class="logo-badge">DCH</div></a>
     <div>
       <div class="header-title">Live Feed</div>
       <div class="header-subtitle">Dubai Creek Harbour · Zone D Security Operations</div>
@@ -499,8 +501,7 @@ border-radius:20px;}
     <a href="sira-compliance.html" class="btn btn-sira">🪪 SIRA COMPLIANCE</a>
     <a href="duty-reference.html" class="btn btn-duty">🛡️ DUTY REFERENCE</a>
     <a href="resident-database.html" class="btn btn-resident">🏘️ RESIDENTS</a>
-    <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec
-" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
+    <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
     <button class="btn btn-admin" onclick="openAdminPanel()" title="Community & Tower Admin Panel">🏢</button>
     <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
     <div style="text-align:right">

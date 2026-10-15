@@ -38,6 +38,13 @@
     --font-body: "Public Sans", -apple-system, "Segoe UI", sans-serif;
     --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
   }
+.site-nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:200;}
+.site-nav .home-link{display:flex;align-items:center;font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.5px;color:var(--ink);text-decoration:none;margin-right:4px;}
+.site-nav .btn{padding:6px 14px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:.3px;text-decoration:none;border-radius:20px;display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+.site-nav .btn:hover{background:var(--accent-soft);color:var(--accent-ink);border-color:var(--accent);}
+.site-nav .btn-manpower{border-color:var(--authority);color:var(--authority-ink);background:var(--authority-soft);}
+.site-nav .btn-manpower:hover{background:var(--authority-soft);filter:brightness(0.96);}
+@media(max-width:600px){.site-nav{padding:10px 16px;}}
 
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -610,6 +617,14 @@
 <div class="back-bar">
   <a href="security-ops.html">&larr; Back to Live Feed</a>
 </div>
+<nav class="site-nav">
+  <a href="index.html" class="home-link" title="Home">DCH</a>
+  <a href="security-ops.html" class="btn">🛰️ LIVE FEED</a>
+  <a href="holiday-home.html" class="btn">🏠 HOLIDAY HOMES</a>
+  <a href="sira-compliance.html" class="btn">🪪 SIRA COMPLIANCE</a>
+  <a href="resident-database.html" class="btn">🏘️ RESIDENTS</a>
+  <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
+</nav>
 <header class="masthead">
   <div class="masthead-inner">
     <div class="eyebrow"><span class="dot"></span>Security Operations &middot; Field Reference</div>

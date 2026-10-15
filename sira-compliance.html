@@ -25,6 +25,9 @@
   --green-dim: rgba(16,185,129,0.12);
   --blue: #06b6d4;
   --purple: #a855f7;
+  --nav-blue: #3b82f6;
+  --nav-cyan: #06b6d4;
+  --nav-pink: #ec4899;
 }
 [data-theme="light"] {
   --bg: #f0f2f7;
@@ -54,12 +57,22 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .header-logo{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--amber),#d97706);display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Rajdhani',sans-serif;font-size:15px;color:#0f0f0f;flex-shrink:0;}
 .header-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;letter-spacing:0.5px;}
 .header-subtitle{font-size:11px;color:var(--text-faint);margin-top:1px;}
-.header-right{display:flex;align-items:center;gap:10px;}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .btn{padding:7px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:'Rajdhani',sans-serif;letter-spacing:.5px;}
 .btn:hover{background:var(--surface3);border-color:var(--amber);}
 .btn-main{border-color:rgba(245,158,11,.5);background:var(--amber-dim);color:var(--amber);}
 .btn-theme{padding:7px 10px;}
 .btn-admin{padding:7px 10px;}
+.btn-live{border-color:var(--nav-blue);color:var(--nav-blue);background:rgba(59,130,246,0.12);}
+.btn-live:hover{background:rgba(59,130,246,0.22);}
+.btn-hh{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.btn-hh:hover{background:rgba(245,158,11,0.22);}
+.btn-duty{border-color:var(--nav-cyan);color:var(--nav-cyan);background:rgba(6,182,212,0.12);}
+.btn-duty:hover{background:rgba(6,182,212,0.22);}
+.btn-resident{border-color:var(--nav-pink);color:var(--nav-pink);background:rgba(236,72,153,0.12);}
+.btn-resident:hover{background:rgba(236,72,153,0.22);}
+.btn-manpower{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.btn-manpower:hover{background:rgba(16,185,129,0.22);}
 .clock{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--amber);}
 .clock-date{font-size:10px;color:var(--text-faint);text-align:right;}
 
@@ -145,15 +158,18 @@ tbody td{padding:9px 12px;vertical-align:middle;}
 
 <header class="header">
   <div class="header-left">
-    <div class="header-logo">SI</div>
+    <a href="index.html" title="Home" style="display:flex;text-decoration:none;"><div class="header-logo">SI</div></a>
     <div>
       <div class="header-title">SIRA COMPLIANCE TRACKER</div>
       <div class="header-subtitle">Dubai Creek Harbour · Zone D Security Licensing</div>
     </div>
   </div>
   <div class="header-right">
-    <a href="security-ops.html" class="btn">🛡 SECURITY OPS</a>
-    <a href="holiday-home.html" class="btn">🏠 HOLIDAY HOMES</a>
+    <a href="security-ops.html" class="btn btn-live">🛰️ LIVE FEED</a>
+    <a href="holiday-home.html" class="btn btn-hh">🏠 HOLIDAY HOMES</a>
+    <a href="duty-reference.html" class="btn btn-duty">🛡️ DUTY REFERENCE</a>
+    <a href="resident-database.html" class="btn btn-resident">🏘️ RESIDENTS</a>
+    <a href="https://script.google.com/macros/s/AKfycbxZfAd9AxrHSa9HJE6kPwsyhPUZAK0eW8dGK8yo4C8AjKKA4Sh-YtojLvDrKEqlgafP6A/exec" class="btn btn-manpower" target="_blank" rel="noopener">🗺️ MANPOWER MAP (LIVE)</a>
     <button class="btn btn-theme" onclick="toggleTheme()" title="Toggle Theme">☀</button>
     <div style="text-align:right">
       <div class="clock" id="clock">--:--:--</div>
