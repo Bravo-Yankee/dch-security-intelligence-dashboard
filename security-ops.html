@@ -240,11 +240,11 @@ border-radius:20px;}
 .zone-kpi-card{
   background:var(--surface2);
   border:1px solid var(--border);
-  padding:11px 13px;
+  padding:11px 13px 16px;
   position:relative;overflow:hidden;
   cursor:pointer;
   transition:transform .12s, border-color .15s;
-  min-height:72px;
+  min-height:88px;
 }
 .zone-kpi-card:hover{transform:scale(1.02);border-color:var(--amber);}
 .zone-kpi-name{
@@ -255,6 +255,21 @@ border-radius:20px;}
 .zone-kpi-count{
   font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;line-height:1;
 }
+.zone-kpi-today{
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);
+  margin-top:3px;letter-spacing:.3px;
+}
+.zone-kpi-today b{color:var(--text-dim);font-weight:700;}
+.zone-leaderboard{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.zlb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+.zlb-title{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;color:var(--text-dim);}
+.zlb-row{display:flex;align-items:center;gap:8px;padding:5px 2px;cursor:pointer;border-radius:3px;transition:background .15s;}
+.zlb-row:hover{background:var(--surface2);}
+.zlb-rank{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);width:20px;flex-shrink:0;}
+.zlb-zone{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;color:var(--text);flex-shrink:0;width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.zlb-bar-wrap{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.zlb-bar{height:100%;background:var(--amber);border-radius:3px;}
+.zlb-count{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--amber);width:22px;text-align:right;flex-shrink:0;}
 .zone-kpi-bar{
   position:absolute;bottom:0;left:0;right:0;height:3px;
 }
@@ -589,6 +604,16 @@ border-radius:20px;}
         <div class="zone-kpi-grid" id="zoneKpiGrid">
           <div class="empty-state">Load data to map active clusters</div>
         </div>
+      </div>
+      <div class="zone-leaderboard">
+        <div class="zlb-header">
+          <span class="zlb-title">🏆 TOP REPORTING COMMUNITIES</span>
+          <div class="radar-tabs">
+            <div class="rtab active" onclick="setZoneLeaderboardMode('shift',this)">This Shift</div>
+            <div class="rtab" onclick="setZoneLeaderboardMode('today',this)">Today</div>
+          </div>
+        </div>
+        <div id="zoneLeaderboardList"><div class="empty-state" style="padding:8px 0;font-size:11px;">Load data to rank communities</div></div>
       </div>
     </div>
 
@@ -1289,6 +1314,35 @@ function _toGSTDate(ts) {
   if (!ts) return null;
   const gst = new Date(new Date(ts).getTime() + 4 * 60 * 60 * 1000);
   return gst.toISOString().slice(0, 10); // YYYY-MM-DD in GST
+}
+
+// ── Live Today / Current-Shift helpers (always anchored to real now, independent of the date-range filter) ──
+function _gstDateKey(d){
+  const pad=x=>String(x).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function _currentShiftLabel(){
+  const hr=getGSTNow().getHours();
+  return (hr>=7&&hr<19)?'Morning Shift (07:00-19:00)':'Night Shift (19:00-07:00)';
+}
+function _computeZoneDayStats(){
+  // { [zone]: { today:number, shift:number } } — today = all of today's reports, shift = today's reports in the shift
+  // currently in progress. Always computed from the full allIncidents list, not getFilteredIncidents(), so these
+  // numbers stay "live" regardless of whatever historical date range is selected elsewhere on the dashboard.
+  const todayKey=_gstDateKey(getGSTNow());
+  const curShift=_currentShiftLabel();
+  const stats={};
+  allIncidents.forEach(i=>{
+    if(!i.timestamp) return;
+    const incGst=getGSTNow(i.timestamp);
+    if(_gstDateKey(incGst)!==todayKey) return;
+    const z=normalizeZone(i.location_zone, i.sender);
+    if(!z) return;
+    if(!stats[z]) stats[z]={today:0, shift:0};
+    stats[z].today++;
+    if(i.shift===curShift) stats[z].shift++;
+  });
+  return stats;
 }
 
 function openKpiModal(type) {
@@ -2868,18 +2922,56 @@ function renderZoneHeatmap(data){
     ['rgba(5,150,105,0.07)','#059669','LOW'],
   ];
 
+  const dayStats=_computeZoneDayStats();
+
   el.innerHTML=sorted.map(([zone,count])=>{
     const intensity=count/max;
     const ci=Math.min(Math.floor((1-intensity)*palette.length),palette.length-1);
     const [bg,accent,label]=palette[ci];
     const cleanZone=zone.replace(/'/g,"\\'");
+    const todayCount=dayStats[zone]?.today||0;
     return `<div class="zone-kpi-card" style="background:${bg};border-color:${accent}20;" onclick="showZonePanel('${cleanZone}')">
       <span class="zone-kpi-badge" style="background:${accent}22;color:${accent};">${label}</span>
       <div class="zone-kpi-name">${zone}</div>
       <div class="zone-kpi-count" style="color:${accent}">${count}</div>
+      <div class="zone-kpi-today">Today: <b>${todayCount}</b></div>
       <div class="zone-kpi-bar" style="background:${accent}"></div>
     </div>`;
   }).join('');
+
+  renderZoneLeaderboard();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  ZONE LEADERBOARD — ranks communities by current-shift or today's report volume
+// ═══════════════════════════════════════════════════════════════════
+let _zlbMode='shift';
+function setZoneLeaderboardMode(mode, el){
+  _zlbMode=mode;
+  document.querySelectorAll('.zone-leaderboard .rtab').forEach(t=>t.classList.toggle('active',t===el));
+  renderZoneLeaderboard();
+}
+function renderZoneLeaderboard(){
+  const listEl=document.getElementById('zoneLeaderboardList');
+  if(!listEl) return;
+  const stats=_computeZoneDayStats();
+  const entries=Object.entries(stats)
+    .map(([zone,s])=>[zone, _zlbMode==='shift'?s.shift:s.today])
+    .filter(([,c])=>c>0)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,8);
+  if(!entries.length){
+    listEl.innerHTML=`<div class="empty-state" style="padding:8px 0;font-size:11px;">No reports yet this ${_zlbMode==='shift'?'shift':'day'}.</div>`;
+    return;
+  }
+  const max=entries[0][1];
+  listEl.innerHTML=entries.map(([zone,c],idx)=>`
+    <div class="zlb-row" onclick="showZonePanel('${zone.replace(/'/g,"\\'")}')">
+      <span class="zlb-rank">#${idx+1}</span>
+      <span class="zlb-zone">${zone}</span>
+      <div class="zlb-bar-wrap"><div class="zlb-bar" style="width:${Math.max(6,Math.round(c/max*100))}%"></div></div>
+      <span class="zlb-count">${c}</span>
+    </div>`).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2936,9 +3028,19 @@ function _renderZpOverview(body,zoneIncs){
   const topTypes=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxT=topTypes[0]?.[1]||1;
 
+  // Live, always-current (independent of the date-range filter above): today's totals + the shift in progress right now
+  const _nowGst=getGSTNow();
+  const _todayKey=_gstDateKey(_nowGst);
+  const _curShiftLbl=_currentShiftLabel();
+  const _todayZoneIncs=allIncidents.filter(i=>i.timestamp && normalizeZone(i.location_zone,i.sender)===_zpZone && _gstDateKey(getGSTNow(i.timestamp))===_todayKey);
+  const todayTotal=_todayZoneIncs.length;
+  const curShiftCount=_todayZoneIncs.filter(i=>i.shift===_curShiftLbl).length;
+
   body.innerHTML=`
     <div>
       <div class="slide-section-title">Zone Vector Overview</div>
+      <div class="slide-stat-row"><span class="slide-stat-key">⏱ Current Shift Reports</span><span class="slide-stat-val" style="color:#10b981">${curShiftCount}</span></div>
+      <div class="slide-stat-row"><span class="slide-stat-key">📅 Today's Total</span><span class="slide-stat-val" style="color:#06b6d4">${todayTotal}</span></div>
       <div class="slide-stat-row"><span class="slide-stat-key">Total Incidents</span><span class="slide-stat-val">${total}</span></div>
       <div class="slide-stat-row"><span class="slide-stat-key">Elevated / Critical</span><span class="slide-stat-val" style="color:var(--red)">${crit}</span></div>
       <div class="slide-stat-row"><span class="slide-stat-key">Open Action Items</span><span class="slide-stat-val" style="color:var(--amber)">${open}</span></div>
