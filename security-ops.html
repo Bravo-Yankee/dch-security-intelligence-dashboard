@@ -215,6 +215,10 @@ border-radius:20px;}
 .rtab{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);padding:2px 6px;border:1px solid var(--border);cursor:pointer;transition:all .2s;}
 .rtab.active,.rtab:hover{border-color:var(--amber);color:var(--amber);}
 #radarCanvas{width:100%;height:160px;display:block;}
+.radar-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.rst-item{background:var(--surface2);border:1px solid var(--border);padding:9px 11px;}
+.rst-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.rst-val{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ─────────────────────────────────────────────────────
    ZONE HEATMAP KPI CARDS (cloned from index2.html)
@@ -593,6 +597,12 @@ border-radius:20px;}
         </div>
       </div>
       <canvas id="radarCanvas"></canvas>
+      <div class="radar-stats" id="radarStats">
+        <div class="rst-item"><div class="rst-label">Peak Hour</div><div class="rst-val" id="rstPeak">—</div></div>
+        <div class="rst-item"><div class="rst-label">Total In Window</div><div class="rst-val" id="rstTotal">—</div></div>
+        <div class="rst-item"><div class="rst-label">Avg / Hr</div><div class="rst-val" id="rstAvg">—</div></div>
+        <div class="rst-item"><div class="rst-label">Busiest Zone</div><div class="rst-val" id="rstZone">—</div></div>
+      </div>
     </div>
 
     <!-- ZONE HEATMAP KPI CARDS (cloned from index2.html, responsive + scrollable + clickable) -->
@@ -3685,6 +3695,53 @@ function drawRadar(hours){
 
   ctx.fillStyle='rgba(245,158,11,0.9)';
   pts.forEach((v,i)=>{if(v>1.8){const x=pad.l+cw*(i/slots);const y2=pad.t+ch*(1-v/maxV);ctx.beginPath();ctx.arc(x,y2,2.5,0,Math.PI*2);ctx.fill();}});
+
+  _renderRadarStats(hours);
+}
+
+// ── Radar stats strip: Peak Hour / Total / Avg per Hour / Busiest Zone,
+// scoped to the same 24H/12H/6H window currently selected on the chart. ──
+function _renderRadarStats(hours){
+  const elPeak=document.getElementById('rstPeak');
+  const elTotal=document.getElementById('rstTotal');
+  const elAvg=document.getElementById('rstAvg');
+  const elZone=document.getElementById('rstZone');
+  if(!elPeak||!elTotal||!elAvg||!elZone) return;
+  if(!allIncidents.length){
+    elPeak.textContent='—';elTotal.textContent='—';elAvg.textContent='—';elZone.textContent='—';
+    return;
+  }
+
+  const nowGst=getGSTNow();
+  const cutoff=new Date(nowGst.getTime()-hours*3600000);
+  const windowIncs=allIncidents.filter(i=>i.timestamp && new Date(i.timestamp)>=cutoff && new Date(i.timestamp)<=nowGst);
+
+  const total=windowIncs.length;
+  elTotal.textContent=String(total);
+  elAvg.textContent=(total/hours).toFixed(1);
+
+  if(!total){
+    elPeak.textContent='—';elZone.textContent='—';
+    return;
+  }
+
+  // Peak hour — bucket by the hour-of-day each incident's own GST timestamp falls in
+  const hourBuckets={};
+  windowIncs.forEach(i=>{
+    const hr=getGSTNow(i.timestamp).getHours();
+    hourBuckets[hr]=(hourBuckets[hr]||0)+1;
+  });
+  const peakEntry=Object.entries(hourBuckets).sort((a,b)=>b[1]-a[1])[0];
+  elPeak.textContent=peakEntry?`${String(peakEntry[0]).padStart(2,'0')}:00 · ${peakEntry[1]}`:'—';
+
+  // Busiest zone within this same window
+  const zoneCounts={};
+  windowIncs.forEach(i=>{
+    const z=normalizeZone(i.location_zone,i.sender);
+    if(z) zoneCounts[z]=(zoneCounts[z]||0)+1;
+  });
+  const topZone=Object.entries(zoneCounts).sort((a,b)=>b[1]-a[1])[0];
+  elZone.textContent=topZone?`${topZone[0]} (${topZone[1]})`:'—';
 }
 
 function setRadar(h,el){
