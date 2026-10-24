@@ -2403,8 +2403,7 @@ function _iaTrend(data, body) {
 const DEFAULT_COMMUNITY_TOWERS = {
   'The Cove': ['Tower 1','Tower 2','Tower 3'],
   'Cove Phase 2': ['Building 4','Building 5','Building 6','Building 7','Building 8','Building 9','Building 10','Building 11'], // 806 units, still managed by the Cove Security team
-  'North Residence': ['Tower 1','Tower 2','Tower 3'],
-  'South Residence': ['Tower 1','Tower 2','Tower 3'],
+  'DCH Residences': ['North Tower 1','North Tower 2','North Tower 3','South Tower 1','South Tower 2','South Tower 3'], // merged North + South Residence into one combined community
   'The Grand': [], // Only One Tower
   'Creek Edge': ['Tower 1','Tower 2'],
   'Creek Crescent': ['Tower 1','Tower 2'],
@@ -2608,6 +2607,15 @@ function _adminResetDefaults(){
 // "DCH/Sales Pavilion") rather than a clean community name. This buckets any
 // raw value into exactly one of the official EMAAR communities so the Zone
 // Heatmap and every zone-scoped tool only ever show those cards.
+//
+// Oct 24 2026: "Reported By" (sender) is checked FIRST and wins whenever it
+// names one specific community, even if it conflicts with location_zone —
+// sender is the duty/supervisor identity that actually filed the report, and
+// is the single source of truth for which community's KPI card a report
+// counts toward. location_zone (often noisier / mis-extracted by the AI
+// classifier) is only used as a fallback when sender doesn't name a specific
+// community (a generic org/supervisor name, or one shared across more than
+// one community, e.g. a combined "North & South" duty group).
 const ZONE_SYNONYMS = [
   // Ordered most-specific-first to avoid partial-name collisions (e.g. Harbour Gate vs Harbour Views).
   [/rym[\s-]?seagate|seagate/i, 'RYM Seagate'],
@@ -2621,8 +2629,7 @@ const ZONE_SYNONYMS = [
   [/creekside\s*18|creekside18/i, 'Creekside 18'],
   [/harbou?r\s*gate/i, 'Harbour Gate'],
   [/harbou?r\s*views?/i, 'Harbour Views'],
-  [/north\s*residence/i, 'North Residence'],
-  [/south\s*residence/i, 'South Residence'],
+  [/north\s*residence|south\s*residence|\bdch\s*residences?\b/i, 'DCH Residences'],
   [/the\s*grand|^grand\b/i, 'The Grand'],
   [/cove\s*phase\s*2|cove\s*ph\.?\s*2|cove\s*2\b/i, 'Cove Phase 2'],
   [/the\s*cove|^cove\b/i, 'The Cove'],
@@ -2631,53 +2638,66 @@ const ZONE_SYNONYMS = [
   [/master\s*communit(y|ies)/i, 'Master Community'],
 ];
 
-// Ambiguous catch-all buckets — when a report resolves to one of these purely from
-// its location text, we check the sender/supervisor field for a more specific
-// community reference (e.g. "Harbour Gate Duty Mobile") before settling on the catch-all.
-const AMBIGUOUS_ZONES = new Set(['Master Community', 'DCH Project']);
+// "Reported By" / sender often drops the "Creek"/"Harbour" prefix and uses a
+// short duty-team form (e.g. "Horizon Security Duty", "Seagate Duty Mobile",
+// "WeOne.IconBay17@WeOne.com") — matched here with looser, standalone
+// keywords. Deliberately excludes Master Community / DCH Project (shared
+// catch-alls, not a specific community a sender name confirms) — a sender
+// that doesn't match anything here (a generic "WeOne Security" / "DCR
+// Superviso Duty Mobile", or a name spanning multiple communities like "DCR
+// North & South") falls through to location_zone instead.
+const SENDER_ZONE_PATTERNS = [
+  [/rym[\s-]?seagate|seagate/i, 'RYM Seagate'],
+  [/17\s*icon\s*bay|icon\s*bay|iconbay/i, '17 Icon Bay'],
+  [/creek\s*beach/i, 'Creek Beach'],
+  [/creek\s*edge/i, 'Creek Edge'],
+  [/creek\s*crescent/i, 'Creek Crescent'],
+  [/creek\s*gate/i, 'Creek Gate'],
+  [/creek\s*rise/i, 'Creek Rise'],
+  [/creek\s*horizon|\bhorizon\b/i, 'Creek Horizon'],
+  [/creekside\s*18|creekside18/i, 'Creekside 18'],
+  [/harbou?r\s*gate/i, 'Harbour Gate'],
+  [/harbou?r\s*views?/i, 'Harbour Views'],
+  [/north\s*residence|south\s*residence|\bdch\s*residences?\b|\bnorth\s*(&|and)\s*south\b/i, 'DCH Residences'],
+  [/the\s*grand|\bgrand\b/i, 'The Grand'],
+  [/cove\s*phase\s*2|cove\s*ph\.?\s*2|cove\s*2\b/i, 'Cove Phase 2'],
+  [/the\s*cove|\bcove\b/i, 'The Cove'],
+  [/island\s*park/i, 'Island Park'],
+];
 
-function _refineWithSender(resolvedZone, sender){
-  if (!AMBIGUOUS_ZONES.has(resolvedZone) || !sender || !sender.trim()) return resolvedZone;
-  for (const [re, community] of ZONE_SYNONYMS) {
-    if (re.test(sender)) return community;
-  }
-  return resolvedZone;
-}
+// Communities whose KPI card / leaderboard entry is hidden from this ops
+// dashboard because they're managed by a different security provider.
+const HIDDEN_FROM_SUMMARY = new Set(['Creek Beach', 'RYM Seagate']);
 
 function normalizeZone(raw, sender){
-  if (!raw || raw.trim()==='' || raw==='Unknown') {
-    // No location text at all — try to infer purely from the sender/supervisor field
-    if (sender && sender.trim()) {
-      for (const [re, community] of ZONE_SYNONYMS) {
-        if (re.test(sender)) return community;
-      }
+  // 1. "Reported By" wins whenever it names ONE specific community — it's
+  //    the single source of truth for which KPI card a report belongs to.
+  if (sender && sender.trim()) {
+    for (const [re, community] of SENDER_ZONE_PATTERNS) {
+      if (re.test(sender)) return community;
     }
-    return null;
   }
+
+  // 2. Sender didn't resolve to a specific community — fall back to the
+  //    location_zone text, same keyword/substring matching as before.
+  if (!raw || raw.trim()==='' || raw==='Unknown') return null;
   const trimmed = raw.trim();
   const liveNames = Object.keys(COMMUNITY_TOWERS);
 
-  // 1. Exact match against the live registry (handles already-clean values,
-  //    including any custom communities added via the Admin Panel)
   const exact = liveNames.find(n => n.toLowerCase() === trimmed.toLowerCase());
-  if (exact) return _refineWithSender(exact, sender);
+  if (exact) return exact;
 
-  // 2. Keyword/synonym matching against messy raw text
   for (const [re, community] of ZONE_SYNONYMS) {
-    if (re.test(trimmed)) return _refineWithSender(community, sender);
+    if (re.test(trimmed)) return community;
   }
 
-  // 3. Substring match against any live registry name (covers admin-added
-  //    communities that don't have an explicit synonym rule yet)
   const sortedLive = [...liveNames].sort((a,b)=>b.length-a.length); // longer/more-specific names first
   for (const name of sortedLive) {
-    if (trimmed.toLowerCase().includes(name.toLowerCase())) return _refineWithSender(name, sender);
+    if (trimmed.toLowerCase().includes(name.toLowerCase())) return name;
   }
 
-  // 4. Nothing matched — bucket into Master Community as the shared/common-area catch-all
-  //    (covers cases like "DCH/Sales Pavilion" that aren't tied to a residential tower),
-  //    still refined by sender if that reveals a more specific community
-  return _refineWithSender('Master Community', sender);
+  // 3. Nothing matched — bucket into Master Community as the shared/common-area catch-all
+  return 'Master Community';
 }
 
 // ── Extract tower/building reference from raw_message or location_zone ──
@@ -2955,7 +2975,7 @@ function renderZoneHeatmap(data){
     const z=normalizeZone(i.location_zone, i.sender);
     if(z) zones[z]=(zones[z]||0)+1;
   });
-  delete zones['Creek Beach']; // managed by Emrill Security (different provider) — excluded from this ops dashboard
+  HIDDEN_FROM_SUMMARY.forEach(z=>delete zones[z]); // different security provider — excluded from this ops dashboard
   const sorted=Object.entries(zones).sort((a,b)=>b[1]-a[1]);
   if(!sorted.length){el.innerHTML='<div class="empty-state">No zone data compiled</div>';return;}
   const max=sorted[0][1];
@@ -3009,7 +3029,7 @@ function renderZoneLeaderboard(){
   if(!listEl) return;
   const stats=_computeZoneDayStats();
   const entries=Object.entries(stats)
-    .filter(([zone])=>zone!=='Creek Beach') // different provider (Emrill Security) — excluded from this ops dashboard
+    .filter(([zone])=>!HIDDEN_FROM_SUMMARY.has(zone)) // different security provider — excluded from this ops dashboard
     .map(([zone,s])=>[zone, _zlbMode==='shift'?s.shift:s.today])
     .filter(([,c])=>c>0)
     .sort((a,b)=>b[1]-a[1])
