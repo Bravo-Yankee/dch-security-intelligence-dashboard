@@ -281,7 +281,8 @@ border-radius:20px;}
 }
 
 /* LIVE FEED */
-.feed-scroll{max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.panel-feed{display:flex;flex-direction:column;}
+.feed-scroll{flex:1;min-height:0;max-height:none;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
 .feed-item{border-bottom:1px solid var(--border);padding:10px 0;display:flex;gap:10px;cursor:pointer;transition:background .15s;}
 .feed-item:hover{background:var(--surface2);padding-left:4px;}
 .feed-item:last-child{border-bottom:none;}
@@ -618,7 +619,7 @@ border-radius:20px;}
     </div>
 
     <!-- LIVE INCIDENT PARSING STREAM — sorted newest first, time_of_incident extracted -->
-    <div class="panel">
+    <div class="panel panel-feed">
       <div class="panel-header">
         <div class="panel-title">Live Incident Parsing Stream</div>
         <div class="panel-tag green" id="feedCount">REAL-TIME FEED</div>
@@ -1203,7 +1204,7 @@ function getFilteredIncidents(){
 //  DEMO DATA
 // ═══════════════════════════════════════════════════════════════════
 function loadDemoData(){
-  const zones=['The Cove','Creek Edge','Creek Crescent','17 Icon Bay','Creek Gate',
+  const zones=['The Cove','Cove Phase 2','Creek Edge','Creek Crescent','17 Icon Bay','Creek Gate',
     'Harbour Gate','Creek Rise','Creek Horizon','Harbour Views','Creekside 18',
     'Master Community','Creek Beach','Central Park','Parking Levels','Infrastructure'];
   const types=['Trespassing','Access_Control','Noise_Complaint','Maintenance_Security',
@@ -2352,6 +2353,7 @@ function _iaTrend(data, body) {
 // Admin Panel are layered on top of this via _rebuildCommunityTowers().
 const DEFAULT_COMMUNITY_TOWERS = {
   'The Cove': ['Tower 1','Tower 2','Tower 3'],
+  'Cove Phase 2': ['Building 4','Building 5','Building 6','Building 7','Building 8','Building 9','Building 10','Building 11'], // 806 units, still managed by the Cove Security team
   'North Residence': ['Tower 1','Tower 2','Tower 3'],
   'South Residence': ['Tower 1','Tower 2','Tower 3'],
   'The Grand': [], // Only One Tower
@@ -2573,6 +2575,7 @@ const ZONE_SYNONYMS = [
   [/north\s*residence/i, 'North Residence'],
   [/south\s*residence/i, 'South Residence'],
   [/the\s*grand|^grand\b/i, 'The Grand'],
+  [/cove\s*phase\s*2|cove\s*ph\.?\s*2|cove\s*2\b/i, 'Cove Phase 2'],
   [/the\s*cove|^cove\b/i, 'The Cove'],
   [/island\s*park/i, 'Island Park'],
   [/dch\s*project\s*site(s)?|dch\s*project\b|construction\s*site|project\s*site/i, 'DCH Project'],
@@ -2903,6 +2906,7 @@ function renderZoneHeatmap(data){
     const z=normalizeZone(i.location_zone, i.sender);
     if(z) zones[z]=(zones[z]||0)+1;
   });
+  delete zones['Creek Beach']; // managed by Emrill Security (different provider) — excluded from this ops dashboard
   const sorted=Object.entries(zones).sort((a,b)=>b[1]-a[1]);
   if(!sorted.length){el.innerHTML='<div class="empty-state">No zone data compiled</div>';return;}
   const max=sorted[0][1];
@@ -2956,6 +2960,7 @@ function renderZoneLeaderboard(){
   if(!listEl) return;
   const stats=_computeZoneDayStats();
   const entries=Object.entries(stats)
+    .filter(([zone])=>zone!=='Creek Beach') // different provider (Emrill Security) — excluded from this ops dashboard
     .map(([zone,s])=>[zone, _zlbMode==='shift'?s.shift:s.today])
     .filter(([,c])=>c>0)
     .sort((a,b)=>b[1]-a[1])
@@ -3520,17 +3525,18 @@ function generateRecommendations(data){
 // ═══════════════════════════════════════════════════════════════════
 let currentOpsTab='ALL';
 const opsStaticAll=[
-  ['Zone Coverage','Zone D — 14 Communities'],
+  ['Zone Coverage','Zone D — 15 Communities'],
   ['Morning Rotation','07:00 – 19:00 Hrs'],
   ['Night Rotation','19:00 – 07:00 Hrs'],
-  ['Total CCTV Cameras','8,008 (7,992 Fixed / 16 PTZ)'],
+  ['Total CCTV Cameras','9,138 — 7,992 Fixed / 16 PTZ (existing) + 1,130 new at Cove Phase 2 (more to be commissioned)'],
   ['Total Security Officers','216 (WeOne Security)'],
   ['Total Apts / Villas','6,566 Apts · 101 Villas'],
+  ['Cove Phase 2','806 Units · 8 Buildings (B4–B11) · Cove Security Team'],
 ];
 const opsStaticAM=[
   ['Shift Start','07:00 GST'],['Shift End','19:00 GST'],
   ['Day Supervisor','Senior Security Supervisor'],
-  ['Day Patrol Areas','Creek Gate, Harbour Gate, COVE, Creek Beach'],
+  ['Day Patrol Areas','Creek Gate, Harbour Gate, COVE'],
 ];
 const opsStaticPM=[
   ['Shift Start','19:00 GST'],['Shift End','07:00 GST'],
