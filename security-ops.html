@@ -1283,7 +1283,46 @@ function renderAll(){
   renderOps(currentOpsTab);
   renderHandover(data);
   drawRadar(radarHours);
+  requestAnimationFrame(_syncMidRowPanelHeights);
 }
+
+// ── Cap the Radar + Live Feed panels to the Zone Heatmap panel's own
+// natural height (card scroll + leaderboard) so the row stops exactly
+// at the bottom of the leaderboard instead of stretching to fit a long
+// Live Feed list. Only applied in the 3-column desktop layout.
+function _syncMidRowPanelHeights(){
+  const heatmapPanel=document.getElementById('zoneKpiGrid')?.closest('.panel');
+  const radarPanel=document.getElementById('radarCanvas')?.closest('.panel');
+  const feedPanelEl=document.getElementById('liveFeed')?.closest('.panel');
+  if(!heatmapPanel||!radarPanel||!feedPanelEl) return;
+
+  if(window.innerWidth<=1100){
+    radarPanel.style.maxHeight='';
+    feedPanelEl.style.maxHeight='';
+    return;
+  }
+
+  // Measure the Zone Heatmap panel's own NATURAL content height (its
+  // children's intrinsic sizes — header + the 260px-capped card scroll +
+  // the leaderboard), not its current rendered box, which may already be
+  // stretched tall by the Live Feed panel via CSS grid's default stretch.
+  const cs=getComputedStyle(heatmapPanel);
+  let contentH=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
+  Array.from(heatmapPanel.children).forEach(child=>{
+    const ccs=getComputedStyle(child);
+    contentH+=child.offsetHeight+parseFloat(ccs.marginTop)+parseFloat(ccs.marginBottom);
+  });
+
+  if(contentH>0){
+    radarPanel.style.maxHeight=contentH+'px';
+    feedPanelEl.style.maxHeight=contentH+'px';
+  }
+}
+let _midRowResizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(_midRowResizeTimer);
+  _midRowResizeTimer=setTimeout(_syncMidRowPanelHeights,150);
+});
 
 // ═══════════════════════════════════════════════════════════════════
 //  KPI CARDS
@@ -3852,7 +3891,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   // Patch theme toggle to redraw radar
   const origToggle=window.toggleTheme;
-  window.toggleTheme=function(){origToggle();setTimeout(()=>{drawRadar(radarHours);if(allIncidents.length)renderZoneHeatmap(getFilteredIncidents());},50);};
+  window.toggleTheme=function(){origToggle();setTimeout(()=>{drawRadar(radarHours);if(allIncidents.length)renderZoneHeatmap(getFilteredIncidents());requestAnimationFrame(_syncMidRowPanelHeights);},50);};
 
   // Re-render when date range changes
   document.getElementById('dateRange').addEventListener('change',()=>{if(allIncidents.length)renderAll();});
