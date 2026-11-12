@@ -140,6 +140,9 @@ border-radius:20px;}
 .btn-connect:hover{background:var(--blue-dim);}
 .btn-telemetry{background:var(--surface3);border:1px solid var(--border2);color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;}
 .btn-telemetry:hover{border-color:var(--text-dim);color:var(--text);}
+.btn-report{background:var(--surface3);border:1px solid var(--amber);color:var(--amber);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;border-radius:20px;}
+.btn-report:hover{background:var(--amber-dim);}
+.btn-report:disabled{opacity:.5;cursor:wait;}
 .demo-tag{font-family:'Rajdhani',sans-serif;font-size:11px;color:var(--text-faint);letter-spacing:.5px;}
 
 /* MAIN GRID */
@@ -543,7 +546,9 @@ border-radius:20px;}
   </select>
   <button class="btn-connect" onclick="connectTarget()">CONNECT TARGET</button>
   <button class="btn-telemetry" onclick="loadDemoData()">LOAD TELEMETRY PROFILE</button>
+  <button class="btn-report" id="btnGenReport" onclick="generateSecurityReport()">📄 GENERATE SECURITY REPORT</button>
   <span class="demo-tag" id="demoTag">No data loaded · Connect or load demo</span>
+  <span class="demo-tag" id="reportStatus"></span>
 </div>
 
 <!-- MAIN -->
@@ -3587,6 +3592,86 @@ function generateRecommendations(data){
   if(access.length)recos.push({title:`PERIMETER BREACH: ${access.length} ACCESS VIOLATIONS`,action:'Audit all ANPR arrays and access control tracks. Cross-check DPA uploads and verify visitor management logs.'});
 
   return recos.slice(0,5);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SECURITY OPERATIONS ANALYSIS REPORT (PDF, on demand)
+//  Sends the currently-filtered incidents (already zone-normalized, same
+//  numbers shown on screen) to the DCH Security Operations Report
+//  Generator n8n workflow, which has an AI write the narrative sections
+//  and returns a finished PDF.
+// ═══════════════════════════════════════════════════════════════════
+const REPORT_WEBHOOK_URL = 'https://dch-sec-intelligence.freshplug.org/webhook/dch-security-report';
+
+function _rangeLabelFor(val){
+  const map = {'1':'Today','7':'Last 7 Days','30':'Last 30 Days','999':'All Time'};
+  return map[val] || 'Selected Period';
+}
+
+async function generateSecurityReport(){
+  const btn = document.getElementById('btnGenReport');
+  const statusEl = document.getElementById('reportStatus');
+  if(!allIncidents.length){
+    alert('Load data first (Connect Target or Load Telemetry Profile) before generating a report.');
+    return;
+  }
+  const data = getFilteredIncidents();
+  const payloadIncidents = data.map(function(i){
+    const zone = normalizeZone(i.location_zone, i.sender);
+    return {
+      location_zone: i.location_zone || '',
+      sender: i.sender || '',
+      severity: i.severity || '',
+      action_required: i.action_required || 'FALSE',
+      shift: i.shift || '',
+      timestamp: i.timestamp || '',
+      incident_type: i.incident_type || '',
+      summary: i.summary || '',
+      zone: zone || 'Unknown',
+      excludedFromSummary: zone ? HIDDEN_FROM_SUMMARY.has(zone) : false
+    };
+  });
+  const rangeVal = document.getElementById('dateRange').value;
+  const body = {
+    incidents: payloadIncidents,
+    dateRangeLabel: _rangeLabelFor(rangeVal),
+    rangeDays: parseInt(rangeVal)
+  };
+
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'GENERATING...';
+  if(statusEl) statusEl.textContent = 'Compiling '+payloadIncidents.length+' incidents, writing analysis — this can take 20–60s...';
+
+  try{
+    const resp = await fetch(REPORT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if(!resp.ok){
+      let txt = '';
+      try{ txt = await resp.text(); }catch(e){}
+      throw new Error('Server returned '+resp.status+(txt ? (': '+txt.slice(0,200)) : ''));
+    }
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'DCH-Security-Ops-Report-'+new Date().toISOString().slice(0,10)+'.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+    if(statusEl) statusEl.textContent = 'Report downloaded.';
+  }catch(err){
+    console.error('Report generation failed', err);
+    if(statusEl) statusEl.textContent = 'Failed: '+err.message;
+    alert('Could not generate the report: '+err.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
