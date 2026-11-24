@@ -11,27 +11,29 @@ Live operational dashboards for **Zone D, Dubai Creek Harbour** — built for We
 
 | File | Purpose |
 |---|---|
-| `index.html` | **Security Command Center** — live incident feed, shift handover reports, community zone breakdown, critical/compliance alerting |
+| `index.html` | **Landing page** — entry point linking to the dashboards below |
+| `security-ops.html` | **Security Operations Live Feed** — incident feed, zone heatmaps, shift handover reports, alerting, on-demand analysis report |
 | `holiday-home.html` | **Holiday Homes Tracker (HHO)** — guest check-in/check-out monitoring, community occupancy, compliance screening |
-| `logo.png` | Platform logo |
+| `resident-database.html` | **Resident Database** — move-in/move-out log and resident record lookup |
+| `sira-compliance.html` | **SIRA Compliance Tracker** |
+| `duty-reference.html` | **Vertical Duty Reference** — condensed vertical and Master Community rules |
+| `manifest-*.json`, `icons/` | PWA manifests and icons |
 
-Both are self-contained, dependency-light HTML files — no build step, no framework. They run entirely client-side and pull live data from a Google Sheets CSV export, refreshed automatically.
+The pages are self-contained, dependency-light HTML files — no build step, no framework. They run client-side and refresh their data automatically.
 
 ---
 
 ## How it works
 
 ```
-WhatsApp report  →  n8n workflow (Railway)  →  AI classification  →  Google Sheets  →  Dashboard (GitHub Pages)
+WhatsApp report  →  n8n workflow (self-hosted)  →  AI classification  →  Google Sheets  →  Dashboard (GitHub Pages)
 ```
 
 1. **Intake** — Community supervisors send free-text reports/guest check-ins via WhatsApp (Evolution API).
-2. **Automation** — An n8n workflow (hosted on Railway, PostgreSQL + Redis) parses each message and routes it to the correct pipeline (security incident vs. HHO guest event).
-3. **AI classification** — Each message is structured into JSON (incident type, severity, zone, guest details, compliance flags, etc.) using a 4-model failover cascade:
-   `Groq llama-3.1-8b-instant → Groq llama-3.3-70b-versatile → Groq gemma2-9b-it → OpenRouter (auto)`
-   This protects against any single model's daily token quota silently dropping reports.
+2. **Automation** — A self-hosted n8n workflow parses each message and routes it to the correct pipeline (security incident vs. HHO guest event).
+3. **AI classification** — Each message is structured into JSON (incident type, severity, zone, guest details, compliance flags, etc.) using a multi-model failover cascade. This protects against any single model's daily token quota silently dropping reports.
 4. **Storage** — Structured records are logged to Google Sheets, which also doubles as the audit trail.
-5. **Dashboard** — Both HTML files fetch the sheet as CSV on a polling interval and render it live — KPIs, activity feeds, community breakdowns, and auto-generated shift handover reports (07:00 / 19:00 Dubai time).
+5. **Dashboard** — The dashboard pages fetch the sheet as CSV on a polling interval and render it live — KPIs, activity feeds, community breakdowns, and auto-generated shift handover reports (07:00 / 19:00 Dubai time).
 6. **Alerting** — Critical incidents and compliance-flagged guest check-ins (e.g. nationality watch-list matches) trigger automatic WhatsApp alerts to supervisors.
 
 ---
@@ -57,8 +59,8 @@ WhatsApp report  →  n8n workflow (Railway)  →  AI classification  →  Googl
 ## Tech stack
 
 - **Frontend:** Vanilla HTML/CSS/JS, no build tooling — runs directly on GitHub Pages
-- **Automation:** [n8n](https://n8n.io) (self-hosted on Railway)
-- **AI classification:** Groq (Llama 3.1/3.3, Gemma 2) with OpenRouter fallback
+- **Automation:** [n8n](https://n8n.io) (self-hosted)
+- **AI classification:** multi-provider LLM failover
 - **Messaging:** Evolution API (WhatsApp)
 - **Data store:** Google Sheets (CSV export endpoint)
 - **Animation:** [lottie-web](https://github.com/airbnb/lottie-web) for footer micro-interactions
@@ -67,7 +69,7 @@ WhatsApp report  →  n8n workflow (Railway)  →  AI classification  →  Googl
 
 ## Security notes
 
-This public repository contains the **sanitized** version of the dashboard — no live API keys, credentials, or the internal n8n workflow-editing tab are exposed here. The automation workflow and its credentials are managed separately and are not part of this static site.
+This repository contains only the static front end. The automation workflow, its diagram, its credentials and any API keys are managed separately and are deliberately **not** published here. Do not commit keys, passwords, workflow exports or any personal data to this repository.
 
 ---
 
