@@ -2,7 +2,7 @@
 
 Live operational dashboards for **Zone D, Dubai Creek Harbour** — built for WeOne Security to give supervisors a real-time view of security incidents and Holiday Home (short-term guest) activity across all 14 residential communities, without needing to dig through WhatsApp threads or raw spreadsheets.
 
-🔗 **Live:** hosted as a static PWA via GitHub Pages
+🔗 **Live:** https://dash.freshplug.org (sign-in required). The pages in this repo are now redirects to that site; the dashboards themselves are served from the DCH server, not from GitHub Pages.
 🏢 **Coverage:** 14 communities · 6,566 apartments · 101 villas · 527 serviced apartments · 8,008 CCTV cameras · 44 ANPR cameras
 
 ---
